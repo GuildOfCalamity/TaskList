@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Task List App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Task List App (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

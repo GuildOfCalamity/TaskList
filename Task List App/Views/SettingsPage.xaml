@@ -1,0 +1,150 @@
+﻿<Page
+    x:Class="Task_List_App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctrls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:cvrt="using:Task_List_App.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extras="using:Task_List_App.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <cvrt:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    </Page.Resources>
+    <Grid>
+        <ScrollViewer>
+            <StackPanel x:Name="ContentArea">
+
+                <extras:CompositionShadow
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    BlurRadius="6"
+                    Brush="{ThemeResource SecondaryBrush}"
+                    OffsetX="3"
+                    OffsetY="2">
+                    <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                </extras:CompositionShadow>
+
+                <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                    <!--
+                        [Theme]
+                    -->
+                    <TextBlock x:Uid="Settings_Theme" />
+                    <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                        <RadioButton
+                            x:Uid="Settings_Theme_Light"
+                            Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                            FontSize="15"
+                            GroupName="AppTheme"
+                            IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Light</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                        <RadioButton
+                            x:Uid="Settings_Theme_Dark"
+                            Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                            FontSize="15"
+                            GroupName="AppTheme"
+                            IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Dark</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                        <RadioButton
+                            x:Uid="Settings_Theme_Default"
+                            Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                            FontSize="15"
+                            GroupName="AppTheme"
+                            IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Default</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                        <!--
+                            [Other Options]
+                        -->
+                        <extras:CompositionShadow
+                            Margin="0,12,0,5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            BlurRadius="6"
+                            Brush="{ThemeResource SecondaryBrush}"
+                            OffsetX="3"
+                            OffsetY="2">
+                            <TextBlock x:Uid="Settings_Other" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        </extras:CompositionShadow>
+                        <CheckBox
+                            Command="{x:Bind ViewModel.ToggleNotificationsCommand}"
+                            CommandParameter="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
+                            Content="Toast Notifications"
+                            FontSize="14"
+                            IsChecked="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}">
+                            <!--
+                        <CheckBox.CommandParameter>
+                            <x:Boolean>False</x:Boolean>
+                        </CheckBox.CommandParameter>
+                            -->
+                        </CheckBox>
+                        <CheckBox
+                            Command="{x:Bind ViewModel.PersistLoginCommand}"
+                            CommandParameter="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}"
+                            Content="Stay Logged In"
+                            FontSize="14"
+                            IsChecked="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}">
+                            <!--
+                        <CheckBox.CommandParameter>
+                            <x:Boolean>False</x:Boolean>
+                        </CheckBox.CommandParameter>
+                            -->
+                        </CheckBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--
+                    [About]
+                -->
+                <extras:CompositionShadow
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    BlurRadius="6"
+                    Brush="{ThemeResource SecondaryBrush}"
+                    OffsetX="3"
+                    OffsetY="2">
+                    <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                </extras:CompositionShadow>
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" />
+
+                    <TextBlock
+                        x:Uid="Settings_AboutDescription"
+                        MaxWidth="400"
+                        Margin="{StaticResource XSmallTopMargin}"
+                        HorizontalAlignment="Left"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        TextWrapping="Wrap" />
+                    <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+                </StackPanel>
+
+                <!--
+                    The NuGet "CommunityToolkit.WinUI.UI.Controls.Markdown" was added soley for this embedded ReadMe functionality.
+                    https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.ui.controls?view=win-comm-toolkit-dotnet-7.0
+                -->
+                <ctrls:MarkdownTextBlock
+                    x:Name="mdReadMe"
+                    Margin="0,12,0,6"
+                    Background="Transparent"
+                    CodeBackground="Transparent"
+                    ImageMaxHeight="500"
+                    ImageMaxWidth="500"
+                    ImageResolving="mdReadMe_ImageResolving"
+                    IsFocusEngagementEnabled="False"
+                    LinkClicked="mdReadMe_LinkClicked"
+                    SchemeList="uwpct" />
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
