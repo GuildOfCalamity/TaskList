@@ -52,7 +52,7 @@ public class ThemeSelectorService : IThemeSelectorService
     public async Task SetPersistLoginAsync(bool enabled)
     {
         PersistLogin = enabled;
-        await SavePersistLoginInSettingsAsync(Notifications);
+        await SavePersistLoginInSettingsAsync(PersistLogin);
     }
 
     #region [Theme settings]
