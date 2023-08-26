@@ -41,6 +41,7 @@
     <None Remove="Assets\Check_Purple.png" />
     <None Remove="Assets\Check_Red.png" />
     <None Remove="Assets\Check_Yellow.png" />
+    <None Remove="Assets\Fonts\Aptos.ttf" />
     <None Remove="Assets\README.md" />
     <None Remove="Assets\ScreenShot.png" />
     <None Remove="Views\CreateTaskDialog.xaml" />
