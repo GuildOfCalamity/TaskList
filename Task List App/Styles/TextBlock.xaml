@@ -5,11 +5,13 @@
         <Setter Property="FontWeight" Value="SemiLight" />
         <Setter Property="FontSize" Value="{StaticResource LargeFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
         <Setter Property="TextWrapping" Value="NoWrap" />
     </Style>
 
     <Style x:Key="BodyTextStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
         <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="Wrap" />
