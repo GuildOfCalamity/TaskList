@@ -20,14 +20,14 @@ namespace Task_List_App.Views;
 
 /// <summary>
 /// This is considered the main landing page, so we will require other view 
-/// models in order to determine that system state, e.g. Is the user logged
+/// models in order to determine the system state, e.g. Is the user logged
 /// in? Does the user desire toast notifications? et al.
 /// </summary>
 public sealed partial class TasksPage : Page
 {
     #region [Properties]
     int closeCount = 0;
-    int cycleCount = 3;
+    int cycleCount = 4;
     int notifyDelay = 4;
     string newTaskPrompt = "Enter title here";
 	string toastTemplate = "<toast launch=\"action=ToastClick\"><visual><binding template=\"ToastGeneric\"><text>{0}</text><text>{1}</text><image placement=\"appLogoOverride\" hint-crop=\"circle\" src=\"{2}Assets/WindowIcon.ico\"/></binding></visual><actions><action content=\"Settings\" arguments=\"action=Settings\"/></actions></toast>";
@@ -564,8 +564,8 @@ public sealed partial class TasksPage : Page
 		var tb = new TextBox()
         {
             Text = message,
-            FontSize = 15 /*(double)App.Current.Resources["FontSizeTwo"]*/,
-            /*FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],*/
+            FontSize = (double)App.Current.Resources["MediumFontSize"],
+            FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],
             TextWrapping = TextWrapping.Wrap
         };
         tb.Loaded += (s, e) => { tb.SelectAll(); };
