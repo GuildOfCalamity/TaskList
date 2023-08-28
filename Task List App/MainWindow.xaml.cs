@@ -24,4 +24,16 @@ public sealed partial class MainWindow : Window
         Content = null;
         Title = "AppDisplayName".GetLocalized();
     }
+
+    /// <summary>
+    /// Superfluous testing.
+    /// </summary>
+    void TestMethod01(string logName = "Debug.log")
+    {
+        Task.Run(async () =>
+        {
+            var fileData = await GeneralExtensions.ReadLocalFileAsync(logName);
+            Debug.WriteLine($"> {((ulong)fileData.Length).ToFileSize()} bytes read from '{logName}'");
+        });
+    }
 }

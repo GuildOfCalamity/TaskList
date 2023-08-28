@@ -11,7 +11,9 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
     public DefaultActivationHandler(INavigationService navigationService)
     {
-        _navigationService = navigationService;
+		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
+
+		_navigationService = navigationService;
     }
 
     protected override bool CanHandleInternal(LaunchActivatedEventArgs args)

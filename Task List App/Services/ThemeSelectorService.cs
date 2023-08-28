@@ -27,7 +27,10 @@ public class ThemeSelectorService : IThemeSelectorService
 		_localSettingsService = localSettingsService;
     }
 
-    public async Task InitializeAsync()
+	/// <summary>
+	/// Load settings upon activation from <see cref="Task_List_App.Services.ActivationService"/>.
+	/// </summary>
+	public async Task InitializeAsync()
     {
         Theme = await LoadThemeFromSettingsAsync();
         Notifications = await LoadNotificationsFromSettingsAsync();
@@ -36,7 +39,10 @@ public class ThemeSelectorService : IThemeSelectorService
         await Task.CompletedTask;
     }
 
-    public async Task SetThemeAsync(ElementTheme theme)
+	/// <summary>
+	/// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+	/// </summary>
+	public async Task SetThemeAsync(ElementTheme theme)
     {
         Theme = theme;
 
@@ -44,18 +50,25 @@ public class ThemeSelectorService : IThemeSelectorService
         await SaveThemeInSettingsAsync(Theme);
     }
 
+	/// <summary>
+	/// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+	/// </summary>
 	public async Task SetNotificationsAsync(bool enabled)
 	{
 		Notifications = enabled;
         await SaveNotificationsInSettingsAsync(Notifications);
     }
-    public async Task SetPersistLoginAsync(bool enabled)
+	
+    /// <summary>
+	/// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+	/// </summary>
+	public async Task SetPersistLoginAsync(bool enabled)
     {
         PersistLogin = enabled;
         await SavePersistLoginInSettingsAsync(PersistLogin);
     }
 
-    #region [Theme settings]
+    #region [App theme settings]
     /// <summary>
     /// Update the theme immediately from the service.
     /// </summary>
@@ -70,6 +83,9 @@ public class ThemeSelectorService : IThemeSelectorService
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Loads theme parameter
+    /// </summary>
     async Task<ElementTheme> LoadThemeFromSettingsAsync()
     {
         var themeName = await _localSettingsService.ReadSettingAsync<string>(SettingsKeyTheme);
@@ -82,31 +98,48 @@ public class ThemeSelectorService : IThemeSelectorService
         return ElementTheme.Default;
     }
 
-    async Task SaveThemeInSettingsAsync(ElementTheme theme)
+	/// <summary>
+	/// Saves theme parameter
+	/// </summary>
+	async Task SaveThemeInSettingsAsync(ElementTheme theme)
     {
         await _localSettingsService.SaveSettingAsync(SettingsKeyTheme, $"{theme}");
     }
-    #endregion
+	#endregion
 
-    #region [Notifications setting]
-    async Task<bool> LoadNotificationsFromSettingsAsync()
+	#region [Toast notification setting]
+	/// <summary>
+	/// Loads notification parameter
+	/// </summary>
+	async Task<bool> LoadNotificationsFromSettingsAsync()
     {
         var notify = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyNotifications);
         return notify;
     }
-    async Task SaveNotificationsInSettingsAsync(bool notify)
+
+	/// <summary>
+	/// Saves notification parameter
+	/// </summary>
+	async Task SaveNotificationsInSettingsAsync(bool notify)
     {
         await _localSettingsService.SaveSettingAsync(SettingsKeyNotifications, $"{notify}");
     }
-    #endregion
+	#endregion
 
-    #region [Persist setting]
-    async Task<bool> LoadPersistLoginFromSettingsAsync()
+	#region [Persist login setting]
+	/// <summary>
+	/// Loads login parameter
+	/// </summary>
+	async Task<bool> LoadPersistLoginFromSettingsAsync()
     {
         var persist = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyPersist);
         return persist;
     }
-    async Task SavePersistLoginInSettingsAsync(bool persist)
+
+	/// <summary>
+	/// Saves login parameter
+	/// </summary>
+	async Task SavePersistLoginInSettingsAsync(bool persist)
     {
         await _localSettingsService.SaveSettingAsync(SettingsKeyPersist, $"{persist}");
     }

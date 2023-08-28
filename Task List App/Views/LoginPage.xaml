@@ -46,6 +46,7 @@
                 x:Name="tbPassword"
                 MinWidth="200"
                 FontSize="16"
+                IsEnabled="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
                 Password="password">
                 <PasswordBox.Header>
                     <TextBlock

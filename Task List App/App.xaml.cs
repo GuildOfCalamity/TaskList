@@ -142,9 +142,9 @@ public partial class App : Application
 
 		// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.focusvisualkind?view=windows-app-sdk-1.3
 		this.FocusVisualKind = FocusVisualKind.Reveal;
-	}
+    }
 
-	protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         var cmdArgs = Environment.GetCommandLineArgs();
         foreach(var arg in cmdArgs)
@@ -200,18 +200,21 @@ public partial class App : Application
     void CurrentDomainFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
     {
         Debug.WriteLine($"First chance exception: {e.Exception}", $"{nameof(App)}");
+        DebugLog($"First chance exception from {sender?.GetType()}: {e.Exception}");
     }
 
     void CurrentDomainUnhandledException(object? sender, System.UnhandledExceptionEventArgs e)
     {
         Exception? ex = e.ExceptionObject as Exception;
         Debug.WriteLine($"Thread exception of type {ex?.GetType()}: {ex}", $"{nameof(App)}");
-    }
+		DebugLog($"Thread exception of type {ex?.GetType()}: {ex}");
+	}
 
-    void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+	void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         Debug.WriteLine($"Unobserved task exception: {e.Exception}", $"{nameof(App)}");
-        e.SetObserved(); // suppress and handle manually
+		DebugLog($"Unobserved task exception: {e.Exception}");
+		e.SetObserved(); // suppress and handle manually
     }
     #endregion
 

@@ -15,7 +15,9 @@ public class AppNotificationActivationHandler : ActivationHandler<LaunchActivate
 
     public AppNotificationActivationHandler(INavigationService navigationService, IAppNotificationService notificationService)
     {
-        _navigationService = navigationService;
+		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
+
+		_navigationService = navigationService;
         _notificationService = notificationService;
     }
 
