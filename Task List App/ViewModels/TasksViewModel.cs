@@ -338,6 +338,14 @@ public partial class TasksViewModel : ObservableRecipient
 		return results;
 	}
 
+	public IEnumerable<TaskItem> GetCompletionTimes()
+	{
+		if (TaskItems.Count == 0 || App.IsClosing)
+			return Enumerable.Empty<TaskItem>();
+
+		return TaskItems.Select(o => o).Where(m => m.Completed == true && m.Completion != null);
+	}
+
 	public TaskItem? FindTaskItem(string? title)
 	{
 		if (string.IsNullOrEmpty(title))
