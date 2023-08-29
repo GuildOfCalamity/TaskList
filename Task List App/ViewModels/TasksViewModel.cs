@@ -196,8 +196,16 @@ public partial class TasksViewModel : ObservableRecipient
 		Debug.WriteLine($"ToggleCompletedItem: {item}");
 		// This will be inverted since the Completed flag is bound to
 		// the checkbox and will already be updated once we get here.
-		if (item.Completed) { item.Status = status[0]; }
-        else { item.Status = status[1]; }
+		if (item.Completed) 
+		{ 
+			item.Status = status[0];
+			item.Completion = DateTime.Now;
+		}
+		else 
+		{ 
+			item.Status = status[1];
+			item.Completion = null;
+		}
 
         RefreshNeeded = true;
 	}
