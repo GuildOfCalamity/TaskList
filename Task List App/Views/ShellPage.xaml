@@ -7,6 +7,7 @@
     xmlns:helpers="using:Task_List_App.Helpers"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="ThisPage"
     Loaded="OnLoaded">
 
     <Grid>
@@ -31,6 +32,7 @@
         <!--
             NOTE: Keeping PaneDisplayMode="Auto" ensures that the navbar
             will take the appropriate action when the window is resized.
+            I am keeping the OpenPaneLength small to maximize GUI real estate.
         -->
         <NavigationView
             x:Name="NavigationViewControl"
@@ -86,8 +88,8 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <!--
-                   Example of a seperator...
-                <NavigationViewItemSeparator Tag="MeSeparator" />
+                   Example of a line separator...
+                <NavigationViewItemSeparator Tag="MySeparator" />
                 -->
             </NavigationView.MenuItems>
             <NavigationView.HeaderTemplate>
@@ -102,7 +104,30 @@
                     <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
                         <DataTemplate>
                             <Grid>
-                                <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="{Binding}" />
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Page Title  -->
+                                <TextBlock
+                                    Grid.Column="0"
+                                    Style="{ThemeResource TitleTextBlockStyle}"
+                                    Text="{Binding}" />
+
+                                <!--
+                                    For the completion average stat we'll need to reference the
+                                    page name in this binding to step outside of the DataTemplate.
+                                -->
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="0,0,60,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    FontSize="{ThemeResource MediumFontSize}"
+                                    Foreground="{ThemeResource BorderBrush}"
+                                    Text="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
                             </Grid>
                         </DataTemplate>
                     </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
@@ -117,11 +142,11 @@
                                 <NavigationThemeTransition.DefaultNavigationTransitionInfo>
                                     <!--
                                         https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.animation.drillinnavigationtransitioninfo?view=winrt-22621
-                                        [Applies to WinRT]: Build 10240, Build 10586, Build 14383, Build 15063, Build 16299, Build 17134, Build 17763, Build 18362, Build 19041, Build 20348, Build 22000, Build 22556 (Preview), Build 22621
+                                        [Applies to WinRT]: Build 10240, Build 10586, Build 14383, Build 15063, Build 16299, Build 17134, Build 17763, Build 18362, Build 19041, Build 20348, Build 22000, Build 22556 (Preview), Build 22621, Build 23466 (Preview)
                                     -->
                                     <DrillInNavigationTransitionInfo />
                                     <!--
-                                        === Others transition effects ===
+                                        === other transition effects ===
                                     -->
                                     <!-- <ContinuumNavigationTransitionInfo /> -->
                                     <!-- <EntranceNavigationTransitionInfo/> -->

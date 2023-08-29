@@ -13,7 +13,7 @@
 	<Nullable>enable</Nullable>
 	<UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
-	<Version>1.0.0.1</Version>
+	<Version>1.0.0.2</Version>
     <!-- 
       WindowsPackageType defines whether your app is packaged (MSIX) or unpackaged (None) 
     -->

@@ -117,6 +117,7 @@ public partial class App : Application
             #endregion
 
             #region [Views and ViewModels]
+
             // We could make these transient, but I want some things to be shared across the
             // app, such as the total task count for updating the <NavigationViewItem.InfoBadge>.
 
@@ -157,9 +158,9 @@ public partial class App : Application
                 else
                 {
                     if (App.IsPackaged)
-                        System.IO.File.AppendAllText(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "Debug.log"), $"[{DateTime.Now.ToString("hh:mm:ss.fff tt")}] OnLaunched: {arg}{Environment.NewLine}");
+                        System.IO.File.AppendAllText(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "Debug.log"), $"[{DateTime.Now.ToString("hh:mm:ss.fff tt")}] OnLaunched: {arg}{System.Environment.NewLine}");
                     else
-                        System.IO.File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "Debug.log"), $"[{DateTime.Now.ToString("hh:mm:ss.fff tt")}] OnLaunched: {arg}{Environment.NewLine}");
+                        System.IO.File.AppendAllText(Path.Combine(System.AppContext.BaseDirectory, "Debug.log"), $"[{DateTime.Now.ToString("hh:mm:ss.fff tt")}] OnLaunched: {arg}{System.Environment.NewLine}");
                 }
             }
         }
@@ -243,6 +244,25 @@ public partial class App : Application
         return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version();
     }
 
+    /// <summary>
+    /// Simplified debug logger for app-wide use.
+    /// </summary>
+    /// <param name="message">the text to write into the file</param>
+    public static void DebugLog(string message)
+    {
+        try
+        {
+            if (App.IsPackaged)
+                System.IO.File.AppendAllText(System.IO.Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Debug.log"), $"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}{Environment.NewLine}");
+            else
+                System.IO.File.AppendAllText(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Debug.log"), $"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}{Environment.NewLine}");
+        }
+        catch (Exception)
+        {
+            Debug.WriteLine($"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}");
+        }
+    }
+
 	#region [Dialog Helpers]
 	/// <summary>
 	/// The <see cref="Windows.UI.Popups.MessageDialog"/> does not look as nice as the
@@ -302,8 +322,8 @@ public partial class App : Application
 			Content = new TextBlock()
 			{
 				Text = message,
-				FontSize = (double)App.Current.Resources["FontSizeTwo"],
-				FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["ScanLineFont"],
+				FontSize = (double)App.Current.Resources["MediumFontSize"],
+				FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],
 				TextWrapping = TextWrapping.Wrap
 			},
 			XamlRoot = App.MainRoot?.XamlRoot,
@@ -329,12 +349,4 @@ public partial class App : Application
 		}
 	}
 	#endregion
-
-    public static void DebugLog(string message)
-    {
-        if (App.IsPackaged)
-            System.IO.File.AppendAllText(System.IO.Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Debug.log"), $"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}{Environment.NewLine}");
-        else
-            System.IO.File.AppendAllText(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Debug.log"), $"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}{Environment.NewLine}");
-	}
 }

@@ -15,9 +15,10 @@ public class TaskItem : INotifyPropertyChanged
 	string _status = "";
 	bool _completed = false;
 	DateTime _created = DateTime.Now;
+	DateTime? _completion = null;
 
-	#region [Properties]
-	public string Title
+    #region [Properties]
+    public string Title
 	{
 		get { return _title; }
 		set
@@ -77,9 +78,21 @@ public class TaskItem : INotifyPropertyChanged
 			}
 		}
 	}
-	#endregion
+    public DateTime? Completion
+    {
+        get { return _completion; }
+        set
+        {
+            if (_completion != value)
+            {
+                _completion = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    #endregion
 
-	public override string ToString()
+    public override string ToString()
 	{
 		return $"{Title}, {Status}, {Time}, Completed={Completed}";
 	}

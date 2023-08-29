@@ -100,7 +100,6 @@
                 IsOpen="False"
                 Message="..."
                 Severity="Error" />
-            <TextBlock x:Name="pocText" Margin="20,14,0,0" />
         </StackPanel>
 
         <ListView

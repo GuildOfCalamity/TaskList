@@ -69,7 +69,7 @@ public sealed partial class TasksPage : Page
         this.Loaded += TasksPage_Loaded;
         this.Unloaded += TasksPage_Unloaded;
         TaskListView.Tapped += TaskListView_Tapped;
-		ShellPage.MainWindowActivatedEvent += MainWindow_MainWindowActivatedEvent;
+		ShellPage.MainWindowActivatedEvent += MainWindow_ActivatedEvent;
         ShellPage.ShellKeyboardEvent += ShellPage_ShellKeyboardEvent;
         ShellPage.ShellPointerEvent += ShellPage_ShellPointerEvent;
 
@@ -160,9 +160,9 @@ public sealed partial class TasksPage : Page
     }
 
     /// <summary>
-    /// Currently not used.
+    /// We'll save the user's data when the main window is deactivated.
     /// </summary>
-    void MainWindow_MainWindowActivatedEvent(object? sender, WindowActivatedEventArgs e)
+    void MainWindow_ActivatedEvent(object? sender, WindowActivatedEventArgs e)
 	{
         Debug.WriteLine($"[MainWindowActivatedEvent] {e.WindowActivationState}");
 
@@ -197,7 +197,11 @@ public sealed partial class TasksPage : Page
 			});
 			noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Tasks have been loaded.", InfoBarSeverity.Informational } });
 		}
-	}
+        else
+        {
+            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Tasks failed to load. See debug log for details.", InfoBarSeverity.Error } });
+        }
+    }
     #endregion
 
     #region [Button Events]
@@ -872,6 +876,7 @@ public sealed partial class TasksPage : Page
     #region [Misc Methods]
     /// <summary>
     /// Setup our task system timer and our messaging system timer.
+    /// These timers handle other features, e.g. updating our completion time statistic.
     /// </summary>
     void ConfigureSystemTimers()
     {
@@ -882,18 +887,21 @@ public sealed partial class TasksPage : Page
         {
             try
             {
+                // These logic branches could be condensed, but I have left them open for flexibility.
+
                 if (DispatcherQueue != null && !App.IsClosing && SaveNeeded)
-                {   // There may be calls in the future that exceed the
-                    // timer window, so stop the timer just to be safe.
+                {
+                    #region [Check if saving needed]
                     _timerPoll.Stop();
                     Debug.WriteLine($"[UpdateTaskItem]");
                     ViewModel.UpdateTaskItemCommand.Execute(null);
                     SaveNeeded = false;
                     _timerPoll.Start();
+                    #endregion
                 }
                 else if (DispatcherQueue != null && !App.IsClosing && ViewModel.RefreshNeeded)
-                {   // There may be calls in the future that exceed the
-                    // timer window, so stop the timer just to be safe.
+                {
+                    #region [Check for refresh of ListView]
                     _timerPoll.Stop();
                     Debug.WriteLine($"[RefreshNeeded]");
                     if (initFinished && ViewModel.RefreshNeeded)
@@ -907,35 +915,40 @@ public sealed partial class TasksPage : Page
                         });
                     }
                     _timerPoll.Start();
+                    #endregion
                 }
                 else if (--cycleCount <= 0 && !App.IsClosing)
                 {
+                    #region [Check messaging and update statistics]
                     _timerPoll.Stop();
                     cycleCount = 1800; // after initial notification, slow down the occurrence
+
+                    CalculateAverageTimeStatistic();
+
                     var tsk = ViewModel.GetPendingTaskItems();
                     if (tsk.Count > 0 && ApplicationSettings.ShowNotifications && LoginModel.IsLoggedIn)
                     {
                         //App.GetService<IAppNotificationService>().Show(string.Format(toastTemplate, $"Overdue: {tsk.Title}", tsk.Created.ToLongDateString(), AppContext.BaseDirectory));
-
                         ToastTest_ImageAndText(tsk.Count, ViewModel.TallyUncompletedTaskItems());
                         //TestToastXmlString("Is there anybody out there?");
                         //ScheduleToast(DateTimeOffset.Now.Add(new TimeSpan(0, 1, 0)));
                         //ShowToastHistory();
                     }
                     _timerPoll.Start();
+                    #endregion
                 }
                 else if (App.IsClosing)
                 {
                     _timerPoll.Stop();
                 }
 
-                #region [Foundation for idle trigger]
-                // We could add a login page and switch to it once an idle period is detected.
+                #region [Check idle trigger]
                 var idleTime = DateTime.Now - _lastActivity;
                 if (idleTime.TotalMinutes >= 15 && !App.IsClosing)
                 {
                     _lastActivity = DateTime.Now;
                     Debug.WriteLine($"[{DateTime.Now.ToString("hh:mm:ss.fff tt")}] System Idle Detected");
+                    // Switch to login page once an idle period is detected.
                     if (!ApplicationSettings.PersistLogin && !string.IsNullOrEmpty(NavService?.CurrentRoute) && !NavService.CurrentRoute.Contains(nameof(LoginViewModel)))
                     {
                         LoginModel.IsLoggedIn = false;
@@ -1052,6 +1065,32 @@ public sealed partial class TasksPage : Page
     {
         if (ShellModel.BadgeTotal != count)
             ShellModel.BadgeTotal = count;
+    }
+
+    void CalculateAverageTimeStatistic()
+    {
+        int count = 0;
+        double tally = 0.0;
+
+        var items = ViewModel.GetCompletionTimes();
+        foreach (var item in items)
+        {
+            count++;
+            var diff = item.Completion - item.Created;
+            if (diff.HasValue)
+                tally += diff.Value.TotalDays;
+        }
+
+        if (count > 0)
+        {
+            double avg = tally / (double)count;
+            if (avg > 0.01) 
+            {
+                string text = $"completion average is {avg:N1} days";
+                if (ShellModel.Average != text)
+                    ShellModel.Average = text;
+            }
+        }
     }
 
     async Task LaunchUrlFromTextBox(TextBox textBox)

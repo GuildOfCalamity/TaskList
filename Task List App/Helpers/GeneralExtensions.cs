@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -50,6 +54,40 @@ public static class GeneralExtensions
     {
         return dateTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
     }
+
+    /// <summary>
+    /// Clamping function for any value of type <see cref="IComparable{T}"/>.
+    /// </summary>
+    /// <param name="val">initial value</param>
+    /// <param name="min">lowest range</param>
+    /// <param name="max">highest range</param>
+    /// <returns>clamped value</returns>
+    public static T Clamp<T>(this T val, T min, T max) where T : IComparable<T>
+    {
+        return val.CompareTo(min) < 0 ? min : (val.CompareTo(max) > 0 ? max : val);
+    }
+
+    /// <summary>
+    /// Scales a range of double. [baseMin to baseMax] will become [limitMin to limitMax]
+    /// </summary>
+    public static double Scale(this double valueIn, double baseMin, double baseMax, double limitMin, double limitMax) => ((limitMax - limitMin) * (valueIn - baseMin) / (baseMax - baseMin)) + limitMin;
+    /// <summary>
+    /// Scales a range of floats. [baseMin to baseMax] will become [limitMin to limitMax]
+    /// </summary>
+    public static float Scale(this float valueIn, float baseMin, float baseMax, float limitMin, float limitMax) => ((limitMax - limitMin) * (valueIn - baseMin) / (baseMax - baseMin)) + limitMin;
+    /// <summary>
+    /// Scales a range of integers. [baseMin to baseMax] will become [limitMin to limitMax]
+    /// </summary>
+    public static int Scale(this int valueIn, int baseMin, int baseMax, int limitMin, int limitMax) => ((limitMax - limitMin) * (valueIn - baseMin) / (baseMax - baseMin)) + limitMin;
+
+    /// <summary>
+    /// Linear interpolation for a range of doubles.
+    /// </summary>
+    public static double Lerp(this double start, double end, double amount = 0.5D) => start + (end - start) * amount;
+    /// <summary>
+    /// Linear interpolation for a range of floats.
+    /// </summary>
+    public static float Lerp(this float start, float end, float amount = 0.5F) => start + (end - start) * amount;
 
     /// <summary>
     /// Converts long file size into typical browser file size.
@@ -117,8 +155,6 @@ public static class GeneralExtensions
         }
     }
 
-
-
     /// <summary>
     /// Gets the default member name that is used for an indexer (e.g. "Item").
     /// </summary>
@@ -148,7 +184,7 @@ public static class GeneralExtensions
             Debug.WriteLine($"Authority (ms-resource)");
 
             string path = uri.AbsolutePath.StartsWith("/Files")
-                ? uri.AbsolutePath.Replace("/Files", string.Empty)
+                ? uri.AbsolutePath.Replace("/Files", "/Assets")
                 : uri.AbsolutePath;
 
             return new Uri($"ms-appx://{path}");
@@ -215,6 +251,143 @@ public static class GeneralExtensions
             Debug.WriteLine("WARNING: The input collection has at least an item already present in the second collection");
 
         return a.Concat(b).ToArray();
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="Span{T}"/> over an input <see cref="List{T}"/> instance.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the input <see cref="List{T}"/> instance.</typeparam>
+    /// <param name="list">The input <see cref="List{T}"/> instance.</param>
+    /// <returns>A <see cref="Span{T}"/> instance with the values of <paramref name="list"/>.</returns>
+    /// <remarks>
+    /// Note that the returned <see cref="Span{T}"/> is only guaranteed to be valid as long as the items within
+    /// <paramref name="list"/> are not modified. Doing so might cause the <see cref="List{T}"/> to swap its
+    /// internal buffer, causing the returned <see cref="Span{T}"/> to become out of date. That means that in this
+    /// scenario, the <see cref="Span{T}"/> would end up wrapping an array no longer in use. Always make sure to use
+    /// the returned <see cref="Span{T}"/> while the target <see cref="List{T}"/> is not modified.
+    /// </remarks>
+    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this List<T>? list)
+    {
+        return CollectionsMarshal.AsSpan(list);
+    }
+
+    /// <summary>
+    /// Returns a simple string representation of an array.
+    /// </summary>
+    /// <typeparam name="T">The element type of the array.</typeparam>
+    /// <param name="array">The source array.</param>
+    /// <returns>The <see cref="string"/> representation of the array.</returns>
+    public static string ToArrayString<T>(this T?[] array)
+    {
+        // The returned string will be in the following format: [1, 2, 3]
+        StringBuilder builder = new StringBuilder();
+        builder.Append('[');
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (i != 0)
+                builder.Append(",\t");
+
+            builder.Append(array[i]?.ToString());
+        }
+        builder.Append(']');
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Reads a sequence of bytes from a given <see cref="Stream"/> instance.
+    /// </summary>
+    /// <param name="stream">The source <see cref="Stream"/> to read data from.</param>
+    /// <param name="buffer">The target <see cref="Span{T}"/> to write data to.</param>
+    /// <returns>The number of bytes that have been read.</returns>
+    public static int Read(this Stream stream, Span<byte> buffer)
+    {
+        byte[] rent = ArrayPool<byte>.Shared.Rent(buffer.Length);
+
+        try
+        {
+            int bytesRead = stream.Read(rent, 0, buffer.Length);
+            if (bytesRead > 0)
+                rent.AsSpan(0, bytesRead).CopyTo(buffer);
+
+            return bytesRead;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rent);
+        }
+    }
+
+    /// <summary>
+    /// Reads a value of a specified type from a source <see cref="Stream"/> instance.
+    /// </summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="stream">The source <see cref="Stream"/> instance to read from.</param>
+    /// <returns>The <typeparamref name="T"/> value read from <paramref name="stream"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="stream"/> reaches the end.</exception>
+    public static T Read<T>(this Stream stream) where T : unmanaged
+    {
+        int length = Unsafe.SizeOf<T>();
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
+
+        try
+        {
+            if (stream.Read(buffer, 0, length) != length)
+                throw new InvalidOperationException("The stream didn't contain enough data to read the requested item");
+
+            return Unsafe.ReadUnaligned<T>(ref buffer[0]);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    /// <summary>
+    /// Writes a sequence of bytes to a given <see cref="Stream"/> instance.
+    /// </summary>
+    /// <param name="stream">The destination <see cref="Stream"/> to write data to.</param>
+    /// <param name="buffer">The source <see cref="Span{T}"/> to read data from.</param>
+    public static void Write(this Stream stream, ReadOnlySpan<byte> buffer)
+    {
+        byte[] rent = ArrayPool<byte>.Shared.Rent(buffer.Length);
+
+        try
+        {
+            buffer.CopyTo(rent);
+            stream.Write(rent, 0, buffer.Length);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rent);
+        }
+    }
+
+    /// <summary>
+    /// Writes a value of a specified type into a target <see cref="Stream"/> instance.
+    /// </summary>
+    /// <typeparam name="T">The type of value to write.</typeparam>
+    /// <param name="stream">The target <see cref="Stream"/> instance to write to.</param>
+    /// <param name="value">The input value to write to <paramref name="stream"/>.</param>
+    public static void Write<T>(this Stream stream, in T value) where T : unmanaged
+    {
+        int length = Unsafe.SizeOf<T>();
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
+
+        try
+        {
+            Unsafe.WriteUnaligned(ref buffer[0], value);
+            stream.Write(buffer, 0, length);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Write<{typeof(T)}>: {ex}");
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     /// <summary>
@@ -514,6 +687,200 @@ public static class GeneralExtensions
     }
 
     /// <summary>
+    /// Calculates the linear interpolated Color based on the given Color values.
+    /// </summary>
+    /// <param name="colorFrom">Source Color.</param>
+    /// <param name="colorTo">Target Color.</param>
+    /// <param name="amount">Weightage given to the target color.</param>
+    /// <returns>Linear Interpolated Color.</returns>
+    public static Windows.UI.Color Lerp(this Windows.UI.Color colorFrom, Windows.UI.Color colorTo, float amount)
+    {
+        // Convert colorFrom components to lerp-able floats
+        float sa = colorFrom.A,
+            sr = colorFrom.R,
+            sg = colorFrom.G,
+            sb = colorFrom.B;
+
+        // Convert colorTo components to lerp-able floats
+        float ea = colorTo.A,
+            er = colorTo.R,
+            eg = colorTo.G,
+            eb = colorTo.B;
+
+        // lerp the colors to get the difference
+        byte a = (byte)Math.Max(0, Math.Min(255, sa.Lerp(ea, amount))),
+            r = (byte)Math.Max(0, Math.Min(255, sr.Lerp(er, amount))),
+            g = (byte)Math.Max(0, Math.Min(255, sg.Lerp(eg, amount))),
+            b = (byte)Math.Max(0, Math.Min(255, sb.Lerp(eb, amount)));
+
+        // return the new color
+        return Windows.UI.Color.FromArgb(a, r, g, b);
+    }
+
+    /// <summary>
+    /// Darkens the color by the given percentage using lerp.
+    /// </summary>
+    /// <param name="color">Source color.</param>
+    /// <param name="amount">Percentage to darken. Value should be between 0 and 1.</param>
+    /// <returns>Color</returns>
+    public static Windows.UI.Color DarkerBy(this Windows.UI.Color color, float amount)
+    {
+        return color.Lerp(Microsoft.UI.Colors.Black, amount);
+    }
+
+    /// <summary>
+    /// Lightens the color by the given percentage using lerp.
+    /// </summary>
+    /// <param name="color">Source color.</param>
+    /// <param name="amount">Percentage to lighten. Value should be between 0 and 1.</param>
+    /// <returns>Color</returns>
+    public static Windows.UI.Color LighterBy(this Windows.UI.Color color, float amount)
+    {
+        return color.Lerp(Microsoft.UI.Colors.White, amount);
+    }
+
+    /// <summary>
+    /// Multiply color bytes by <paramref name="factor"/>, default value is 1.5
+    /// </summary>
+    public static Windows.UI.Color LightenColor(this Windows.UI.Color source, float factor = 1.5F)
+    {
+        var red = (int)((float)source.R * factor);
+        var green = (int)((float)source.G * factor);
+        var blue = (int)((float)source.B * factor);
+
+        if (red == 0) { red = 0x1F; }
+        else if (red > 255) { red = 0xFF; }
+        if (green == 0) { green = 0x1F; }
+        else if (green > 255) { green = 0xFF; }
+        if (blue == 0) { blue = 0x1F; }
+        else if (blue > 255) { blue = 0xFF; }
+
+        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
+    }
+
+    /// <summary>
+    /// Divide color bytes by <paramref name="factor"/>, default value is 1.5
+    /// </summary>
+    public static Windows.UI.Color DarkenColor(this Windows.UI.Color source, float factor = 1.5F)
+    {
+        if (source.R == 0) { source.R = 2; }
+        if (source.G == 0) { source.G = 2; }
+        if (source.B == 0) { source.B = 2; }
+
+        var red = (int)((float)source.R / factor);
+        var green = (int)((float)source.G / factor);
+        var blue = (int)((float)source.B / factor);
+
+        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Color"/> to a hexadecimal string representation.
+    /// </summary>
+    /// <param name="color">The color to convert.</param>
+    /// <returns>The hexadecimal string representation of the color.</returns>
+    public static string ToHex(this Windows.UI.Color color)
+    {
+        return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Color"/> from a XAML color string.
+    /// Any format used in XAML should work.
+    /// </summary>
+    /// <param name="colorString">The XAML color string.</param>
+    /// <returns>The created <see cref="Color"/>.</returns>
+    public static Windows.UI.Color? ToColor(this string colorString)
+    {
+        if (string.IsNullOrEmpty(colorString))
+            throw new ArgumentException($"The parameter \"{nameof(colorString)}\" must not be null or empty.");
+
+        if (colorString[0] == '#')
+        {
+            switch (colorString.Length)
+            {
+                case 9:
+                    {
+                        var cuint = Convert.ToUInt32(colorString.Substring(1), 16);
+                        var a = (byte)(cuint >> 24);
+                        var r = (byte)((cuint >> 16) & 0xff);
+                        var g = (byte)((cuint >> 8) & 0xff);
+                        var b = (byte)(cuint & 0xff);
+                        return Windows.UI.Color.FromArgb(a, r, g, b);
+                    }
+                case 7:
+                    {
+                        var cuint = Convert.ToUInt32(colorString.Substring(1), 16);
+                        var r = (byte)((cuint >> 16) & 0xff);
+                        var g = (byte)((cuint >> 8) & 0xff);
+                        var b = (byte)(cuint & 0xff);
+                        return Windows.UI.Color.FromArgb(255, r, g, b);
+                    }
+                case 5:
+                    {
+                        var cuint = Convert.ToUInt16(colorString.Substring(1), 16);
+                        var a = (byte)(cuint >> 12);
+                        var r = (byte)((cuint >> 8) & 0xf);
+                        var g = (byte)((cuint >> 4) & 0xf);
+                        var b = (byte)(cuint & 0xf);
+                        a = (byte)(a << 4 | a);
+                        r = (byte)(r << 4 | r);
+                        g = (byte)(g << 4 | g);
+                        b = (byte)(b << 4 | b);
+                        return Windows.UI.Color.FromArgb(a, r, g, b);
+                    }
+                case 4:
+                    {
+                        var cuint = Convert.ToUInt16(colorString.Substring(1), 16);
+                        var r = (byte)((cuint >> 8) & 0xf);
+                        var g = (byte)((cuint >> 4) & 0xf);
+                        var b = (byte)(cuint & 0xf);
+                        r = (byte)(r << 4 | r);
+                        g = (byte)(g << 4 | g);
+                        b = (byte)(b << 4 | b);
+                        return Windows.UI.Color.FromArgb(255, r, g, b);
+                    }
+                default: return ThrowFormatException();
+            }
+        }
+
+        if (colorString.Length > 3 && colorString[0] == 's' && colorString[1] == 'c' && colorString[2] == '#')
+        {
+            var values = colorString.Split(',');
+
+            if (values.Length == 4)
+            {
+                var scA = double.Parse(values[0].Substring(3), CultureInfo.InvariantCulture);
+                var scR = double.Parse(values[1], CultureInfo.InvariantCulture);
+                var scG = double.Parse(values[2], CultureInfo.InvariantCulture);
+                var scB = double.Parse(values[3], CultureInfo.InvariantCulture);
+
+                return Windows.UI.Color.FromArgb((byte)(scA * 255), (byte)(scR * 255), (byte)(scG * 255), (byte)(scB * 255));
+            }
+
+            if (values.Length == 3)
+            {
+                var scR = double.Parse(values[0].Substring(3), CultureInfo.InvariantCulture);
+                var scG = double.Parse(values[1], CultureInfo.InvariantCulture);
+                var scB = double.Parse(values[2], CultureInfo.InvariantCulture);
+
+                return Windows.UI.Color.FromArgb(255, (byte)(scR * 255), (byte)(scG * 255), (byte)(scB * 255));
+            }
+
+            return ThrowFormatException();
+        }
+
+        var prop = typeof(Microsoft.UI.Colors).GetTypeInfo().GetDeclaredProperty(colorString);
+
+        if (prop != null)
+            return (Windows.UI.Color?)prop.GetValue(null) ?? Windows.UI.Color.FromArgb(255, 198, 87, 88);
+
+        return ThrowFormatException();
+
+        static Windows.UI.Color ThrowFormatException() => throw new FormatException($"The parameter \"{nameof(colorString)}\" is not a recognized Color format.");
+    }
+
+    /// <summary>
     /// This performs no conversion, it reboxes the same value in another type.
     /// </summary>
     /// <example>
@@ -525,6 +892,24 @@ public static class GeneralExtensions
     {
         Type intType = Enum.GetUnderlyingType(anyEnum.GetType());
         return Convert.ChangeType(anyEnum, intType);
+    }
+
+    /// <summary>
+    /// Tries to get a boxed <typeparamref name="T"/> value from an input <see cref="object"/> instance.
+    /// </summary>
+    /// <typeparam name="T">The type of value to try to unbox.</typeparam>
+    /// <param name="obj">The input <see cref="object"/> instance to check.</param>
+    /// <param name="value">The resulting <typeparamref name="T"/> value, if <paramref name="obj"/> was in fact a boxed <typeparamref name="T"/> value.</param>
+    /// <returns><see langword="true"/> if a <typeparamref name="T"/> value was retrieved correctly, <see langword="false"/> otherwise.</returns>
+    public static bool TryUnbox<T>(object obj, out T value)
+    {
+        if (obj is T)
+        {
+            value = (T)obj;
+            return true;
+        }
+        value = default;
+        return false;
     }
 
     /// <summary>
@@ -683,117 +1068,31 @@ public static class GeneralExtensions
         }
     }
 
-    /// <summary>
-    /// Chainable task helper.
-    /// var result = await SomeLongAsyncFunction().WithTimeout(TimeSpan.FromSeconds(2));
-    /// </summary>
-    /// <typeparam name="TResult">the type of task result</typeparam>
-    /// <returns><see cref="Task"/>TResult</returns>
-    public async static Task<TResult> WithTimeout<TResult>(this Task<TResult> task, TimeSpan timeout)
+    public static async Task<byte[]> AsPng(this UIElement control)
     {
-        Task winner = await (Task.WhenAny(task, Task.Delay(timeout)));
+        // Get XAML Visual in BGRA8 format
+        var rtb = new RenderTargetBitmap();
+        await rtb.RenderAsync(control, (int)control.ActualSize.X, (int)control.ActualSize.Y);
 
-        if (winner != task)
-            throw new TimeoutException();
+        // Encode as PNG
+        var pixelBuffer = (await rtb.GetPixelsAsync()).ToArray();
+        IRandomAccessStream mraStream = new InMemoryRandomAccessStream();
+        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, mraStream);
+        encoder.SetPixelData(
+            BitmapPixelFormat.Bgra8,
+            BitmapAlphaMode.Premultiplied,
+            (uint)rtb.PixelWidth,
+            (uint)rtb.PixelHeight,
+            184,
+            184,
+            pixelBuffer);
+        await encoder.FlushAsync();
 
-        return await task;   // Unwrap result/re-throw
-    }
+        // Transform to byte array
+        var bytes = new byte[mraStream.Size];
+        await mraStream.ReadAsync(bytes.AsBuffer(), (uint)mraStream.Size, InputStreamOptions.None);
 
-    /// <summary>
-    /// Task extension to add a timeout.
-    /// </summary>
-    /// <returns>The task with timeout.</returns>
-    /// <param name="task">Task.</param>
-    /// <param name="timeoutInMilliseconds">Timeout duration in Milliseconds.</param>
-    /// <typeparam name="T">The 1st type parameter.</typeparam>
-    public async static Task<T> WithTimeout<T>(this Task<T> task, int timeoutInMilliseconds)
-    {
-        var retTask = await Task.WhenAny(task, Task.Delay(timeoutInMilliseconds))
-            .ConfigureAwait(false);
-
-        #pragma warning disable CS8603 // Possible null reference return.
-        return retTask is Task<T> ? task.Result : default;
-        #pragma warning restore CS8603 // Possible null reference return.
-    }
-
-    /// <summary>
-    /// Chainable task helper.
-    /// var result = await SomeLongAsyncFunction().WithCancellation(cts.Token);
-    /// </summary>
-    /// <typeparam name="TResult">the type of task result</typeparam>
-    /// <returns><see cref="Task"/>TResult</returns>
-    public static Task<TResult> WithCancellation<TResult>(this Task<TResult> task, CancellationToken cancelToken)
-    {
-        var tcs = new TaskCompletionSource<TResult>();
-        var reg = cancelToken.Register(() => tcs.TrySetCanceled());
-        task.ContinueWith(ant =>
-        {
-            reg.Dispose();
-            if (ant.IsCanceled)
-                tcs.TrySetCanceled();
-            else if (ant.IsFaulted)
-                tcs.TrySetException(ant.Exception?.InnerException ?? new Exception("Antecendent faulted."));
-            else
-                tcs.TrySetResult(ant.Result);
-        });
-        return tcs.Task;  // Return the TaskCompletionSource result
-    }
-
-    public static Task<T> WithAllExceptions<T>(this Task<T> task)
-    {
-        TaskCompletionSource<T> tcs = new TaskCompletionSource<T>();
-
-        task.ContinueWith(ignored =>
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Canceled:
-                    Debug.WriteLine($"[TaskStatus.Canceled]", $"{nameof(GeneralExtensions)}");
-                    tcs.SetCanceled();
-                    break;
-                case TaskStatus.RanToCompletion:
-                    tcs.SetResult(task.Result);
-                    //Debug.WriteLine($"[TaskStatus.RanToCompletion({task.Result})]");
-                    break;
-                case TaskStatus.Faulted:
-                    // SetException will automatically wrap the original AggregateException
-                    // in another one. The new wrapper will be removed in TaskAwaiter, leaving
-                    // the original intact.
-                    Debug.WriteLine($"[TaskStatus.Faulted: {task.Exception?.Message}]", $"{nameof(GeneralExtensions)}");
-                    tcs.SetException(task.Exception ?? new Exception("Task faulted."));
-                    break;
-                default:
-                    Debug.WriteLine($"[TaskStatus: Continuation called illegally.]", $"{nameof(GeneralExtensions)}");
-                    tcs.SetException(new InvalidOperationException("Continuation called illegally."));
-                    break;
-            }
-        });
-
-        return tcs.Task;
-    }
-
-    #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
-    /// <summary>
-    /// Attempts to await on the task and catches exception
-    /// </summary>
-    /// <param name="task">Task to execute</param>
-    /// <param name="onException">What to do when method has an exception</param>
-    /// <param name="continueOnCapturedContext">If the context should be captured.</param>
-    public static async void SafeFireAndForget(this Task task, Action<Exception>? onException = null, bool continueOnCapturedContext = false)
-    #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
-    {
-        try
-        {
-            await task.ConfigureAwait(continueOnCapturedContext);
-        }
-        catch (Exception ex) when (onException != null)
-        {
-            onException.Invoke(ex);
-        }
-        catch (Exception ex) when (onException == null)
-        {
-            Debug.WriteLine($"SafeFireAndForget: {ex.Message}", $"{nameof(GeneralExtensions)}");
-        }
+        return bytes;
     }
 
     public static string RemoveExtraSpaces(this string strText)
@@ -920,31 +1219,151 @@ public static class GeneralExtensions
         return index;
     }
 
-    public static async Task<byte[]> AsPng(this UIElement control)
+    /// <summary>
+    /// Basic key generator for unique IDs.
+    /// This employs the standard MS key table which accounts
+    /// for the 36 Latin letters and Arabic numerals used in
+    /// most Western European languages...
+    /// 24 chars are favored: 2346789 BCDFGHJKMPQRTVWXY
+    /// 12 chars are avoided: 015 AEIOU LNSZ
+    /// Of the 24 favored chars, only two are occasionally
+    /// mistaken: 8 & B, which depends mostly on the font.
+    /// The base of possible codes is large, about 3.2 * 10^34.
+    /// </summary>
+    public static string KeyGen(int kLength = 6, long pSeed = 0)
     {
-        // Get XAML Visual in BGRA8 format
-        var rtb = new RenderTargetBitmap();
-        await rtb.RenderAsync(control, (int)control.ActualSize.X, (int)control.ActualSize.Y);
+        const string pwChars = "2346789BCDFGHJKMPQRTVWXY";
+        if (kLength < 6)
+            kLength = 6; // minimum of 6 characters
 
-        // Encode as PNG
-        var pixelBuffer = (await rtb.GetPixelsAsync()).ToArray();
-        IRandomAccessStream mraStream = new InMemoryRandomAccessStream();
-        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, mraStream);
-        encoder.SetPixelData(
-            BitmapPixelFormat.Bgra8,
-            BitmapAlphaMode.Premultiplied,
-            (uint)rtb.PixelWidth,
-            (uint)rtb.PixelHeight,
-            184,
-            184,
-            pixelBuffer);
-        await encoder.FlushAsync();
+        char[] charArray = pwChars.Distinct().ToArray();
 
-        // Transform to byte array
-        var bytes = new byte[mraStream.Size];
-        await mraStream.ReadAsync(bytes.AsBuffer(), (uint)mraStream.Size, InputStreamOptions.None);
+        if (pSeed == 0)
+        {
+            pSeed = DateTime.Now.Ticks;
+            //Thread.Sleep(1); // allow a tick to go by (if hammering)
+        }
 
-        return bytes;
+        var result = new char[kLength];
+        var rng = new Random((int)pSeed);
+
+        for (int x = 0; x < kLength; x++)
+            result[x] = pwChars[rng.Next() % pwChars.Length];
+
+        return (new string(result));
+    }
+
+    /// <summary>
+    /// Chainable task helper.
+    /// var result = await SomeLongAsyncFunction().WithTimeout(TimeSpan.FromSeconds(2));
+    /// </summary>
+    /// <typeparam name="TResult">the type of task result</typeparam>
+    /// <returns><see cref="Task"/>TResult</returns>
+    public async static Task<TResult> WithTimeout<TResult>(this Task<TResult> task, TimeSpan timeout)
+    {
+        Task winner = await (Task.WhenAny(task, Task.Delay(timeout)));
+
+        if (winner != task)
+            throw new TimeoutException();
+
+        return await task;   // Unwrap result/re-throw
+    }
+
+    /// <summary>
+    /// Task extension to add a timeout.
+    /// </summary>
+    /// <returns>The task with timeout.</returns>
+    /// <param name="task">Task.</param>
+    /// <param name="timeoutInMilliseconds">Timeout duration in Milliseconds.</param>
+    /// <typeparam name="T">The 1st type parameter.</typeparam>
+    public async static Task<T> WithTimeout<T>(this Task<T> task, int timeoutInMilliseconds)
+    {
+        var retTask = await Task.WhenAny(task, Task.Delay(timeoutInMilliseconds))
+            .ConfigureAwait(false);
+
+        #pragma warning disable CS8603 // Possible null reference return.
+        return retTask is Task<T> ? task.Result : default;
+        #pragma warning restore CS8603 // Possible null reference return.
+    }
+
+    /// <summary>
+    /// Chainable task helper.
+    /// var result = await SomeLongAsyncFunction().WithCancellation(cts.Token);
+    /// </summary>
+    /// <typeparam name="TResult">the type of task result</typeparam>
+    /// <returns><see cref="Task"/>TResult</returns>
+    public static Task<TResult> WithCancellation<TResult>(this Task<TResult> task, CancellationToken cancelToken)
+    {
+        var tcs = new TaskCompletionSource<TResult>();
+        var reg = cancelToken.Register(() => tcs.TrySetCanceled());
+        task.ContinueWith(ant =>
+        {
+            reg.Dispose();
+            if (ant.IsCanceled)
+                tcs.TrySetCanceled();
+            else if (ant.IsFaulted)
+                tcs.TrySetException(ant.Exception?.InnerException ?? new Exception("Antecendent faulted."));
+            else
+                tcs.TrySetResult(ant.Result);
+        });
+        return tcs.Task;  // Return the TaskCompletionSource result
+    }
+
+    public static Task<T> WithAllExceptions<T>(this Task<T> task)
+    {
+        TaskCompletionSource<T> tcs = new TaskCompletionSource<T>();
+
+        task.ContinueWith(ignored =>
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Canceled:
+                    Debug.WriteLine($"[TaskStatus.Canceled]", $"{nameof(GeneralExtensions)}");
+                    tcs.SetCanceled();
+                    break;
+                case TaskStatus.RanToCompletion:
+                    tcs.SetResult(task.Result);
+                    //Debug.WriteLine($"[TaskStatus.RanToCompletion({task.Result})]");
+                    break;
+                case TaskStatus.Faulted:
+                    // SetException will automatically wrap the original AggregateException
+                    // in another one. The new wrapper will be removed in TaskAwaiter, leaving
+                    // the original intact.
+                    Debug.WriteLine($"[TaskStatus.Faulted: {task.Exception?.Message}]", $"{nameof(GeneralExtensions)}");
+                    tcs.SetException(task.Exception ?? new Exception("Task faulted."));
+                    break;
+                default:
+                    Debug.WriteLine($"[TaskStatus: Continuation called illegally.]", $"{nameof(GeneralExtensions)}");
+                    tcs.SetException(new InvalidOperationException("Continuation called illegally."));
+                    break;
+            }
+        });
+
+        return tcs.Task;
+    }
+
+    #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
+    /// <summary>
+    /// Attempts to await on the task and catches exception
+    /// </summary>
+    /// <param name="task">Task to execute</param>
+    /// <param name="onException">What to do when method has an exception</param>
+    /// <param name="continueOnCapturedContext">If the context should be captured.</param>
+    public static async void SafeFireAndForget(this Task task, Action<Exception>? onException = null, bool continueOnCapturedContext = false)
+    #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
+    {
+        try
+        {
+            await task.ConfigureAwait(continueOnCapturedContext);
+        }
+        catch (Exception ex) when (onException != null)
+        {
+            onException.Invoke(ex);
+        }
+        catch (Exception ex) when (onException == null)
+        {
+            Debug.WriteLine($"SafeFireAndForget: {ex.Message}", $"{nameof(GeneralExtensions)}");
+        }
     }
 
     /// <summary>
@@ -963,4 +1382,344 @@ public static class GeneralExtensions
             }
         }, TaskContinuationOptions.OnlyOnFaulted);
     }
+
+    /// <summary>
+    /// Gets the result of a <see cref="Task"/> if available, or <see langword="null"/> otherwise.
+    /// </summary>
+    /// <param name="task">The input <see cref="Task"/> instance to get the result for.</param>
+    /// <returns>The result of <paramref name="task"/> if completed successfully, or <see langword="default"/> otherwise.</returns>
+    /// <remarks>
+    /// This method does not block if <paramref name="task"/> has not completed yet. Furthermore, it is not generic
+    /// and uses reflection to access the <see cref="Task{TResult}.Result"/> property and boxes the result if it's
+    /// a value type, which adds overhead. It should only be used when using generics is not possible.
+    /// </remarks>
+    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static object? GetResultOrDefault(this Task task)
+    {
+        // Check if the instance is a completed Task
+        if (
+#if NETSTANDARD2_1
+            task.IsCompletedSuccessfully
+#else
+            task.Status == TaskStatus.RanToCompletion
+#endif
+        )
+        {
+            // We need an explicit check to ensure the input task is not the cached
+            // Task.CompletedTask instance, because that can internally be stored as
+            // a Task<T> for some given T (eg. on .NET 5 it's VoidTaskResult), which
+            // would cause the following code to return that result instead of null.
+            if (task != Task.CompletedTask)
+            {
+                // Try to get the Task<T>.Result property. This method would've
+                // been called anyway after the type checks, but using that to
+                // validate the input type saves some additional reflection calls.
+                // Furthermore, doing this also makes the method flexible enough to
+                // cases whether the input Task<T> is actually an instance of some
+                // runtime-specific type that inherits from Task<T>.
+                PropertyInfo? propertyInfo =
+#if NETSTANDARD1_4
+                    task.GetType().GetRuntimeProperty(nameof(Task<object>.Result));
+#else
+                    task.GetType().GetProperty(nameof(Task<object>.Result));
+#endif
+
+                // Return the result, if possible
+                return propertyInfo?.GetValue(task);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the result of a <see cref="Task{TResult}"/> if available, or <see langword="default"/> otherwise.
+    /// </summary>
+    /// <typeparam name="T">The type of <see cref="Task{TResult}"/> to get the result for.</typeparam>
+    /// <param name="task">The input <see cref="Task{TResult}"/> instance to get the result for.</param>
+    /// <returns>The result of <paramref name="task"/> if completed successfully, or <see langword="default"/> otherwise.</returns>
+    /// <remarks>This method does not block if <paramref name="task"/> has not completed yet.</remarks>
+    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? GetResultOrDefault<T>(this Task<T?> task)
+    {
+#if NETSTANDARD2_1
+        return task.IsCompletedSuccessfully ? task.Result : default;
+#else
+        return task.Status == TaskStatus.RanToCompletion ? task.Result : default;
+#endif
+    }
+
+
+    /// <summary>
+    /// Enqueues an action using the <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/>.
+    /// Wraps the call in a try/catch and returns the result as a <see cref="Task"/>.
+    /// This would typically be called from an asynchronous event, such as <see cref="Windows.System.Power.PowerManager.EnergySaverStatusChanged"/>
+    /// </summary>
+    /// <example>
+    /// Dispatcher.CallOnUIThread(() => { TextBlock.SelectionHighlightColor = new SolidColorBrush(Colors.Yellow); });
+    /// </example>
+    public static Task CallOnUIThread(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Microsoft.UI.Dispatching.DispatcherQueueHandler handler)
+    {
+        try
+        {
+            _ = dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, handler);
+            return Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            return Task.FromException(e);
+        }
+    }
+
+    /// <summary>
+    /// Invokes a given function on the target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> and returns a
+    /// <see cref="Task"/> that completes when the invocation of the function is completed.
+    /// </summary>
+    /// <param name="dispatcher">The target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> to invoke the code on.</param>
+    /// <param name="function">The <see cref="Action"/> to invoke.</param>
+    /// <param name="priority">The priority level for the function to invoke.</param>
+    /// <returns>A <see cref="Task"/> that completes when the invocation of <paramref name="function"/> is over.</returns>
+    /// <remarks>If the current thread has access to <paramref name="dispatcher"/>, <paramref name="function"/> will be invoked directly.</remarks>
+    public static Task EnqueueAsync(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Action function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority = Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal)
+    {
+        // Run the function directly when we have thread access.
+        // Also reuse Task.CompletedTask in case of success,
+        // to skip an unnecessary heap allocation for every invocation.
+        if (dispatcher.HasThreadAccess) //if (IsHasThreadAccessPropertyAvailable && dispatcher.HasThreadAccess)
+        {
+            try
+            {
+                function();
+
+                return Task.CompletedTask;
+            }
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+            }
+        }
+
+        static Task TryEnqueueAsync(Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Action function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority)
+        {
+            var taskCompletionSource = new TaskCompletionSource<object?>();
+
+            if (!dispatcher.TryEnqueue(priority, () =>
+            {
+                try
+                {
+                    function();
+
+                    taskCompletionSource.SetResult(null);
+                }
+                catch (Exception e)
+                {
+                    taskCompletionSource.SetException(e);
+                }
+            }))
+            {
+                taskCompletionSource.SetException(GetEnqueueException("Failed to enqueue the operation"));
+            }
+
+            return taskCompletionSource.Task;
+        }
+
+        return TryEnqueueAsync(dispatcher, function, priority);
+    }
+
+    /// <summary>
+    /// Invokes a given function on the target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> and returns a
+    /// <see cref="Task{TResult}"/> that completes when the invocation of the function is completed.
+    /// </summary>
+    /// <typeparam name="T">The return type of <paramref name="function"/> to relay through the returned <see cref="Task{TResult}"/>.</typeparam>
+    /// <param name="dispatcher">The target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> to invoke the code on.</param>
+    /// <param name="function">The <see cref="Func{TResult}"/> to invoke.</param>
+    /// <param name="priority">The priority level for the function to invoke.</param>
+    /// <returns>A <see cref="Task"/> that completes when the invocation of <paramref name="function"/> is over.</returns>
+    /// <remarks>If the current thread has access to <paramref name="dispatcher"/>, <paramref name="function"/> will be invoked directly.</remarks>
+    public static Task<T> EnqueueAsync<T>(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<T> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority = Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal)
+    {
+        // If we have thread access, we can retrieve the task directly.
+        // We don't use ConfigureAwait(false) in this case, in order
+        // to let the caller continue its execution on the same thread
+        // after awaiting the task returned by this function.
+        if (dispatcher.HasThreadAccess) //if (IsHasThreadAccessPropertyAvailable && dispatcher.HasThreadAccess)
+        {
+            try
+            {
+                return Task.FromResult(function());
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<T>(e);
+            }
+        }
+
+        static Task<T> TryEnqueueAsync(Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<T> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority)
+        {
+            var taskCompletionSource = new TaskCompletionSource<T>();
+
+            if (!dispatcher.TryEnqueue(priority, () =>
+            {
+                try
+                {
+                    taskCompletionSource.SetResult(function());
+                }
+                catch (Exception e)
+                {
+                    taskCompletionSource.SetException(e);
+                }
+            }))
+            {
+                taskCompletionSource.SetException(GetEnqueueException("Failed to enqueue the operation"));
+            }
+
+            return taskCompletionSource.Task;
+        }
+
+        return TryEnqueueAsync(dispatcher, function, priority);
+    }
+
+    /// <summary>
+    /// Invokes a given function on the target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> and returns a
+    /// <see cref="Task"/> that acts as a proxy for the one returned by the given function.
+    /// </summary>
+    /// <param name="dispatcher">The target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> to invoke the code on.</param>
+    /// <param name="function">The <see cref="Func{TResult}"/> to invoke.</param>
+    /// <param name="priority">The priority level for the function to invoke.</param>
+    /// <returns>A <see cref="Task"/> that acts as a proxy for the one returned by <paramref name="function"/>.</returns>
+    /// <remarks>If the current thread has access to <paramref name="dispatcher"/>, <paramref name="function"/> will be invoked directly.</remarks>
+    public static Task EnqueueAsync(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<Task> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority = Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal)
+    {
+        // If we have thread access, we can retrieve the task directly.
+        // We don't use ConfigureAwait(false) in this case, in order
+        // to let the caller continue its execution on the same thread
+        // after awaiting the task returned by this function.
+        if (dispatcher.HasThreadAccess) //if (IsHasThreadAccessPropertyAvailable && dispatcher.HasThreadAccess)
+        {
+            try
+            {
+                if (function() is Task awaitableResult)
+                {
+                    return awaitableResult;
+                }
+
+                return Task.FromException(GetEnqueueException($"The Task returned by {nameof(function)} cannot be null."));
+            }
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+            }
+        }
+
+        static Task TryEnqueueAsync(Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<Task> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority)
+        {
+            var taskCompletionSource = new TaskCompletionSource<object?>();
+
+            if (!dispatcher.TryEnqueue(priority, async () =>
+            {
+                try
+                {
+                    if (function() is Task awaitableResult)
+                    {
+                        await awaitableResult.ConfigureAwait(false);
+
+                        taskCompletionSource.SetResult(null);
+                    }
+                    else
+                    {
+                        taskCompletionSource.SetException(GetEnqueueException($"The Task returned by {nameof(function)} cannot be null."));
+                    }
+                }
+                catch (Exception e)
+                {
+                    taskCompletionSource.SetException(e);
+                }
+            }))
+            {
+                taskCompletionSource.SetException(GetEnqueueException("Failed to enqueue the operation"));
+            }
+
+            return taskCompletionSource.Task;
+        }
+
+        return TryEnqueueAsync(dispatcher, function, priority);
+    }
+
+    /// <summary>
+    /// Invokes a given function on the target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> and returns a
+    /// <see cref="Task{TResult}"/> that acts as a proxy for the one returned by the given function.
+    /// </summary>
+    /// <typeparam name="T">The return type of <paramref name="function"/> to relay through the returned <see cref="Task{TResult}"/>.</typeparam>
+    /// <param name="dispatcher">The target <see cref="Microsoft.UI.Dispatching.DispatcherQueue"/> to invoke the code on.</param>
+    /// <param name="function">The <see cref="Func{TResult}"/> to invoke.</param>
+    /// <param name="priority">The priority level for the function to invoke.</param>
+    /// <returns>A <see cref="Task{TResult}"/> that relays the one returned by <paramref name="function"/>.</returns>
+    /// <remarks>If the current thread has access to <paramref name="dispatcher"/>, <paramref name="function"/> will be invoked directly.</remarks>
+    public static Task<T> EnqueueAsync<T>(this Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<Task<T>> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority = Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal)
+    {
+        if (dispatcher.HasThreadAccess) //if (IsHasThreadAccessPropertyAvailable && dispatcher.HasThreadAccess)
+        {
+            try
+            {
+                if (function() is Task<T> awaitableResult)
+                {
+                    return awaitableResult;
+                }
+
+                return Task.FromException<T>(GetEnqueueException($"The Task returned by {nameof(function)} cannot be null."));
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<T>(e);
+            }
+        }
+
+        static Task<T> TryEnqueueAsync(Microsoft.UI.Dispatching.DispatcherQueue dispatcher, Func<Task<T>> function, Microsoft.UI.Dispatching.DispatcherQueuePriority priority)
+        {
+            var taskCompletionSource = new TaskCompletionSource<T>();
+
+            if (!dispatcher.TryEnqueue(priority, async () =>
+            {
+                try
+                {
+                    if (function() is Task<T> awaitableResult)
+                    {
+                        var result = await awaitableResult.ConfigureAwait(false);
+
+                        taskCompletionSource.SetResult(result);
+                    }
+                    else
+                    {
+                        taskCompletionSource.SetException(GetEnqueueException($"The Task returned by {nameof(function)} cannot be null."));
+                    }
+                }
+                catch (Exception e)
+                {
+                    taskCompletionSource.SetException(e);
+                }
+            }))
+            {
+                taskCompletionSource.SetException(GetEnqueueException("Failed to enqueue the operation"));
+            }
+
+            return taskCompletionSource.Task;
+        }
+
+        return TryEnqueueAsync(dispatcher, function, priority);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="InvalidOperationException"/> to return when an enqueue operation fails.
+    /// </summary>
+    /// <param name="message">The message of the exception.</param>
+    /// <returns>An <see cref="InvalidOperationException"/> with a specified message.</returns>
+    [MethodImpl(MethodImplOptions.NoInlining)] // Prevent the JIT compiler from inlining this method with the caller.
+    private static InvalidOperationException GetEnqueueException(string message)
+    {
+        return new InvalidOperationException(message);
+    }
+
+
 }

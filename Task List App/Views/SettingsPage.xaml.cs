@@ -31,7 +31,6 @@ public sealed partial class SettingsPage : Page
 
         // Ensure that the Page is only created once, and cached during navigation.
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
-
         this.Loaded += SettingsPage_Loaded;
     }
 
@@ -79,6 +78,11 @@ public sealed partial class SettingsPage : Page
         {
             await Launcher.LaunchUriAsync(result);
         }
+    }
+
+    void mdReadMe_ImageClicked(object sender, CommunityToolkit.WinUI.UI.Controls.LinkClickedEventArgs e)
+    {
+        Debug.WriteLine($"ImageClicked: {e.Link}");
     }
 
     /// <summary>
@@ -309,4 +313,5 @@ public sealed partial class SettingsPage : Page
         return workingFolder;
     }
     #endregion
+
 }

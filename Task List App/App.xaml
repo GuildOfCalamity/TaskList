@@ -34,7 +34,7 @@
                         <ResourceDictionary x:Key="Dark">
                             <!--  === Brushes ===  -->
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
-                            <Brush x:Key="BorderBrush">#585864</Brush>
+                            <Brush x:Key="BorderBrush">#686874</Brush>
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
                             <Brush x:Key="SecondaryBrush">#8F1FDF</Brush>
                             <Brush x:Key="TertiaryBrush">#a43e4b</Brush>
