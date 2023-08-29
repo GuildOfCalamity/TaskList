@@ -36,7 +36,8 @@
             <CommandBar
                 Margin="-16,0,0,0"
                 Background="Transparent"
-                DefaultLabelPosition="Right">
+                DefaultLabelPosition="Right"
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}">
                 <AppBarButton
                     x:Name="AddTask"
                     Click="AddTask_Click"
