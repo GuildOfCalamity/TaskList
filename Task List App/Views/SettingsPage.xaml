@@ -139,22 +139,49 @@
                     Foreground="{ThemeResource QuaternaryBrush}"
                     Text="{x:Bind local:AssemblyHelper.GetFormattedDate()}" />
 
-                <!--
-                    The NuGet "CommunityToolkit.WinUI.UI.Controls.Markdown" was added soley for this embedded ReadMe functionality.
-                    https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.ui.controls?view=win-comm-toolkit-dotnet-7.0
-                -->
-                <ctrls:MarkdownTextBlock
-                    x:Name="mdReadMe"
-                    Margin="0,12,0,6"
-                    Background="Transparent"
-                    CodeBackground="Transparent"
-                    ImageClicked="mdReadMe_ImageClicked"
-                    ImageMaxHeight="600"
-                    ImageMaxWidth="600"
-                    ImageResolving="mdReadMe_ImageResolving"
-                    IsFocusEngagementEnabled="False"
-                    LinkClicked="mdReadMe_LinkClicked"
-                    SchemeList="uwpct" />
+                <Expander
+                    Margin="0,12,30,8"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Background="Transparent">
+                    <Expander.Header>
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <BitmapIcon
+                                Grid.Column="0"
+                                Height="28"
+                                HorizontalAlignment="Left"
+                                ShowAsMonochrome="False"
+                                UriSource="/Assets/Check_Logo.png" />
+                            <TextBlock
+                                Grid.Column="1"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="{StaticResource MediumFontSize}"
+                                Foreground="{ThemeResource SecondaryBrush}"
+                                Text="ReadMe" />
+                        </Grid>
+                    </Expander.Header>
+                    <!--
+                        The NuGet "CommunityToolkit.WinUI.UI.Controls.Markdown" was added soley for this embedded ReadMe functionality.
+                        https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.ui.controls?view=win-comm-toolkit-dotnet-7.0
+                    -->
+                    <ctrls:MarkdownTextBlock
+                        x:Name="mdReadMe"
+                        Margin="2"
+                        Background="Transparent"
+                        CodeBackground="Transparent"
+                        ImageClicked="mdReadMe_ImageClicked"
+                        ImageMaxHeight="600"
+                        ImageMaxWidth="600"
+                        ImageResolving="mdReadMe_ImageResolving"
+                        IsFocusEngagementEnabled="False"
+                        LinkClicked="mdReadMe_LinkClicked"
+                        SchemeList="uwpct" />
+                </Expander>
 
             </StackPanel>
         </ScrollViewer>
