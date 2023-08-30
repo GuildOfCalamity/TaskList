@@ -19,16 +19,19 @@ namespace Task_List_App.Views;
 public sealed partial class CreateTaskDialog : ContentDialog
 {
     public string? SelectedTitle { get; private set; }
-    public string SelectedTime { get; private set; }
-    public string SelectedStatus { get; private set; }
+    public string? SelectedTime { get; private set; }
+    public string? SelectedStatus { get; private set; }
     public TasksViewModel ViewModel { get; private set; }
     public ContentDialogResult? Result { get; private set; }
 
     public CreateTaskDialog()
     {
         this.InitializeComponent();
+        
         ViewModel = App.GetService<TasksViewModel>();
-        SelectedTime = ViewModel.Times[1];
+        //SelectedTime = ViewModel.Times[ViewModel.LastSelectedTime];
+        //SelectedStatus = ViewModel.Times[ViewModel.LastSelectedStatus];
+
         this.Loaded += CreateTaskDialog_Loaded;
         this.PrimaryButtonClick += (s, e) => { Result = ContentDialogResult.Primary; };
         this.SecondaryButtonClick += (s, e) => { Result = ContentDialogResult.Secondary; };
@@ -37,8 +40,8 @@ public sealed partial class CreateTaskDialog : ContentDialog
 
     private void CreateTaskDialog_Loaded(object sender, RoutedEventArgs e)
     {
-        cbTime.SelectedIndex = 1;   // "tomorrow"
-        cbStatus.SelectedIndex = 1; // "not started"
+        cbTime.SelectedIndex = ViewModel.LastSelectedTime;
+        cbStatus.SelectedIndex = ViewModel.LastSelectedStatus;
         Result = ContentDialogResult.None;
     }
 
@@ -51,11 +54,13 @@ public sealed partial class CreateTaskDialog : ContentDialog
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
         {
+            // Because the Hide() method does not support passing a 
+            // ContentDialogResult, we will set it manually for the caller.
             Result = ContentDialogResult.Primary;
+
             this.Hide(); // Close the dialog and return the result.
             /*  
              *  ===[NOTE]===
-             *  
              *  We could also create a new TaskItem here and assign it to the
              *  Tag of this control and then extract it from the calling Page.
              *  
@@ -66,24 +71,32 @@ public sealed partial class CreateTaskDialog : ContentDialog
     /// <summary>
     /// We have a two-way binding for <see cref="SelectedTime"/>, so we won't need 
     /// to update the property inside this event, but it is here if you need it.
+    /// Currently we're only using this to remember the user's last selected time.
     /// </summary>
     void cbTime_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var cb = sender as ComboBox;
         string? text = e.AddedItems[0] as string;
         if (!string.IsNullOrEmpty(text))
+        {
             Debug.WriteLine($"Time_SelectionChanged => '{text}'");
+            ViewModel.LastSelectedTime = cbTime.SelectedIndex;
+        }
     }
 
     /// <summary>
     /// We have a two-way binding for <see cref="SelectedStatus"/>, so we won't need 
     /// to update the property inside this event, but it is here if you need it.
+    /// Currently we're only using this to remember the user's last selected status.
     /// </summary>
     void cbStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var cb = sender as ComboBox;
         string? text = e.AddedItems[0] as string;
         if (!string.IsNullOrEmpty(text))
+        {
             Debug.WriteLine($"Status_SelectionChanged => '{text}'");
+            ViewModel.LastSelectedStatus = cbStatus.SelectedIndex;
+        }
     }
 }

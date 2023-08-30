@@ -7,8 +7,11 @@ namespace Task_List_App;
 public class PreambleConverter : IValueConverter
 {
     /// <summary>
-    /// Removes a preamble like "[1]Some info here" => "Some info here".
+    /// Removes a bracket preamble.
     /// </summary>
+    /// <example>
+    /// "[1]Some info here" => "Some info here"
+    /// </example>
     public object? Convert(object value, Type targetType, object parameter, string language)
     {
         if (value == null)

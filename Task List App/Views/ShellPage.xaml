@@ -115,19 +115,29 @@
                                     Style="{ThemeResource TitleTextBlockStyle}"
                                     Text="{Binding}" />
 
-                                <!--
-                                    For the completion average stat we'll need to reference the
-                                    page name in this binding to step outside of the DataTemplate.
-                                -->
-                                <TextBlock
+                                <StackPanel
                                     Grid.Column="1"
-                                    Margin="0,0,60,0"
+                                    Margin="0,0,91,0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Bottom"
-                                    FontSize="{ThemeResource MediumFontSize}"
-                                    Foreground="{ThemeResource BorderBrush}"
-                                    Text="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    Visibility="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay, Converter={StaticResource ValueVisibility}}">
+                                    <TextBlock
+                                        x:Uid="Shell_Average"
+                                        FontSize="{ThemeResource MediumFontSize}"
+                                        Foreground="{ThemeResource BorderBrush}"
+                                        TextWrapping="Wrap" />
+                                    <!--
+                                        For the completion average stat we'll need to reference the
+                                        page name in this binding to step outside of the DataTemplate.
+                                    -->
+                                    <TextBlock
+                                        FontSize="{ThemeResource MediumFontSize}"
+                                        Foreground="{ThemeResource QuaternaryBrush}"
+                                        Text="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>

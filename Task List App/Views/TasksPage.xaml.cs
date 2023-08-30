@@ -15,6 +15,7 @@ using Windows.UI.Popups;
 using Task_List_App.Contracts.Services;
 using Task_List_App.Models;
 using Task_List_App.ViewModels;
+using Task_List_App.Helpers;
 
 namespace Task_List_App.Views;
 
@@ -28,7 +29,7 @@ public sealed partial class TasksPage : Page
     #region [Properties]
     int closeCount = 0;
     int cycleCount = 4;
-    int notifyDelay = 4;
+    int notifyDelay = 6;
     string newTaskPrompt = "Enter title here";
 	string toastTemplate = "<toast launch=\"action=ToastClick\"><visual><binding template=\"ToastGeneric\"><text>{0}</text><text>{1}</text><image placement=\"appLogoOverride\" hint-crop=\"circle\" src=\"{2}Assets/WindowIcon.ico\"/></binding></visual><actions><action content=\"Settings\" arguments=\"action=Settings\"/></actions></toast>";
     string toastImage = Path.Combine(AppContext.BaseDirectory.Replace(@"\","/"), "Assets/StoreLogo.png");
@@ -106,7 +107,7 @@ public sealed partial class TasksPage : Page
                     noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "The task was not created because it was cancelled.", InfoBarSeverity.Warning } });
                 });
             }
-            else
+            else // This is the recommended method for adding a new task via our custom ContentDialog.
             {
                 // Setup our custom ContentDialog.
                 ContentDialog dialog = new CreateTaskDialog();
@@ -124,11 +125,13 @@ public sealed partial class TasksPage : Page
                     string? title = (dialog as CreateTaskDialog)?.SelectedTitle;
                     string? time = (dialog as CreateTaskDialog)?.SelectedTime;
                     string? status = (dialog as CreateTaskDialog)?.SelectedStatus;
-                    if (!string.IsNullOrEmpty(title))
+                    if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(time) && !string.IsNullOrEmpty(status))
                     {
                         ViewModel.TaskItems.Add(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
-                        ViewModel.ResortAllTasks();
-                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
+                        if (ViewModel.ResortAllTasks())
+                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
+                        else
+                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created but re-sort failed.", InfoBarSeverity.Warning } });
                     }
                     else
                     {
@@ -212,6 +215,8 @@ public sealed partial class TasksPage : Page
         
         // Passing null to this command indicates to update all and re-load data.
         ViewModel.UpdateTaskItemCommand.Execute(null);
+        
+        CalculateAverageTimeStatistic();
     }
 
     async void CompleteTask_Click(object sender, RoutedEventArgs e)
@@ -319,11 +324,13 @@ public sealed partial class TasksPage : Page
                 string? title = (dialog as CreateTaskDialog)?.SelectedTitle;
                 string? time = (dialog as CreateTaskDialog)?.SelectedTime;
                 string? status = (dialog as CreateTaskDialog)?.SelectedStatus;
-                if (!string.IsNullOrEmpty(title))
+                if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(time) && !string.IsNullOrEmpty(status))
                 {
                     ViewModel.TaskItems.Add(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
-                    ViewModel.ResortAllTasks();
-                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
+                    if (ViewModel.ResortAllTasks())
+                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
+                    else
+                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created but re-sort failed.", InfoBarSeverity.Warning } });
                 }
                 else
                 {
@@ -353,6 +360,7 @@ public sealed partial class TasksPage : Page
         if (ViewModel is not null && !ViewModel.IsBusy)
             await ViewModel.SignalBusyCycle(TimeSpan.FromSeconds(1.5));
     }
+
 	/// <summary>
 	/// Show an attribute of selected <see cref="TaskItem"/>.
 	/// </summary>
@@ -372,12 +380,28 @@ public sealed partial class TasksPage : Page
             {
                 if (initFinished && item is TaskItem tsk)
                 {
-				    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task was created {tsk.Created.ToLongDateString()}", InfoBarSeverity.Informational } });
+                    if (tsk.Completion != null)
+                    {
+                        var diff = tsk.Completion - tsk.Created;
+                        if (diff.HasValue)
+                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", InfoBarSeverity.Informational } });
+                        else
+                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Created on {tsk.Created.ToLongDateString()}.  Completed on {tsk.Completion?.ToLongDateString()}", InfoBarSeverity.Informational } });
+                    }
+                    else
+                    {
+                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task created on {tsk.Created.ToLongDateString()}", InfoBarSeverity.Informational } });
+                    }
+
                     Task.Run(async () => { await LocateAndLaunchUrlFromString(tsk.Title); });
                 }
             }
 		}
 	}
+
+    /// <summary>
+    /// Currently this event is for testing.
+    /// </summary>
     void cbStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
@@ -404,6 +428,10 @@ public sealed partial class TasksPage : Page
         }
         catch (Exception) { }
     }
+
+    /// <summary>
+    /// Currently this event is for testing.
+    /// </summary>
     void cbTime_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
@@ -511,6 +539,15 @@ public sealed partial class TasksPage : Page
     {
         if (MainRoot?.XamlRoot == null) { return; }
 
+        var tb = new TextBox()
+        {
+            Text = message,
+            FontSize = (double)App.Current.Resources["MediumFontSize"],
+            FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],
+            TextWrapping = TextWrapping.Wrap
+        };
+        tb.Loaded += (s, e) => { tb.SelectAll(); };
+
         // NOTE: Content dialogs will automatically darken the background.
         ContentDialog contentDialog = new ContentDialog()
         {
@@ -518,13 +555,7 @@ public sealed partial class TasksPage : Page
             PrimaryButtonText = primaryText,
             CloseButtonText = cancelText,
             CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyle1"],
-		    Content = new TextBlock()
-            {
-                Text = message,
-                FontSize = 15 /*(double)App.Current.Resources["FontSizeTwo"]*/,
-                /*FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],*/
-                TextWrapping = TextWrapping.Wrap
-            },
+		    Content = tb,
             XamlRoot = MainRoot?.XamlRoot,
             RequestedTheme = MainRoot?.ActualTheme ?? ElementTheme.Default
         };
@@ -1086,7 +1117,7 @@ public sealed partial class TasksPage : Page
             double avg = tally / (double)count;
             if (avg > 0.01) 
             {
-                string text = $"completion average is {avg:N1} days";
+                string text = $"{avg:N1} days";
                 if (ShellModel.Average != text)
                     ShellModel.Average = text;
             }
@@ -1131,7 +1162,7 @@ public sealed partial class TasksPage : Page
             await Task.CompletedTask;
     }
 
-    private List<string> ExtractUrls(string text)
+    List<string> ExtractUrls(string text)
     {
         List<string> urls = new List<string>();
         Regex urlRx = new Regex(@"((https?|ftp|file)\://|www\.)[A-Za-z0-9\.\-]+(/[A-Za-z0-9\?\&\=;\+!'\\(\)\*\-\._~%]*)*", RegexOptions.IgnoreCase);

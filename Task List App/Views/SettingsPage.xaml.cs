@@ -11,6 +11,7 @@ using CommunityToolkit.WinUI.Helpers;
 
 using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
+using System;
 
 namespace Task_List_App.Views;
 
@@ -315,3 +316,49 @@ public sealed partial class SettingsPage : Page
     #endregion
 
 }
+
+/// <summary>
+/// Support class for method invoking directly from the XAML.
+/// This could be done using converters, but I like to show different techniques offering the same result.
+/// </summary>
+public static class AssemblyHelper
+{
+    /// <summary>
+    /// Return the declaring type's version.
+    /// </summary>
+    /// <remarks>Includes string formatting.</remarks>
+    public static string GetVersion()
+    {
+        var ver = App.GetCurrentAssemblyVersion();
+        return $"Version {ver}";
+    }
+
+    /// <summary>
+    /// Return the declaring type's namespace.
+    /// </summary>
+    public static string? GetNamespace()
+    {
+        var assembly = App.GetCurrentNamespace();
+        return assembly ?? "Unknown";
+    }
+
+    /// <summary>
+    /// Return the declaring type's assembly name.
+    /// </summary>
+    public static string? GetAssemblyName()
+    {
+        var assembly = App.GetCurrentAssemblyName()?.Split(',')[0].SeparateCamelCase();
+        return assembly ?? "Unknown";
+    }
+
+    /// <summary>
+    /// Returns <see cref="DateTime.Now"/> in a long format, e.g. "Wednesday, August 30, 2023"
+    /// </summary>
+    /// <remarks>Includes string formatting.</remarks>
+    public static string GetFormattedDate()
+    {
+        return String.Format("{0:dddd, MMMM d, yyyy}", DateTime.Now);
+    }
+}
+
+

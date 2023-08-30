@@ -13,6 +13,7 @@ using Task_List_App.Models;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using static System.Reflection.Metadata.BlobBuilder;
+using Task_List_App.Helpers;
 
 namespace Task_List_App.ViewModels;
 
@@ -95,6 +96,12 @@ public partial class TasksViewModel : ObservableRecipient
 	[ObservableProperty]
 	bool isBusy = false;
 
+    [ObservableProperty]
+    int lastSelectedTime = 1;
+
+    [ObservableProperty]
+    int lastSelectedStatus = 1;
+
     public ObservableCollection<string> Messages = new ObservableCollection<string>();
 
     public Core.Services.FileService? fileService { get; private set; }
@@ -105,8 +112,8 @@ public partial class TasksViewModel : ObservableRecipient
 
         try
         {
-            // Why does this not work as expected?
-			// We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
+            // This should work as expected, but it does not. We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
+            // It could be possible that the IServiceCollection does not like resolving it at compile time due to it being in a seperate project.
             fileService = App.GetService<Core.Services.FileService>();
         }
         catch (Exception ex)
@@ -201,11 +208,11 @@ public partial class TasksViewModel : ObservableRecipient
 			item.Status = status[0];
 			item.Completion = DateTime.Now;
 		}
-		else 
+        else 
 		{ 
 			item.Status = status[1];
-			item.Completion = null;
-		}
+            item.Completion = null;
+        }
 
         RefreshNeeded = true;
 	}
@@ -346,15 +353,15 @@ public partial class TasksViewModel : ObservableRecipient
 		return results;
 	}
 
-	public IEnumerable<TaskItem> GetCompletionTimes()
-	{
-		if (TaskItems.Count == 0 || App.IsClosing)
-			return Enumerable.Empty<TaskItem>();
+    public IEnumerable<TaskItem> GetCompletionTimes()
+    {
+        if (TaskItems.Count == 0 || App.IsClosing)
+            return Enumerable.Empty<TaskItem>();
 
-		return TaskItems.Select(o => o).Where(m => m.Completed == true && m.Completion != null);
-	}
+        return TaskItems.Select(o => o).Where(m => m.Completed == true && m.Completion != null);
+    }
 
-	public TaskItem? FindTaskItem(string? title)
+    public TaskItem? FindTaskItem(string? title)
 	{
 		if (string.IsNullOrEmpty(title))
 			return null;
@@ -373,18 +380,20 @@ public partial class TasksViewModel : ObservableRecipient
 
 		if (TaskItems.Count > 0 && item != null)
 		{
-			if (completed) // mark as complete
-			{
-				item.Status = status[0];
-				SaveTaskItemsJson();
-				RefreshNeeded = true;
-			}
-			else // mark as not started
-			{
-				item.Status = status[1];
-				SaveTaskItemsJson();
-				RefreshNeeded = true;
-			}
+            if (completed) // mark as complete
+            {
+                item.Status = status[0];
+                item.Completion = DateTime.Now;
+            }
+            else // mark as not started
+            {
+                item.Status = status[1];
+                item.Completion = null;
+            }
+
+            SaveTaskItemsJson();
+			RefreshNeeded = true;
+
 			return true;
 		}
 
@@ -395,8 +404,8 @@ public partial class TasksViewModel : ObservableRecipient
     /// <summary>
     /// All of the ViewModel methods are fast, so this method can be used to 
 	/// trigger the busy flag in certain scenarios where you might want the 
-	/// user to see that some activity is occurring. As the database grows 
-	/// large this might not be neccessary in the future.
+	/// user to see that some activity is occurring. If the database grows 
+	/// very large this might not be neccessary in the future.
     /// </summary>
     /// <param name="ts"><see cref="TimeSpan?"/></param>
     /// <returns><see cref="Task.CompletedTask"/></returns>
@@ -420,14 +429,14 @@ public partial class TasksViewModel : ObservableRecipient
     {
         return new List<TaskItem>
         {
-            new TaskItem { Title = "Task #1", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-1), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #2", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-4), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = true },
-            new TaskItem { Title = "Task #3", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-8), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #4", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-12), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #5", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-16), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #6", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-30), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #7", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-90), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
-            new TaskItem { Title = "Task #8", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-180), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = false },
+            new TaskItem { Title = "Task #1", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-1), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #2", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-4), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #3", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-8), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #4", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-12), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #5", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-16), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #6", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-30), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #7", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-90), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #8", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-180), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
         };
     }
 

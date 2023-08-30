@@ -20,7 +20,7 @@ public class LevelToBrushConverter : IValueConverter
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 148, 148, 148));
                 break;
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
-                scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 87, 119, 198));
+                scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 87, 129, 198));
                 break;
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 180));
@@ -73,7 +73,7 @@ public class LevelToBrushBorderConverter : IValueConverter
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 85, 85, 85));
                 break;
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
-                scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 43, 59, 99));
+                scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 43, 69, 99));
                 break;
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 128, 90));

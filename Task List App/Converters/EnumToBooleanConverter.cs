@@ -1,7 +1,8 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace Task_List_App.Converters;
+namespace Task_List_App;
 
 public class EnumToBooleanConverter : IValueConverter
 {

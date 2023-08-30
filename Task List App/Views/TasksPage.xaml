@@ -40,27 +40,27 @@
                 IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}">
                 <AppBarButton
                     x:Name="AddTask"
+                    x:Uid="AppBar_Add"
                     Click="AddTask_Click"
                     Icon="Add"
-                    Label="Add"
                     ToolTipService.ToolTip="Add a new task (shortcut Alt-A)" />
                 <AppBarButton
                     x:Name="SaveTask"
+                    x:Uid="AppBar_Save"
                     Click="SaveTask_Click"
                     Icon="Sync"
-                    Label="Update"
                     ToolTipService.ToolTip="Save and re-sort all tasks (shortcut Alt-S)" />
                 <AppBarButton
                     x:Name="SortTask"
+                    x:Uid="AppBar_Sort"
                     Click="SortTask_Click"
                     Icon="Sort"
-                    Label="Re-sort"
                     ToolTipService.ToolTip="Re-sort all tasks" />
                 <AppBarButton
                     x:Name="CompleteTask"
+                    x:Uid="AppBar_Complete"
                     Click="CompleteTask_Click"
                     Icon="Like"
-                    Label="Complete"
                     ToolTipService.ToolTip="Completes selected tasks" />
             </CommandBar>
             <!--  Busy Indicator  -->
@@ -119,7 +119,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="model:TaskItem">
                     <StackPanel Opacity="{x:Bind Completed, Converter={StaticResource BooleanOpacityInverse}}">
-                        <Grid ColumnDefinitions="1*,8*,2*,3*,1*,1*">
+                        <Grid ColumnDefinitions="1*,9*,2*,3*,1*,1*">
                             <!--
                                 [Shadow effect for the time-color rectangle below, you could also use my CompositionShadow control]
                             -->

@@ -12,12 +12,14 @@
             <local:LevelToImageConverter x:Key="LevelToImage" />
             <local:BooleanInverseConverter x:Key="BooleanInverter" />
             <local:BooleanToVisibilityConverter x:Key="BooleanVisibility" />
+            <local:ValueToVisibilityConverter x:Key="ValueVisibility" />
             <local:BooleanToOpacityConverter x:Key="BooleanOpacity" />
             <local:BooleanToOpacityInverseConverter x:Key="BooleanOpacityInverse" />
             <local:BooleanToVisibilityInverseConverter x:Key="BooleanVisibilityInverse" />
             <local:StringFormatConverter x:Key="StringToFormat" />
             <local:DaysToTimeConverter x:Key="DaysToTime" />
             <local:LevelToBrushConverter x:Key="LevelToBrush" />
+            <local:EnumToBooleanConverter x:Key="EnumToBoolean" />
             <local:LevelToBrushBorderConverter x:Key="LevelToBrushBorder" />
             <local:PreambleConverter x:Key="Preamble" />
 
@@ -38,7 +40,7 @@
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
                             <Brush x:Key="SecondaryBrush">#8F1FDF</Brush>
                             <Brush x:Key="TertiaryBrush">#a43e4b</Brush>
-                            <Brush x:Key="QuaternaryBrush">#6f8698</Brush>
+                            <Brush x:Key="QuaternaryBrush">#76B9ED</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
                             <media:AcrylicBrush
@@ -239,7 +241,7 @@
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>
                             <Brush x:Key="SecondaryBrush">#6800FF</Brush>
                             <Brush x:Key="TertiaryBrush">#512031</Brush>
-                            <Brush x:Key="QuaternaryBrush">#4f6678</Brush>
+                            <Brush x:Key="QuaternaryBrush">#4689BD</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
                             <media:AcrylicBrush

@@ -89,6 +89,14 @@ public static class GeneralExtensions
     /// </summary>
     public static float Lerp(this float start, float end, float amount = 0.5F) => start + (end - start) * amount;
 
+    public static bool RandomBoolean()
+    {
+        if (Random.Shared.Next(100) > 49) 
+            return true;
+
+        return false;
+    }
+
     /// <summary>
     /// Converts long file size into typical browser file size.
     /// </summary>

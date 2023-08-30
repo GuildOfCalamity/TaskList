@@ -27,7 +27,7 @@ public class LevelToImageConverter : IValueConverter
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Gray.png", UriKind.Absolute));
                 break;
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
-                result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Blue.png", UriKind.Absolute));
+                result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Purple.png", UriKind.Absolute));
                 break;
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Blue.png", UriKind.Absolute));

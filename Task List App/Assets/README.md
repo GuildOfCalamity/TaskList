@@ -2,7 +2,7 @@
 
 ![Example Picture](./ScreenShot.png)
 
-### 📝 v1.0.0.2 - August 2023
+### 📝 v1.0.0.3 - August 2023
 
 * I have reworked this entire project, which was originally from [Pdawg-bytes](https://github.com/Pdawg-bytes/WinUI3-TaskList)
 * It is now fully functional and bug-free. I have left **TODO** markers for a developer's future enhancements.
