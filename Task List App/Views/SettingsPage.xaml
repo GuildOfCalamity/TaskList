@@ -8,6 +8,8 @@
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:behaviors="using:Task_List_App.Behaviors"
+    behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
     mc:Ignorable="d">
     <!--
     <Page.Resources>

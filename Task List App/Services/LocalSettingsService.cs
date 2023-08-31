@@ -40,7 +40,7 @@ public class LocalSettingsService : ILocalSettingsService
         _settings = new Dictionary<string, object>();
     }
 
-    private async Task InitializeAsync()
+    async Task InitializeAsync()
     {
         if (!_isInitialized)
         {
@@ -76,8 +76,11 @@ public class LocalSettingsService : ILocalSettingsService
         else
         {
             await InitializeAsync();
-            _settings[key] = await Json.StringifyAsync(value);
-            await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+            if (_settings != null)
+            {
+                _settings[key] = await Json.StringifyAsync(value);
+                await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+            }
         }
     }
 }

@@ -51,6 +51,7 @@ public partial class App : Application
 	public static FrameworkElement? MainRoot { get; set; }
 	public static bool IsClosing { get; set; } = false;
     public static bool ToastLaunched { get; set; } = false;
+    static ValueStopwatch stopWatch { get; set; } = ValueStopwatch.StartNew();
 
     // https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/#advantages-and-disadvantages-of-packaging-your-app
 #if IS_UNPACKAGED // We're using a custom PropertyGroup Condition we defined in the csproj to help us with the decision.
@@ -168,6 +169,8 @@ public partial class App : Application
         base.OnLaunched(args);
         //App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
         await App.GetService<IActivationService>().ActivateAsync(args);
+
+        Debug.WriteLine($"─── OnLaunched finished at {stopWatch.GetElapsedTime().ToTimeString()} ───");
     }
 
     #region [Domain Events]
@@ -218,6 +221,13 @@ public partial class App : Application
 		e.SetObserved(); // suppress and handle manually
     }
     #endregion
+
+    public static TimeSpan GetStopWatch(bool reset = false)
+    {
+        var ts = stopWatch.GetElapsedTime();
+        if (reset) { stopWatch = ValueStopwatch.StartNew(); }
+        return ts;
+    }
 
     /// <summary>
     /// Returns the declaring type's namespace.

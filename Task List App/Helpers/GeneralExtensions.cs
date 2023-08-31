@@ -164,6 +164,23 @@ public static class GeneralExtensions
     }
 
     /// <summary>
+    /// Converts <see cref="TimeSpan"/> objects to a simple human-readable string.
+    /// e.g. 420 milliseconds, 3.1 seconds, 2 minutes, 4.231 hours, etc.
+    /// </summary>
+    /// <param name="span"><see cref="TimeSpan"/></param>
+    /// <param name="significantDigits">number of right side digits in output (precision)</param>
+    /// <returns>human-friendly string</returns>
+    public static string ToTimeString(this TimeSpan span, int significantDigits = 3)
+    {
+        var format = $"G{significantDigits}";
+        return span.TotalMilliseconds < 1000 ? span.TotalMilliseconds.ToString(format) + " milliseconds"
+                : (span.TotalSeconds < 60 ? span.TotalSeconds.ToString(format) + " seconds"
+                : (span.TotalMinutes < 60 ? span.TotalMinutes.ToString(format) + " minutes"
+                : (span.TotalHours < 24 ? span.TotalHours.ToString(format) + " hours"
+                : span.TotalDays.ToString(format) + " days")));
+    }
+
+    /// <summary>
     /// Gets the default member name that is used for an indexer (e.g. "Item").
     /// </summary>
     /// <param name="type">Type to check.</param>
@@ -943,6 +960,42 @@ public static class GeneralExtensions
         }
     }
 
+    public static UInt16 ReverseBytes(this UInt16 value)
+    {
+        return (UInt16)((value & 0xFFU) << 8 | (value & 0xFF00U) >> 8);
+    }
+
+    public static UInt32 ReverseBytes(this UInt32 value)
+    {
+        return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
+               (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+    }
+
+    public static UInt64 ReverseBytes(this UInt64 value)
+    {
+        return (value & 0x00000000000000FFUL) << 56 | (value & 0x000000000000FF00UL) << 40 |
+               (value & 0x0000000000FF0000UL) << 24 | (value & 0x00000000FF000000UL) << 8 |
+               (value & 0x000000FF00000000UL) >> 8 | (value & 0x0000FF0000000000UL) >> 24 |
+               (value & 0x00FF000000000000UL) >> 40 | (value & 0xFF00000000000000UL) >> 56;
+    }
+
+    public static byte[] StringToByteArray(this string hex)
+    {
+        return Enumerable.Range(0, hex.Length)
+                         .Where(x => x % 2 == 0)
+                         .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                         .ToArray();
+    }
+
+    public static string ByteArrayToHexString(this byte[] array)
+    {
+        if (array.Length == 0) { return string.Empty; }
+        var hex = new StringBuilder(array.Length * 2);
+        foreach (byte b in array) { hex.AppendFormat("{0:X2}", b); }
+        return hex.ToString();
+    }
+
+
     /// <summary>
     /// Macro for <see cref="IEnumerable{T}"/> collections.
     /// </summary>
@@ -1416,7 +1469,7 @@ public static class GeneralExtensions
         {
             // We need an explicit check to ensure the input task is not the cached
             // Task.CompletedTask instance, because that can internally be stored as
-            // a Task<T> for some given T (eg. on .NET 5 it's VoidTaskResult), which
+            // a Task<T> for some given T (e.g. on dotNET 5 it's VoidTaskResult), which
             // would cause the following code to return that result instead of null.
             if (task != Task.CompletedTask)
             {
@@ -1729,5 +1782,26 @@ public static class GeneralExtensions
         return new InvalidOperationException(message);
     }
 
+    /// <summary>
+    /// Helper method for thread state.
+    /// </summary>
+    /// <param name="ts"></param>
+    /// <returns><see cref="System.Threading.ThreadState"/></returns>
+    public static System.Threading.ThreadState SimplifyState(System.Threading.ThreadState ts)
+    {
+        return ts & (System.Threading.ThreadState.Unstarted |
+                     System.Threading.ThreadState.WaitSleepJoin |
+                     System.Threading.ThreadState.Stopped);
+    }
+
+    /// <summary>
+    /// You can test for a thread being blocked via its <see cref="System.Threading.ThreadState"/> property.
+    /// </summary>
+    /// <param name="ts">The <see cref="System.Threading.ThreadState"/> of the thread you want to test.</param>
+    /// <returns>true if blocked, false otherwise</returns>
+    public static bool IsThreadBlocked(this System.Threading.ThreadState ts)
+    {
+        return (ts & System.Threading.ThreadState.WaitSleepJoin) != 0;
+    }
 
 }
