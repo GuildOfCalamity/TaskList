@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,14 +10,18 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Task_List_App.Models;
-using Task_List_App.ViewModels;
+
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+
 using Microcharts;
 using SkiaSharp;
-using System.Collections.Concurrent;
-using ColorCode.Compilation.Languages;
-using System.Runtime.ConstrainedExecution;
+
+using Task_List_App.Models;
+using Task_List_App.ViewModels;
 using Task_List_App.Helpers;
+using Windows.Services.Maps;
+using Task_List_App.Contracts.Services;
 
 namespace Task_List_App.Views;
 
@@ -30,15 +32,16 @@ public sealed partial class AlternatePage : Page
 {
     #region [Properties]
     int closeCount = 0;
-    int notifyHangTime = 7;
+    const int notifyHangTime = 7;
     DispatcherTimer? _timerMsg;
     TaskItem? SelectedTask = null;
     Queue<Dictionary<string, string>> noticeQueue = new();
 
     public AlternateViewModel ViewModel { get; private set; }
     public TasksViewModel TasksViewModel { get; private set; }
-    public SettingsViewModel ConfigViewModel { get; private set;
-    }
+    public SettingsViewModel ConfigViewModel { get; private set; }
+    public LoginViewModel LoginModel { get; private set; }
+    public INavigationService? NavService { get; private set; }
 
     public List<ChartEntry> _entriesComp = new();
     public Chart CompChart
@@ -70,6 +73,8 @@ public sealed partial class AlternatePage : Page
         ViewModel = App.GetService<AlternateViewModel>();
         TasksViewModel = App.GetService<TasksViewModel>();
         ConfigViewModel = App.GetService<SettingsViewModel>();
+        NavService = App.GetService<INavigationService>();
+        LoginModel = App.GetService<LoginViewModel>();
 
         this.InitializeComponent();
 
@@ -131,42 +136,49 @@ public sealed partial class AlternatePage : Page
         };
         #endregion
 
-        this.Loaded += (_, _) =>
-        { 
-            _timerMsg?.Start();
-            
-            // Fetch and render our statistic graph.
-            var items = TasksViewModel.GetCompletionTimes().OrderBy(t => t.Created);
-            if (items.Any())
-            {
-                foreach (var item in items)
-                {
-                    var diff = item.Completion - item.Created;
-                    if (diff.HasValue)
-                    {
-                        var clr = GeneralExtensions.GetRandomColorString(ConfigViewModel.ElementTheme);
-                        _entriesComp.Add(new ChartEntry((float)diff.Value.TotalDays)
-                        {
-                            Label = " ",
-                            TextColor = SKColor.Parse(clr),
-                            ValueLabel = $"{diff.Value.TotalDays:N1} days",
-                            ValueLabelColor = SKColor.Parse(clr),
-                            Color = SKColor.Parse(clr)
-                        });
-                    }
-                }
-            }
-            else
-            {
-                noticeQueue.Enqueue(new Dictionary<string, string> { { $"You must complete tasks before their time scale can be graphed.", "No Data" } });
-            }
-        };
-
+        this.Loaded += AlternatePage_Loaded;
         this.Unloaded += (_, _) => 
         { 
             _timerMsg?.Stop();
             _entriesComp.Clear();
         };
+    }
+
+    void AlternatePage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (!LoginModel.IsLoggedIn)
+        {
+            NavService?.NavigateTo(typeof(LoginViewModel).FullName!);
+            return;
+        }
+
+        _timerMsg?.Start();
+
+        // Fetch and render our statistic graph.
+        var items = TasksViewModel.GetCompletionTimes().OrderBy(t => t.Created);
+        if (items.Any())
+        {
+            foreach (var item in items)
+            {
+                var diff = item.Completion - item.Created;
+                if (diff.HasValue)
+                {
+                    var clr = GeneralExtensions.GetRandomColorString(ConfigViewModel.ElementTheme);
+                    _entriesComp.Add(new ChartEntry((float)diff.Value.TotalDays)
+                    {
+                        Label = " ",
+                        TextColor = SKColor.Parse(clr),
+                        ValueLabel = $"{diff.Value.TotalDays:N1} days",
+                        ValueLabelColor = SKColor.Parse(clr),
+                        Color = SKColor.Parse(clr)
+                    });
+                }
+            }
+        }
+        else
+        {
+            noticeQueue.Enqueue(new Dictionary<string, string> { { $"You must complete tasks before their time scale can be graphed.", "No Data" } });
+        }
     }
 
     /// <summary>

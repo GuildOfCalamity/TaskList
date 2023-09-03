@@ -477,7 +477,10 @@ public sealed partial class TasksPage : Page
         UpdateBadgeIcon(ViewModel.TallyUncompletedTaskItems());
 
         if (!LoginModel.IsLoggedIn)
+        {
             NavService?.NavigateTo(typeof(LoginViewModel).FullName!);
+            return;
+        }
 
         _timerPoll?.Start();
         _timerMsg?.Start();
