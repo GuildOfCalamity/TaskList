@@ -88,6 +88,11 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource Shield}" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="Page_Alternate" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.AlternateViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource AreaChart}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <!--
                    Example of a line separator...
                 <NavigationViewItemSeparator Tag="MySeparator" />

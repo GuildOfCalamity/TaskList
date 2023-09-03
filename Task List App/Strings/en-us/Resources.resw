@@ -203,4 +203,7 @@ If the title contains a URL then it will be opened in a browser when that task i
   <data name="AppBar_Sort.Label" xml:space="preserve">
     <value>Re-sort</value>
   </data>
+  <data name="Page_Alternate.Content" xml:space="preserve">
+    <value>Graph</value>
+  </data>
 </root>

@@ -12,6 +12,9 @@ public class PageService : IPageService
 {
     private readonly Dictionary<string, Type> _pages = new();
 
+    /// <summary>
+    /// NOTE: When adding new pages to the application do not forget to configure them here.
+    /// </summary>
     public PageService()
     {
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
@@ -19,6 +22,7 @@ public class PageService : IPageService
 		Configure<TasksViewModel, TasksPage>();
         Configure<SettingsViewModel, SettingsPage>();
         Configure<LoginViewModel, LoginPage>();
+        Configure<AlternateViewModel, AlternatePage>();
     }
 
     public Type GetPageType(string key)

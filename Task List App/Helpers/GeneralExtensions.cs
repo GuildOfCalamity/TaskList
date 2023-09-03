@@ -690,25 +690,29 @@ public static class GeneralExtensions
     }
 
     /// <summary>
-    /// Generates a 6 digit color string and may include the # sign.
-    /// The 0 and 1 options have been removed so dark colors such as #000000/#111111 are not possible.
+    /// Generates a 7 digit color string including the # sign.
+    /// If the <see cref="ElementTheme"/> is dark then 0, 1 & 2 options are 
+    /// removed so dark colors such as 000000/111111/222222 are not possible.
+    /// If the <see cref="ElementTheme"/> is light then D, E & F options are 
+    /// removed so light colors such as DDDDDD/EEEEEE/FFFFFF are not possible.
     /// </summary>
-    public static string GetRandomColorString(bool includePound = true)
+    public static string GetRandomColorString(ElementTheme? theme)
     {
         StringBuilder sb = new StringBuilder();
-        const string pwChars = "2346789ABCDEF";
+        string pwChars = "012346789ABCDEF";
+
+        if (theme.HasValue && theme == ElementTheme.Dark)
+            pwChars = "346789ABCDEF";
+        else if (theme.HasValue && theme == ElementTheme.Light)
+            pwChars = "012346789ABC";
+
         char[] charArray = pwChars.Distinct().ToArray();
-
         var result = new char[7];
-        var rng = new Random();
-
-        if (includePound)
-            sb.Append("#");
 
         for (int x = 0; x < 6; x++)
-            sb.Append(pwChars[rng.Next() % pwChars.Length]);
+            sb.Append(pwChars[Random.Shared.Next() % pwChars.Length]);
 
-        return sb.ToString();
+        return $"#{sb}";
     }
 
     /// <summary>

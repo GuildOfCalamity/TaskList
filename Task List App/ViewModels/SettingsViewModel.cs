@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 
 using Task_List_App.Contracts.Services;
 using Task_List_App.Helpers;
-
+using Task_List_App.Models;
 using Windows.ApplicationModel;
 
 namespace Task_List_App.ViewModels;

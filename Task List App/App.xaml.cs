@@ -43,6 +43,9 @@ namespace Task_List_App;
 /// window instantiation and other window functions. I have removed 'WinUIEx' from this project as
 /// it was causing issues with the build-up and tear-down of <see cref="Microsoft.UI.Xaml.Window"/>
 /// when updating the WindowsAppSDK to newer versions (and yes, I updated the WinUIEx NuGet also).
+/// The Windows App SDK is currently backward compatible to Windows 10 version 1809.
+/// For more info on the SDK visit https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/release-channels
+/// For latest release notes visit https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel
 /// </summary>
 public partial class App : Application
 {
@@ -133,6 +136,9 @@ public partial class App : Application
 
             services.AddSingleton<LoginViewModel>();
             services.AddSingleton<LoginPage>();
+
+            services.AddSingleton<AlternateViewModel>();
+            services.AddSingleton<AlternatePage>();
             #endregion
 
             // Configuration

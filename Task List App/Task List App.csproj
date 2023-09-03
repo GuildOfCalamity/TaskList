@@ -44,6 +44,9 @@
     <None Remove="Assets\Fonts\Aptos.ttf" />
     <None Remove="Assets\README.md" />
     <None Remove="Assets\ScreenShot.png" />
+    <None Remove="Controls\CardControl.xaml" />
+    <None Remove="Controls\SampleControl.xaml" />
+    <None Remove="Views\AlternatePage.xaml" />
     <None Remove="Views\CreateTaskDialog.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\TasksPageDialog.xaml" />
@@ -62,6 +65,8 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    <PackageReference Include="Microcharts" Version="0.9.5.9" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
@@ -75,6 +80,15 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Controls\CardControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\AlternatePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\SampleControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\CompositionShadow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

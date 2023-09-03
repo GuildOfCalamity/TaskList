@@ -7,9 +7,18 @@
     <ActiveDebugProfile>Task List App (Unpackaged)</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="Controls\CardControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <None Update="Controls\CompositionShadow.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Views\AlternatePage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\SampleControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\LoginPage.xaml">

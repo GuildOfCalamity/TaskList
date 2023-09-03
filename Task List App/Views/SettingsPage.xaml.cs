@@ -12,6 +12,9 @@ using CommunityToolkit.WinUI.Helpers;
 using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
 using System;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml;
+using Task_List_App.Models;
 
 namespace Task_List_App.Views;
 
@@ -314,7 +317,6 @@ public sealed partial class SettingsPage : Page
         return workingFolder;
     }
     #endregion
-
 }
 
 /// <summary>

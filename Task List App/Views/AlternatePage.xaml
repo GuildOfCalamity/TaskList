@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Task_List_App.Views.AlternatePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="using:Task_List_App.Behaviors"
+    xmlns:ctrls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extras="using:Task_List_App.Controls"
+    xmlns:local="using:Task_List_App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:Task_List_App.Models"
+    behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  Begin Task Item Template  -->
+        <DataTemplate x:Key="TaskItemTemplate" x:DataType="model:TaskItem">
+            <UserControl PointerPressed="OnTemplatePointerPressed">
+                <StackPanel
+                    x:Name="stackRoot"
+                    Margin="4"
+                    Background="{ThemeResource BackgroundBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Orientation="Vertical">
+                    <StackPanel
+                        Height="30"
+                        Margin="6"
+                        Background="{x:Bind Time, Mode=OneWay, Converter={StaticResource LevelToBrush}}"
+                        CornerRadius="4"
+                        Opacity="0.9">
+                        <TextBlock
+                            x:Name="taskLevel"
+                            Margin="0"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            FontSize="20"
+                            Foreground="{ThemeResource PrimaryBrush}"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap">
+                            <Run Text="{x:Bind Title}" />
+                            <Run Text=" (" />
+                            <Run Text="{x:Bind Completed}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock
+                        x:Name="taskSource"
+                        Margin="13,4,10,10"
+                        FontSize="20"
+                        Foreground="{ThemeResource SecondaryBrush}"
+                        Text="{x:Bind Time}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
+                    <TextBlock
+                        x:Name="taskMessage"
+                        Margin="15,1,15,15"
+                        FontFamily="Consolas"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="{x:Bind Status}" />
+                    <StackPanel
+                        Height="23"
+                        Margin="6"
+                        VerticalAlignment="Bottom"
+                        Background="{ThemeResource BackgroundBrush}"
+                        CornerRadius="4">
+                        <TextBlock
+                            x:Name="taskTime"
+                            Padding="1"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Foreground="{ThemeResource QuinaryBrush}"
+                            Text="{x:Bind Created, Converter={StaticResource StringToFormat}, ConverterParameter='{}{0:ddd, dd MMM yyyy (hh:mm tt)}'}"
+                            TextAlignment="Center" />
+                    </StackPanel>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="NoticeSelectionState">
+                            <VisualState x:Name="Default" />
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Target="stackRoot.Background" Value="{ThemeResource SelectedBrush}" />
+                                    <Setter Target="taskSource.Foreground" Value="{ThemeResource PrimaryBrush}" />
+                                    <Setter Target="taskMessage.Foreground" Value="{ThemeResource QuaternaryBrush}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </StackPanel>
+            </UserControl>
+        </DataTemplate>
+        <!--  End Task Item Template  -->
+    </Page.Resources>
+
+    <Grid RowDefinitions="9*,2*">
+        <!--
+            [Completion Graph Stats]
+        -->
+        <extras:ChartCanvas
+            x:Name="microChart"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Margin="-44,-2,-30,-10"
+            Chart="{x:Bind CompChart}"
+            Opacity="1" />
+
+        <!--
+            [Alternative Template Testing]
+            Change opacity to 1 to see the other variants.
+        -->
+        <ScrollViewer Grid.Row="0" Opacity="0">
+            <StackPanel Orientation="Vertical">
+                <!--  [Native Control Template]  -->
+                <Grid Margin="0,22" HorizontalAlignment="Stretch">
+                    <ItemsRepeaterScrollHost>
+                        <ScrollViewer>
+                            <ItemsRepeater
+                                x:Name="TaskItemRepeater"
+                                ElementIndexChanged="VariedRepeaterOnElementIndexChanged"
+                                ItemTemplate="{StaticResource TaskItemTemplate}">
+                                <ItemsRepeater.Layout>
+                                    <UniformGridLayout
+                                        MinItemHeight="170"
+                                        MinItemWidth="265"
+                                        Orientation="Horizontal" />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </ScrollViewer>
+                    </ItemsRepeaterScrollHost>
+                </Grid>
+                <!--  [Sample Control Template]  -->
+                <ListView
+                    x:Name="TaskItemList"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ItemsSource="{x:Bind ViewModel.Samples, Mode=OneWay}"
+                    SelectionChanged="TaskItemList_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="model:TaskItem">
+                            <extras:SampleControl ListDetailsTaskItem="{Binding}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <!--  Single Card Template  -->
+                <extras:CardControl SourceTaskItems="{x:Bind ViewModel.Sample, Mode=OneWay}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--
+            [Debug Messages]
+        -->
+        <InfoBar
+            x:Name="InfoBar"
+            Title="Message"
+            Grid.Row="1"
+            Margin="4"
+            VerticalAlignment="Center"
+            FontFamily="{StaticResource CustomFont}"
+            IsOpen="false"
+            Message=""
+            Severity="Informational" />
+
+    </Grid>
+</Page>

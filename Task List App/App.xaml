@@ -43,6 +43,7 @@
                             <Brush x:Key="QuaternaryBrush">#76B9ED</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
+                            <Brush x:Key="SelectedBrush">#3976B9ED</Brush>
                             <media:AcrylicBrush
                                 x:Key="CustomAcrylicBrush"
                                 FallbackColor="#317ad7"
@@ -53,6 +54,37 @@
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"
                                 Color="#1E1E1E" />
+
+                            <media:AcrylicBrush
+                                x:Key="RevealBorderBrush"
+                                FallbackColor="#317ad7"
+                                TintColor="SpringGreen"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="LightBackgroundBrush"
+                                FallbackColor="AntiqueWhite"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.01" />
+                            <media:AcrylicBrush
+                                x:Key="DarkBackgroundBrush"
+                                FallbackColor="AntiqueWhite"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="DarkBorderBrush"
+                                FallbackColor="AntiqueWhite"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="LightBorderBrush"
+                                FallbackColor="#317ad7"
+                                TintColor="AntiqueWhite"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
 
                             <!--  === Styles ===  -->
                             <Style x:Key="ButtonStyle1" TargetType="Button">
@@ -244,6 +276,7 @@
                             <Brush x:Key="QuaternaryBrush">#4689BD</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
+                            <Brush x:Key="SelectedBrush">#3976B9ED</Brush>
                             <media:AcrylicBrush
                                 x:Key="CustomAcrylicBrush"
                                 FallbackColor="#317ad7"
@@ -254,6 +287,38 @@
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"
                                 Color="#1E1E1E" />
+
+                            <media:AcrylicBrush
+                                x:Key="RevealBorderBrush"
+                                FallbackColor="#317ad7"
+                                TintColor="SpringGreen"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="LightBackgroundBrush"
+                                FallbackColor="Black"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.01" />
+                            <media:AcrylicBrush
+                                x:Key="DarkBackgroundBrush"
+                                FallbackColor="Black"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="DarkBorderBrush"
+                                FallbackColor="Black"
+                                TintColor="#714aff"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+                            <media:AcrylicBrush
+                                x:Key="LightBorderBrush"
+                                FallbackColor="#317ad7"
+                                TintColor="AntiqueWhite"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
+
 
                             <!--  === Styles ===  -->
                             <Style x:Key="ButtonStyle1" TargetType="Button">
