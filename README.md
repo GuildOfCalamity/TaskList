@@ -1,4 +1,4 @@
-﻿# 💻 WinUI3 - Task List App
+﻿??? WinUI3 - Task List App
 
 ![Example Picture](./ScreenShot.png)
 
@@ -16,6 +16,7 @@
     - [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
     - [Microsoft.Extensions.Hosting](https://www.nuget.org/packages/Microsoft.Extensions.Hosting)
     - [Microsoft.Xaml.Behaviors.WinUI.Managed](https://www.nuget.org/packages/Microsoft.Xaml.Behaviors.WinUI.Managed)
+    - [MicroCharts](https://www.nuget.org/packages/microcharts) and [SkiaSharp.Views.WinUI](https://www.nuget.org/packages/SkiaSharp.Views.WinUI)
 
 ## 🚀 Future Enhancments
 * Application activation via **Toast Notifications** still needs work.
@@ -24,7 +25,7 @@
 * Finish language conversions and link additional `x:Uid` tags.
 
 ## 🎛️ Usage
-* You can run this as a normal desktop app. Tooltps are provided for each action.
+* You can run this as a normal desktop app. Tooltips are provided for each action.
 * If the database is absent, a new one will be created.
 * `Alt-A`/`Ctrl-A` Adds a new task.
 * `Alt-S`/`Ctrl-S` Saves any changes.
