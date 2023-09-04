@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="using:Task_List_App.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extras="using:Task_List_App.Controls"
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
@@ -27,15 +28,26 @@
             </TransitionCollection>
         </Grid.Transitions>
 
-        <Rectangle
-            Grid.RowSpan="1"
-            Grid.ColumnSpan="1"
-            Margin="20"
-            Fill="{ThemeResource PrimaryBrush}"
-            RadiusX="8"
-            RadiusY="8"
-            Stroke="{ThemeResource SecondaryBrush}"
-            StrokeThickness="2" />
+        <!--  This is totally uneccessary, but is here for you to experiment with.  -->
+        <Grid.RenderTransform>
+            <ScaleTransform x:Name="ContentScale" ScaleX="1.0" ScaleY="1.0" />
+        </Grid.RenderTransform>
+
+        <extras:SimpleGlowPanel
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="{ThemeResource SecondaryBrush}"
+            BlurRadius="50">
+            <Rectangle
+                Grid.RowSpan="1"
+                Grid.ColumnSpan="1"
+                Margin="20"
+                Fill="{ThemeResource PrimaryBrush}"
+                RadiusX="8"
+                RadiusY="8"
+                Stroke="{ThemeResource SecondaryBrush}"
+                StrokeThickness="2" />
+        </extras:SimpleGlowPanel>
 
         <StackPanel
             Grid.Row="0"

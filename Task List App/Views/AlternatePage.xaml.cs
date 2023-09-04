@@ -284,7 +284,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 250)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 365)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -295,7 +295,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 90)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 180)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -306,7 +306,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 20)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 30)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -317,7 +317,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 40)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 60)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -328,7 +328,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 10)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 14)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -339,7 +339,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 5)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 7)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -350,7 +350,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 4)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 5)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -361,7 +361,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 2.0)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 3.0)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
@@ -372,7 +372,7 @@ public sealed partial class AlternatePage : Page
                     else if (amount?.TotalDays < 1.5)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < 2.0)
-                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
