@@ -2,6 +2,7 @@
     x:Class="Task_List_App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctrls="using:Task_List_App.Controls"
     xmlns:local="using:Task_List_App"
     xmlns:media="using:Microsoft.UI.Xaml.Media">
     <Application.Resources>
@@ -36,6 +37,7 @@
                         <ResourceDictionary x:Key="Dark">
                             <!--  === Brushes ===  -->
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
+                            <Brush x:Key="ShadowBrush">#101013</Brush>
                             <Brush x:Key="BorderBrush">#686874</Brush>
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
                             <Brush x:Key="SecondaryBrush">#8F1FDF</Brush>
@@ -87,6 +89,42 @@
                                 TintOpacity="0.1" />
 
                             <!--  === Styles ===  -->
+
+                            <!--  Simple Glow Panel Styler  -->
+                            <Style TargetType="ctrls:SimpleGlowPanel">
+                                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                <Setter Property="VerticalAlignment" Value="Stretch" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ctrls:SimpleGlowPanel">
+                                            <Grid
+                                                x:Name="RootGrid"
+                                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                                                <Rectangle
+                                                    x:Name="ShadowHost"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch" />
+                                                <ContentPresenter
+                                                    x:Name="ContentPresenter"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Content="{TemplateBinding Content}"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    ContentTransitions="{TemplateBinding ContentTransitions}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+
+                            <!--  Button Styler  -->
                             <Style x:Key="ButtonStyle1" TargetType="Button">
                                 <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
                                 <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
@@ -268,6 +306,7 @@
                         <!--  === LIGHT THEME ===  -->
                         <ResourceDictionary x:Key="Light">
                             <!--  === Brushes ===  -->
+                            <Brush x:Key="ShadowBrush">#a7a7aa</Brush>
                             <Brush x:Key="BackgroundBrush">WhiteSmoke</Brush>
                             <Brush x:Key="BorderBrush">#232330</Brush>
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>
@@ -321,6 +360,42 @@
 
 
                             <!--  === Styles ===  -->
+
+                            <!--  Simple Glow Panel Styler  -->
+                            <Style TargetType="ctrls:SimpleGlowPanel">
+                                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                <Setter Property="VerticalAlignment" Value="Stretch" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ctrls:SimpleGlowPanel">
+                                            <Grid
+                                                x:Name="RootGrid"
+                                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                                                <Rectangle
+                                                    x:Name="ShadowHost"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch" />
+                                                <ContentPresenter
+                                                    x:Name="ContentPresenter"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Content="{TemplateBinding Content}"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    ContentTransitions="{TemplateBinding ContentTransitions}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+
+                            <!--  Button Styler  -->
                             <Style x:Key="ButtonStyle1" TargetType="Button">
                                 <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
                                 <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />

@@ -22,6 +22,8 @@ using Task_List_App.ViewModels;
 using Task_List_App.Helpers;
 using Windows.Services.Maps;
 using Task_List_App.Contracts.Services;
+using Newtonsoft.Json.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Task_List_App.Views;
 
@@ -163,10 +165,20 @@ public sealed partial class AlternatePage : Page
                 var diff = item.Completion - item.Created;
                 if (diff.HasValue)
                 {
+                    string title = "";
+                    if (item.Title.Length > 8)
+                        title = String.Format("{0}{1}",  item.Title.Substring(0, 9).Trim(), '\u2026');
+                    else
+                        title = item.Title;
+
+                    // If you want a random color for each element on the graph.
                     var clr = GeneralExtensions.GetRandomColorString(ConfigViewModel.ElementTheme);
+                    // If you want the color to indicate how close to the estimate you were.
+                    clr = GetColorTime(item.Time, diff).ToString();
+
                     _entriesComp.Add(new ChartEntry((float)diff.Value.TotalDays)
                     {
-                        Label = " ",
+                        Label = $"{title}",
                         TextColor = SKColor.Parse(clr),
                         ValueLabel = $"{diff.Value.TotalDays:N1} days",
                         ValueLabelColor = SKColor.Parse(clr),
@@ -252,6 +264,120 @@ public sealed partial class AlternatePage : Page
                 Debug.WriteLine($"[TaskItemList_SelectionChanged] => {ti.Title}");
                 noticeQueue.Enqueue(new Dictionary<string, string> { { $"{ti.Title}", "CardListView" } });
             }
+        }
+    }
+
+    /// <summary>
+    /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
+    /// </summary>
+    Windows.UI.Color GetColorTime(string value, TimeSpan? amount)
+    {
+        if (string.IsNullOrEmpty(value) || amount == null)
+            return Windows.UI.Color.FromArgb(255, 75, 10, 255);
+
+        switch (value)
+        {
+            case string time when time.Contains("a year", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 172)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 250)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 365)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 60)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 90)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 180)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 10)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 20)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 30)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 20)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 40)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 60)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 7)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 10)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 14)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3.5)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 5)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 7)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 4)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 5)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("tomorrow", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1.0)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 2.0)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 3.0)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("soon", StringComparison.OrdinalIgnoreCase) || time.Contains("today", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1.0)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 1.5)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 2.0)
+                        return Windows.UI.Color.FromArgb(255, 10, 255, 180); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            default:
+                return Windows.UI.Color.FromArgb(255, 75, 10, 255);          // purple
         }
     }
 }

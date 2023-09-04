@@ -45,6 +45,57 @@ public static class GeneralExtensions
         return img;
     }
 
+    public static void BindCenterPoint(this Microsoft.UI.Composition.Visual target)
+    {
+        var exp = target.Compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X / 2, this.Target.Size.Y / 2, 0f)");
+        target.StartAnimation("CenterPoint", exp);
+    }
+
+    public static void BindSize(this Microsoft.UI.Composition.Visual target, Microsoft.UI.Composition.Visual source)
+    {
+        var exp = target.Compositor.CreateExpressionAnimation("host.Size");
+        exp.SetReferenceParameter("host", source);
+        target.StartAnimation("Size", exp);
+    }
+
+    public static Microsoft.UI.Composition.ImplicitAnimationCollection CreateImplicitAnimation(this Microsoft.UI.Composition.ImplicitAnimationCollection source, string Target, TimeSpan? Duration = null)
+    {
+        Microsoft.UI.Composition.KeyFrameAnimation animation = null;
+        switch (Target.ToLower())
+        {
+            case "offset":
+            case "scale":
+            case "centerPoint":
+            case "rotationAxis":
+                animation = source.Compositor.CreateVector3KeyFrameAnimation();
+                break;
+
+            case "size":
+                animation = source.Compositor.CreateVector2KeyFrameAnimation();
+                break;
+
+            case "opacity":
+            case "blueRadius":
+            case "rotationAngle":
+            case "rotationAngleInDegrees":
+                animation = source.Compositor.CreateScalarKeyFrameAnimation();
+                break;
+
+            case "color":
+                animation = source.Compositor.CreateColorKeyFrameAnimation();
+                break;
+        }
+
+        if (animation == null) throw new ArgumentNullException("Unknown Target");
+        if (!Duration.HasValue) Duration = TimeSpan.FromSeconds(0.2d);
+        animation.InsertExpressionKeyFrame(1f, "this.FinalValue");
+        animation.Duration = Duration.Value;
+        animation.Target = Target;
+
+        source[Target] = animation;
+        return source;
+    }
+
     /// <summary>
     /// Convert a <see cref="DateTime"/> object into an ISO 8601 formatted string.
     /// </summary>
