@@ -1,8 +1,10 @@
-﻿# 💻 WinUI3 - Task List App
+# 💻 WinUI3 - Task List App
 
 ![Example Picture](./ScreenShot.png)
 
 ![Example Picture](./ScreenShot2.png)
+
+![Example Picture](./ScreenShot3.png)
 
 ### 📝 v1.0.0.3 - August 2023
 
