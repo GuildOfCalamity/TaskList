@@ -71,20 +71,24 @@
                         Text="Enter your password" />
                 </PasswordBox.Header>
             </PasswordBox>
-            <Button
-                MinWidth="200"
-                Click="LoginButton_Click"
-                Content="Login"
-                FontSize="16"
-                Style="{ThemeResource EnhancedButtonStyle}"
-                Visibility="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
-            <Button
-                MinWidth="200"
-                Click="LogoutButton_Click"
-                Content="Logout"
-                FontSize="16"
-                Style="{ThemeResource EnhancedButtonStyle}"
-                Visibility="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
+            <Grid>
+                <Button
+                    MinWidth="200"
+                    Click="LoginButton_Click"
+                    Content="Login"
+                    CornerRadius="5"
+                    FontSize="16"
+                    Style="{StaticResource GrowButton}"
+                    Visibility="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
+                <Button
+                    MinWidth="200"
+                    Click="LogoutButton_Click"
+                    Content="Logout"
+                    CornerRadius="5"
+                    FontSize="16"
+                    Style="{StaticResource GrowButton}"
+                    Visibility="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
+            </Grid>
             <FontIcon
                 Margin="0,24,0,0"
                 FontFamily="{StaticResource SymbolThemeFontFamily}"

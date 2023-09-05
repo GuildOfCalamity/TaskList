@@ -103,6 +103,18 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!--  Restore from backup  -->
+                <Button
+                    x:Name="btnRestore"
+                    x:Uid="Settings_RestoreData"
+                    MinWidth="160"
+                    Margin="1,10,1,26"
+                    Command="{x:Bind ViewModel.RestoreDataCommand}"
+                    CornerRadius="5"
+                    IsEnabled="{x:Bind ViewModel.IsBusy, Converter={StaticResource BooleanInverter}, Mode=OneWay}"
+                    Style="{ThemeResource ButtonStyleBasic}" />
+
+
                 <!--
                     [About]
                 -->

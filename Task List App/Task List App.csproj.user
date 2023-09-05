@@ -13,6 +13,9 @@
     <None Update="Controls\CompositionShadow.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Styles\Buttons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\AlternatePage.xaml">
       <SubType>Designer</SubType>
     </Page>

@@ -46,6 +46,7 @@
     <None Remove="Assets\ScreenShot.png" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\SampleControl.xaml" />
+    <None Remove="Styles\Buttons.xaml" />
     <None Remove="Views\AlternatePage.xaml" />
     <None Remove="Views\CreateTaskDialog.xaml" />
     <None Remove="Views\LoginPage.xaml" />
@@ -82,6 +83,9 @@
     </None>
     <Page Update="Controls\CardControl.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Styles\Buttons.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\AlternatePage.xaml">
       <Generator>MSBuild:Compile</Generator>

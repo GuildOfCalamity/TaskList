@@ -206,4 +206,10 @@ If the title contains a URL then it will be opened in a browser when that task i
   <data name="Page_Alternate.Content" xml:space="preserve">
     <value>Graph</value>
   </data>
+  <data name="AppBar_Remove.Label" xml:space="preserve">
+    <value>Remove done</value>
+  </data>
+  <data name="Settings_RestoreData.Content" xml:space="preserve">
+    <value>Restore database</value>
+  </data>
 </root>

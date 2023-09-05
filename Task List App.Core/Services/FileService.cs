@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
 using Newtonsoft.Json;
 
@@ -80,6 +81,27 @@ public class FileService : IFileService
         catch (Exception ex)
         {
             throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public bool Restore(string folderPath, string fileName)
+    {
+        if (string.IsNullOrEmpty(folderPath) || string.IsNullOrEmpty(fileName))
+            return false;
+
+        if (!File.Exists(Path.Combine(folderPath, $"{fileName}.bak")) || !File.Exists(Path.Combine(folderPath, fileName)))
+            return false;
+
+        try
+        {
+            //File.Delete(Path.Combine(folderPath, fileName));
+            File.Move(Path.Combine(folderPath, $"{fileName}.bak"), Path.Combine(folderPath, fileName), true);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Restore: {ex.Message}");
+            return false;
         }
     }
 

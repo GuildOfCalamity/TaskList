@@ -96,8 +96,8 @@ public sealed partial class TasksPage : Page
                     Debug.WriteLine($"User selected 'OK'");
                     if (!string.IsNullOrEmpty(result))
                     {
-                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task successfully created.", InfoBarSeverity.Success } });
                         ViewModel.AddTaskItemCommand.Execute(new TaskItem { Title = result, Time = ViewModel.Times[1], Created = DateTime.Now, Status = ViewModel.Status[1] });
+                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task successfully created.", InfoBarSeverity.Success } });
                     }
                     return true;
                 },
@@ -111,7 +111,9 @@ public sealed partial class TasksPage : Page
             {
                 // Setup our custom ContentDialog.
                 ContentDialog dialog = new CreateTaskDialog();
-                dialog.CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyle1"];
+                // Make sure to set the theme. This can become inverted if the user switches themes between creation.
+                dialog.RequestedTheme = ApplicationSettings.ElementTheme;
+                dialog.CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyleBasic"];
                 dialog.XamlRoot = this.XamlRoot;
 
                 // Stores result for use in statement
@@ -127,11 +129,8 @@ public sealed partial class TasksPage : Page
                     string? status = (dialog as CreateTaskDialog)?.SelectedStatus;
                     if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(time) && !string.IsNullOrEmpty(status))
                     {
-                        ViewModel.TaskItems.Add(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
-                        if (ViewModel.ResortAllTasks())
-                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
-                        else
-                            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created but re-sort failed.", InfoBarSeverity.Warning } });
+                        ViewModel.AddTaskItemCommand.Execute(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
+                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
                     }
                     else
                     {
@@ -151,10 +150,17 @@ public sealed partial class TasksPage : Page
         }
         else if (e == Windows.System.VirtualKey.X)
         {
-            App.DebugLog($"User exited through keypress.");
-            await Task.Delay(1000);
-			App.Current.Exit();
-		}
+            if (!SaveNeeded)
+            {
+                App.DebugLog($"User exited through keypress.");
+                await Task.Delay(1000);
+                App.Current.Exit();
+            }
+            else
+            {
+                noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "There is a save pending.", InfoBarSeverity.Warning } });
+            }
+        }
     }
 
     void ShellPage_ShellPointerEvent(object? sender, Microsoft.UI.Input.PointerDeviceType e)
@@ -207,7 +213,7 @@ public sealed partial class TasksPage : Page
     }
     #endregion
 
-    #region [Button Events]
+    #region [AppBarButton Events]
     void SaveTask_Click(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"Calling '{nameof(ViewModel.UpdateTaskItemCommand)}'");
@@ -224,7 +230,6 @@ public sealed partial class TasksPage : Page
         Debug.WriteLine($"CompleteTask_Click");
         _lastActivity = DateTime.Now;
 
-        bool result = false;
         int amount = ViewModel.TallyCompletedTaskItems();
 
         if (amount > 0 && useMessageBox)
@@ -232,7 +237,7 @@ public sealed partial class TasksPage : Page
             await ShowMessageBox("Finished?", $"Confirm completion of marked tasks.", "Yes", "No", 
             () => // User selected 'YES'
 			{
-                result = ViewModel.CompleteSelectedTaskItems();
+                var result = ViewModel.CompleteSelectedTaskItems();
                 if (result)
 				    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks have been updated.", InfoBarSeverity.Informational } });
                 else
@@ -248,7 +253,7 @@ public sealed partial class TasksPage : Page
             await ShowDialogBox("Finished?", $"Confirm completion of marked tasks.", "Yes", "No", 
             () => // User selected 'YES'
 			{
-                result = ViewModel.CompleteSelectedTaskItems();
+                var result = ViewModel.CompleteSelectedTaskItems();
 				if (result)
 					noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks have been updated.", InfoBarSeverity.Informational } });
 				else
@@ -266,6 +271,53 @@ public sealed partial class TasksPage : Page
 			() => { Debug.WriteLine($"User selected 'Cancel'"); });
 		}
 	}
+
+    async void RemoveCompletedTask_Click(object sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine($"RemoveCompletedTask_Click");
+        _lastActivity = DateTime.Now;
+
+        int amount = ViewModel.TallyCompletedTaskItems();
+
+        if (amount > 0 && useMessageBox)
+        {
+            await ShowMessageBox("Are you sure?", $"Confirm removal of all completed tasks.", "Yes", "No",
+            () => // User selected 'YES'
+            {
+                var result = ViewModel.RemoveCompletedTaskItems();
+                if (result)
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks have been removed.", InfoBarSeverity.Informational } });
+                else
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks could not be removed.", InfoBarSeverity.Error } });
+            },
+            () => // User selected 'NO'
+            {
+                noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task removal was canceled.", InfoBarSeverity.Warning } });
+            });
+        }
+        else if (amount > 0 && !useMessageBox)
+        {
+            await App.ShowDialogBox("Are you sure?", $"Confirm removal of all completed tasks.", "Yes", "No",
+            () => // User selected 'YES'
+            {
+                var result = ViewModel.RemoveCompletedTaskItems();
+                if (result)
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks have been removed.", InfoBarSeverity.Informational } });
+                else
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks could not be removed.", InfoBarSeverity.Error } });
+            },
+            () => // User selected 'NO'
+            {
+                noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Completed tasks removal was canceled.", InfoBarSeverity.Warning } });
+            });
+        }
+        else
+        {
+            await ShowDialogBox("Notice", $"There are no completed tasks to remove.", "OK", "Cancel",
+            () => { Debug.WriteLine($"User selected 'OK'"); },
+            () => { Debug.WriteLine($"User selected 'Cancel'"); });
+        }
+    }
 
     /// <summary>
     /// This also happens when list is fully saved.
@@ -294,8 +346,8 @@ public sealed partial class TasksPage : Page
                 Debug.WriteLine($"User selected 'OK'");
                 if (!string.IsNullOrEmpty(result))
                 {
-                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task successfully created.", InfoBarSeverity.Success } });
                     ViewModel.AddTaskItemCommand.Execute(new TaskItem { Title = result, Time = ViewModel.Times[1], Created = DateTime.Now, Status = ViewModel.Status[1] });
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task successfully created.", InfoBarSeverity.Success } });
                 }
                 return true;
             },
@@ -310,7 +362,9 @@ public sealed partial class TasksPage : Page
         {
             // Setup our custom ContentDialog.
             ContentDialog dialog = new CreateTaskDialog();
-            dialog.CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyle1"];
+            // Make sure to set the theme. This can become inverted if the user switches themes between creation.
+            dialog.RequestedTheme = ApplicationSettings.ElementTheme;
+            dialog.CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyleBasic"];
             dialog.XamlRoot = this.XamlRoot;
 
             // Stores result for use in statement
@@ -326,11 +380,8 @@ public sealed partial class TasksPage : Page
                 string? status = (dialog as CreateTaskDialog)?.SelectedStatus;
                 if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(time) && !string.IsNullOrEmpty(status))
                 {
-                    ViewModel.TaskItems.Add(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
-                    if (ViewModel.ResortAllTasks())
-                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
-                    else
-                        noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created but re-sort failed.", InfoBarSeverity.Warning } });
+                    ViewModel.AddTaskItemCommand.Execute(new TaskItem { Title = title, Time = time ?? ViewModel.Times[1], Created = DateTime.Now, Status = status ?? ViewModel.Status[1] });
+                    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Task was created successfully.", InfoBarSeverity.Success } });
                 }
                 else
                 {
@@ -471,7 +522,9 @@ public sealed partial class TasksPage : Page
     void TasksPage_Loaded(object sender, RoutedEventArgs e)
 	{
 		Debug.WriteLine($"TasksPage_Loaded");
-        App.DebugLog($"TasksPage_Loaded");
+
+        // AppBarButton icon setting example from code-behind.
+        //RemoveCompletedTasks.Icon = new BitmapIcon() { UriSource = new Uri("ms-appx:///Assets/Check_Logo.png") };
 
         _lastActivity = DateTime.Now;
         UpdateBadgeIcon(ViewModel.TallyUncompletedTaskItems());
@@ -492,7 +545,6 @@ public sealed partial class TasksPage : Page
     void TasksPage_Unloaded(object sender, RoutedEventArgs e)
 	{
         Debug.WriteLine($"TasksPage_Unloaded");
-        App.DebugLog($"TasksPage_Unloaded");
 
 		_timerPoll?.Stop();
 		_timerMsg?.Stop();
@@ -557,7 +609,7 @@ public sealed partial class TasksPage : Page
             Title = title,
             PrimaryButtonText = primaryText,
             CloseButtonText = cancelText,
-            CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyle1"],
+            CloseButtonStyle = (Style)Application.Current.Resources["ButtonStyleBasic"],
 		    Content = tb,
             XamlRoot = MainRoot?.XamlRoot,
             RequestedTheme = MainRoot?.ActualTheme ?? ElementTheme.Default

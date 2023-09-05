@@ -49,8 +49,9 @@ namespace Task_List_App;
 /// </summary>
 public partial class App : Application
 {
+    public static string DatabaseName { get; private set; } = "TaskItems.json";
     public static Window? MainWindow { get; set; } = new();
-	public static IntPtr WindowHandle { get; set; }
+    public static IntPtr WindowHandle { get; set; }
 	public static FrameworkElement? MainRoot { get; set; }
 	public static bool IsClosing { get; set; } = false;
     public static bool ToastLaunched { get; set; } = false;

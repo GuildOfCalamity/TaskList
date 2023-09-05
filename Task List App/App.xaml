@@ -7,9 +7,15 @@
     xmlns:media="using:Microsoft.UI.Xaml.Media">
     <Application.Resources>
 
+        <!--
+            TODO: Add high contrast theme.
+        -->
+
         <ResourceDictionary>
 
-            <!--  === CONVERTERS ===  -->
+            <!--
+                === CONVERTERS ===
+            -->
             <local:LevelToImageConverter x:Key="LevelToImage" />
             <local:BooleanInverseConverter x:Key="BooleanInverter" />
             <local:BooleanToVisibilityConverter x:Key="BooleanVisibility" />
@@ -24,18 +30,25 @@
             <local:LevelToBrushBorderConverter x:Key="LevelToBrushBorder" />
             <local:PreambleConverter x:Key="Preamble" />
 
-            <!--  === MERGED DICTIONARIES ===  -->
+            <!--
+                === MERGED DICTIONARIES ===
+            -->
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Styles/FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
 
-                        <!--  === DARK THEME ===  -->
+                        <!--
+                            === [DARK THEME] ===
+                        -->
                         <ResourceDictionary x:Key="Dark">
-                            <!--  === Brushes ===  -->
+                            <!--
+                                === Brushes ===
+                            -->
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
                             <Brush x:Key="ShadowBrush">#101013</Brush>
                             <Brush x:Key="BorderBrush">#686874</Brush>
@@ -88,7 +101,9 @@
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
 
-                            <!--  === Styles ===  -->
+                            <!--
+                                === Theme Styles ===
+                            -->
 
                             <!--  Simple Glow Panel Styler  -->
                             <Style TargetType="ctrls:SimpleGlowPanel">
@@ -124,8 +139,8 @@
                                 </Setter>
                             </Style>
 
-                            <!--  Button Styler  -->
-                            <Style x:Key="ButtonStyle1" TargetType="Button">
+                            <!--  Basic Button Styler  -->
+                            <Style x:Key="ButtonStyleBasic" TargetType="Button">
                                 <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
                                 <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
                                 <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
@@ -303,9 +318,13 @@
 
                         </ResourceDictionary>
 
-                        <!--  === LIGHT THEME ===  -->
+                        <!--
+                            === [LIGHT THEME] ===
+                        -->
                         <ResourceDictionary x:Key="Light">
-                            <!--  === Brushes ===  -->
+                            <!--
+                                === Brushes ===
+                            -->
                             <Brush x:Key="ShadowBrush">#a7a7aa</Brush>
                             <Brush x:Key="BackgroundBrush">WhiteSmoke</Brush>
                             <Brush x:Key="BorderBrush">#232330</Brush>
@@ -358,8 +377,9 @@
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
 
-
-                            <!--  === Styles ===  -->
+                            <!--
+                                === Theme Styles ===
+                            -->
 
                             <!--  Simple Glow Panel Styler  -->
                             <Style TargetType="ctrls:SimpleGlowPanel">
@@ -395,8 +415,8 @@
                                 </Setter>
                             </Style>
 
-                            <!--  Button Styler  -->
-                            <Style x:Key="ButtonStyle1" TargetType="Button">
+                            <!--  Basic Button Styler  -->
+                            <Style x:Key="ButtonStyleBasic" TargetType="Button">
                                 <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
                                 <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
                                 <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />

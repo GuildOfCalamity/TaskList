@@ -55,11 +55,11 @@ public partial class TasksViewModel : ObservableRecipient
         "A year from now"
     };
 
-	/// <summary>
-	/// A simple string sort will not work in our case, so we 
-	/// will provide a sorting order to be used with the LINQ.
-	/// </summary>
-    string[] sortMatrix = new[] 
+    /// <summary>
+    /// A simple string sort will not work in our case, so we 
+    /// will provide a sorting order to be used with the LINQ.
+    /// </summary>
+    readonly string[] sortMatrix = new[] 
 	{ 
 		"Soon", 
 		"Tomorrow",
@@ -118,7 +118,7 @@ public partial class TasksViewModel : ObservableRecipient
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{ex.Message}");
+            Debug.WriteLine($"TasksViewModel: {ex.Message}");
             fileService = new Core.Services.FileService();
         }
 
@@ -262,8 +262,8 @@ public partial class TasksViewModel : ObservableRecipient
 		}
 
 		SaveTaskItemsJson();
-		RefreshNeeded = true;
-		return true;
+        LoadTaskItemsJson();
+        return true;
 	}
 
 	public bool ResortAllTasks()
@@ -459,12 +459,12 @@ public partial class TasksViewModel : ObservableRecipient
             else
                 baseFolder = Directory.GetCurrentDirectory();
 
-            if (File.Exists(Path.Combine(baseFolder, @"TaskItems.json")))
+            if (File.Exists(Path.Combine(baseFolder, App.DatabaseName)))
             {
 				Debug.WriteLine($"DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
 
                 // FileService testing.
-                var jdata = fileService?.Read<List<TaskItem>>(baseFolder, "TaskItems.json");
+                var jdata = fileService?.Read<List<TaskItem>>(baseFolder, App.DatabaseName);
                 if (jdata != null)
                 {
                     // Look out for duplication bugs.
@@ -529,7 +529,7 @@ public partial class TasksViewModel : ObservableRecipient
                 foreach (var item in TaskItems) { toSave.Add(item); }
 
                 // Use the FileService
-                fileService?.Save(baseFolder, "TaskItems.json", toSave);
+                fileService?.Save(baseFolder, App.DatabaseName, toSave);
             }
             else
             {

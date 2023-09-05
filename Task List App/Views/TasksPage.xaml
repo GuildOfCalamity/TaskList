@@ -44,8 +44,14 @@
                     x:Name="AddTask"
                     x:Uid="AppBar_Add"
                     Click="AddTask_Click"
-                    Icon="Add"
-                    ToolTipService.ToolTip="Add a new task (shortcut Alt-A)" />
+                    ToolTipService.ToolTip="Add a new task (shortcut Alt-A)">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource AddTo}" />
+                        <!--  [Other icon options]  -->
+                        <!-- <ImageIcon Source="ms-appx:///Assets/Add_Icon.png" /> -->
+                        <!-- <BitmapIcon UriSource="ms-appx:///Assets/Add_Icon.png" /> -->
+                    </AppBarButton.Icon>
+                </AppBarButton>
                 <AppBarButton
                     x:Name="SaveTask"
                     x:Uid="AppBar_Save"
@@ -59,11 +65,23 @@
                     Icon="Sort"
                     ToolTipService.ToolTip="Re-sort all tasks" />
                 <AppBarButton
-                    x:Name="CompleteTask"
-                    x:Uid="AppBar_Complete"
-                    Click="CompleteTask_Click"
-                    Icon="Like"
-                    ToolTipService.ToolTip="Completes selected tasks" />
+                    x:Name="RemoveCompletedTasks"
+                    x:Uid="AppBar_Remove"
+                    Click="RemoveCompletedTask_Click"
+                    ToolTipService.ToolTip="Removes all completed tasks">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource Broom}" />
+                        <!--  [Other icon options]  -->
+                        <!-- <ImageIcon Source="ms-appx:///Assets/Check_Logo.png" /> -->
+                        <!-- <BitmapIcon UriSource="ms-appx:///Assets/Check_Logo.png" /> -->
+                    </AppBarButton.Icon>
+                    <!--
+                    NOTE: This keyboard event is only triggered when the control has focus.
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                    -->
+                </AppBarButton>
             </CommandBar>
             <!--  Busy Indicator  -->
             <ProgressRing
