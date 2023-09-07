@@ -13,10 +13,12 @@ public class ThemeSelectorService : IThemeSelectorService
     private const string SettingsKeyTheme = "AppBackgroundRequestedTheme";
     private const string SettingsKeyNotifications = "AppToastNotification";
     private const string SettingsKeyPersist = "AppPersistLogin";
+    private const string SettingsKeyBackdrop = "AppAcrylicBackdrop";
 
     public ElementTheme Theme { get; set; } = ElementTheme.Dark;
 	public bool Notifications { get; set; } = true;
 	public bool PersistLogin { get; set; } = true;
+	public bool AcrylicBackdrop { get; set; } = false;
 
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -35,6 +37,7 @@ public class ThemeSelectorService : IThemeSelectorService
         Theme = await LoadThemeFromSettingsAsync();
         Notifications = await LoadNotificationsFromSettingsAsync();
         PersistLogin = await LoadPersistLoginFromSettingsAsync();
+        AcrylicBackdrop = await LoadAcrylicBackdropFromSettingsAsync();
 
         await Task.CompletedTask;
     }
@@ -68,6 +71,15 @@ public class ThemeSelectorService : IThemeSelectorService
         await SavePersistLoginInSettingsAsync(PersistLogin);
     }
 
+    /// <summary>
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
+    public async Task SetAcrylicBackdropAsync(bool enabled)
+    {
+        AcrylicBackdrop = enabled;
+        await SaveAcrylicBackdropInSettingsAsync(AcrylicBackdrop);
+    }
+
     #region [App theme settings]
     /// <summary>
     /// Update the theme immediately from the service.
@@ -82,7 +94,6 @@ public class ThemeSelectorService : IThemeSelectorService
 
         await Task.CompletedTask;
     }
-
     /// <summary>
     /// Loads theme parameter
     /// </summary>
@@ -116,7 +127,6 @@ public class ThemeSelectorService : IThemeSelectorService
         var notify = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyNotifications);
         return notify;
     }
-
 	/// <summary>
 	/// Saves notification parameter
 	/// </summary>
@@ -135,13 +145,30 @@ public class ThemeSelectorService : IThemeSelectorService
         var persist = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyPersist);
         return persist;
     }
-
 	/// <summary>
 	/// Saves login parameter
 	/// </summary>
 	async Task SavePersistLoginInSettingsAsync(bool persist)
     {
         await _localSettingsService.SaveSettingAsync(SettingsKeyPersist, $"{persist}");
+    }
+    #endregion
+
+    #region [AcrylicBackdrop setting]
+    /// <summary>
+    /// Loads acrylic backdrop parameter
+    /// </summary>
+    async Task<bool> LoadAcrylicBackdropFromSettingsAsync()
+    {
+        var acrylic = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyBackdrop);
+        return acrylic;
+    }
+    /// <summary>
+    /// Saves acrylic backdrop parameter
+    /// </summary>
+    async Task SaveAcrylicBackdropInSettingsAsync(bool acrylic)
+    {
+        await _localSettingsService.SaveSettingAsync(SettingsKeyBackdrop, $"{acrylic}");
     }
     #endregion
 }

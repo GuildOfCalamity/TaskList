@@ -37,10 +37,17 @@ public class ActivationService : IActivationService
 		// Execute tasks before activation.
 		await InitializeAsync();
 
+        // If this was not new'd up in the App constructor process
+        if (App.MainWindow == null)
+        {
+            App.MainWindow = new();
+            App.MainWindow.Content = null;
+        }
+
 		// Set the MainWindow Content.
 		if (App.MainWindow?.Content == null)
 		{
-			_shell = App.GetService<ShellPage>();
+            _shell = App.GetService<ShellPage>();
 			App.MainWindow.Content = _shell ?? new Frame();
             // Save the FrameworkElement for future content dialogs.
             App.MainRoot = App.MainWindow.Content as FrameworkElement; 
@@ -104,13 +111,13 @@ public class ActivationService : IActivationService
         }
     }
 
-    private async Task InitializeAsync()
+    async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
 
-    private async Task StartupAsync()
+    async Task StartupAsync()
     {
         await _themeSelectorService.SetRequestedThemeAsync();
         await Task.CompletedTask;

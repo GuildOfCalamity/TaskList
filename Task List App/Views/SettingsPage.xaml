@@ -6,6 +6,7 @@
     xmlns:ctrls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:extras="using:Task_List_App.Controls"
+    xmlns:interact="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:Task_List_App.Models"
@@ -83,9 +84,9 @@
                             FontSize="14"
                             IsChecked="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}">
                             <!--
-                        <CheckBox.CommandParameter>
-                            <x:Boolean>False</x:Boolean>
-                        </CheckBox.CommandParameter>
+                            <CheckBox.CommandParameter>
+                                <x:Boolean>False</x:Boolean>
+                            </CheckBox.CommandParameter>
                             -->
                         </CheckBox>
                         <CheckBox
@@ -95,9 +96,21 @@
                             FontSize="14"
                             IsChecked="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}">
                             <!--
-                        <CheckBox.CommandParameter>
-                            <x:Boolean>False</x:Boolean>
-                        </CheckBox.CommandParameter>
+                            <CheckBox.CommandParameter>
+                                <x:Boolean>False</x:Boolean>
+                            </CheckBox.CommandParameter>
+                            -->
+                        </CheckBox>
+                        <CheckBox
+                            Command="{x:Bind ViewModel.AcrylicBackdropCommand}"
+                            CommandParameter="{x:Bind ViewModel.AcrylicBackdrop, Mode=TwoWay}"
+                            Content="AcrylicBackdrop"
+                            FontSize="14"
+                            IsChecked="{x:Bind ViewModel.AcrylicBackdrop, Mode=TwoWay}">
+                            <!--
+                            <CheckBox.CommandParameter>
+                                <x:Boolean>False</x:Boolean>
+                            </CheckBox.CommandParameter>
                             -->
                         </CheckBox>
                     </StackPanel>
@@ -107,12 +120,21 @@
                 <Button
                     x:Name="btnRestore"
                     x:Uid="Settings_RestoreData"
-                    MinWidth="160"
                     Margin="1,10,1,26"
                     Command="{x:Bind ViewModel.RestoreDataCommand}"
                     CornerRadius="5"
-                    IsEnabled="{x:Bind ViewModel.IsBusy, Converter={StaticResource BooleanInverter}, Mode=OneWay}"
-                    Style="{ThemeResource ButtonStyleBasic}" />
+                    FontSize="{StaticResource MediumFontSize}"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource LightBackgroundBrush}"
+                    IsEnabled="{x:Bind ViewModel.IsBusy, Converter={StaticResource BooleanInverter}, Mode=OneWay}">
+                    <Button.Resources>
+                        <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+                        <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+                    </Button.Resources>
+                    <interact:Interaction.Behaviors>
+                        <extras:SnapButtonBehavior SnapType="Left" />
+                    </interact:Interaction.Behaviors>
+                </Button>
 
 
                 <!--

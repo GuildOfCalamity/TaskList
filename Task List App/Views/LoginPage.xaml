@@ -6,10 +6,11 @@
     xmlns:behaviors="using:Task_List_App.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:extras="using:Task_List_App.Controls"
+    xmlns:helpers="using:Task_List_App.Helpers"
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
-    Background="Transparent"
+    
     mc:Ignorable="d">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

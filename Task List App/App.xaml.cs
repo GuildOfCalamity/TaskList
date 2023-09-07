@@ -1,5 +1,6 @@
 ﻿#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -49,10 +50,11 @@ namespace Task_List_App;
 /// </summary>
 public partial class App : Application
 {
+    public static UIElement? shell = null;
     public static string DatabaseName { get; private set; } = "TaskItems.json";
-    public static Window? MainWindow { get; set; } = new();
+    public static Window? MainWindow { get; set; } = new MainWindow();
     public static IntPtr WindowHandle { get; set; }
-	public static FrameworkElement? MainRoot { get; set; }
+    public static FrameworkElement? MainRoot { get; set; }
 	public static bool IsClosing { get; set; } = false;
     public static bool ToastLaunched { get; set; } = false;
     static ValueStopwatch stopWatch { get; set; } = ValueStopwatch.StartNew();
@@ -73,6 +75,11 @@ public partial class App : Application
 
     public static T GetService<T>() where T : class
     {
+        if (typeof(T).IsGenericType)
+            Debug.WriteLine($"'{typeof(T).Name}' is a generic type");
+        else
+            Debug.WriteLine($"'{typeof(T).Name}' is not a generic type");
+
         if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
@@ -94,7 +101,9 @@ public partial class App : Application
         UnhandledException += ApplicationUnhandledException;
         #endregion
 
-        InitializeComponent();
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+
+        App.Current.DebugSettings.FailFastOnErrors = false;
 
         Host = Microsoft.Extensions.Hosting.Host.
         CreateDefaultBuilder().
@@ -122,24 +131,24 @@ public partial class App : Application
             #endregion
 
             #region [Views and ViewModels]
-
             // We could make these transient, but I want some things to be shared across the
             // app, such as the total task count for updating the <NavigationViewItem.InfoBadge>.
 
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<SettingsPage>();
+
+            services.AddSingleton<ShellViewModel>();
+            services.AddSingleton<ShellPage>();
             
             services.AddSingleton<TasksViewModel>();
             services.AddSingleton<TasksPage>();
-            
-            services.AddSingleton<ShellViewModel>();
-            services.AddSingleton<ShellPage>();
 
             services.AddSingleton<LoginViewModel>();
             services.AddSingleton<LoginPage>();
 
             services.AddSingleton<AlternateViewModel>();
             services.AddSingleton<AlternatePage>();
+
             #endregion
 
             // Configuration
@@ -148,6 +157,8 @@ public partial class App : Application
         Build();
 
         App.GetService<IAppNotificationService>().Initialize();
+
+        InitializeComponent();
 
 		// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.focusvisualkind?view=windows-app-sdk-1.3
 		this.FocusVisualKind = FocusVisualKind.Reveal;
@@ -175,10 +186,53 @@ public partial class App : Application
 
         base.OnLaunched(args);
         //App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
+        
         await App.GetService<IActivationService>().ActivateAsync(args);
 
         Debug.WriteLine($"─── OnLaunched finished at {stopWatch.GetElapsedTime().ToTimeString()} ───");
     }
+
+    #region [Home-brew service getter]
+    /// <summary>
+    /// Returns an instance of the desired service type. Use this if you can't/won't pass
+    /// the service through the target's constructor. Can be used from any window/page/model.
+    /// The 1st call to this method will add and instantiate the pre-defined services.
+    /// </summary>
+    /// <example>
+    /// var service1 = App.GetService{SomeViewModel}();
+    /// var service2 = App.GetService{FileLogger}();
+    /// </example>
+    public static T? GetServiceAlt<T>() where T : class
+    {
+        try
+        {
+            // New-up the services container if needed.
+            if (ServicesHost == null) { ServicesHost = new List<Object>(); }
+
+            // If 1st time then add relevant services to the container.
+            // This could be done elsewhere, e.g. in the main constructor.
+            if (ServicesHost.Count == 0)
+            {
+                ServicesHost?.Add(new ShellViewModel(App.GetService<INavigationService>(), App.GetService<INavigationViewService>()));
+            }
+
+            // Try and locate the desired service. We're not using FirstOrDefault
+            // here so that a null will be returned when an exception is thrown.
+            var vm = ServicesHost?.Where(o => o.GetType() == typeof(T)).First();
+
+            if (vm != null)
+                return (T)vm;
+            else
+                throw new ArgumentException($"{typeof(T)} must be registered first within {MethodBase.GetCurrentMethod()?.Name}.");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"{MethodBase.GetCurrentMethod()?.Name}: {ex.Message}");
+            return null;
+        }
+    }
+    public static List<Object>? ServicesHost { get; private set; }
+    #endregion
 
     #region [Domain Events]
     void ApplicationUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

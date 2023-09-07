@@ -11,7 +11,7 @@
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     Loaded="OnLoaded">
 
-    <Grid>
+    <Grid x:Name="gridRoot">
         <Grid
             x:Name="AppTitleBar"
             Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
@@ -37,13 +37,13 @@
         -->
         <NavigationView
             x:Name="NavigationViewControl"
-            Background="{ThemeResource BackgroundBrush}"
             Canvas.ZIndex="0"
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
             ExpandedModeThresholdWidth="1280"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
             IsBackButtonVisible="Visible"
             IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="{x:Bind IsPaneToggleButtonVisible(NavigationViewControl.DisplayMode), Mode=OneWay}"
             IsSettingsVisible="True"
             OpenPaneLength="150"
             PaneDisplayMode="Auto"
@@ -151,7 +151,7 @@
             </i:Interaction.Behaviors>
             <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
                 <!--  Content Holder  -->
-                <Frame x:Name="NavigationFrame">
+                <Frame x:Name="NavigationFrame" Margin="{x:Bind MainFrameMargin(NavigationViewControl.DisplayMode), Mode=OneWay}">
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition>

@@ -40,6 +40,21 @@ public sealed partial class ShellPage : Page
 
         if (App.MainWindow != null )
         {
+            var appSettings = App.GetService<SettingsViewModel>();
+            #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502 and higher]
+            if (appSettings != null && appSettings.AcrylicBackdrop)
+            {
+                if (GeneralExtensions.IsWindows11OrGreater())
+                    App.MainWindow.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+                else
+                    App.MainWindow.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
+            }
+            else
+            {
+                gridRoot.Background = (SolidColorBrush)App.Current.Resources["BackgroundBrush"];
+            }
+            #endregion
+
             // The title bar icon is currently set in the ActivationService.
             // A custom title bar is required for full window theme and Mica support.
             // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
@@ -123,4 +138,31 @@ public sealed partial class ShellPage : Page
         bool result = navigationService.GoBack();
         args.Handled = result;
     }
+
+    /// <summary>
+    /// Change this logic to fit your needs.
+    /// </summary>
+    bool IsPaneToggleButtonVisible(NavigationViewDisplayMode mode)
+    {
+        return mode == NavigationViewDisplayMode.Expanded || mode == NavigationViewDisplayMode.Minimal;
+    }
+
+    /// <summary>
+    /// Testing for future use.
+    /// </summary>
+    Thickness MainFrameMargin(NavigationViewDisplayMode mode)
+    {
+        switch (mode)
+        {
+            case NavigationViewDisplayMode.Expanded: 
+                return new Thickness(0, 0, 0, 0);
+            case NavigationViewDisplayMode.Minimal: 
+                return new Thickness(0, 5, 0, 0);
+            case NavigationViewDisplayMode.Compact: 
+                return new Thickness(0, 10, 0, 0);
+            default:
+                return new Thickness(0, 15, 0, 0);
+        }
+    }
+
 }

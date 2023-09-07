@@ -61,10 +61,10 @@
                             <Brush x:Key="SelectedBrush">#3976B9ED</Brush>
                             <media:AcrylicBrush
                                 x:Key="CustomAcrylicBrush"
-                                FallbackColor="#317ad7"
-                                TintColor="SpringGreen"
-                                TintLuminosityOpacity="0.01"
-                                TintOpacity="0.01" />
+                                FallbackColor="#714aff"
+                                TintColor="#94d446"
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
                             <SolidColorBrush
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"
@@ -79,9 +79,9 @@
                             <media:AcrylicBrush
                                 x:Key="LightBackgroundBrush"
                                 FallbackColor="AntiqueWhite"
-                                TintColor="#714aff"
-                                TintLuminosityOpacity="0.1"
-                                TintOpacity="0.01" />
+                                TintColor="#76B9ED"
+                                TintLuminosityOpacity="0.9"
+                                TintOpacity="0.9" />
                             <media:AcrylicBrush
                                 x:Key="DarkBackgroundBrush"
                                 FallbackColor="AntiqueWhite"
@@ -339,8 +339,8 @@
                                 x:Key="CustomAcrylicBrush"
                                 FallbackColor="#317ad7"
                                 TintColor="SpringGreen"
-                                TintLuminosityOpacity="0.01"
-                                TintOpacity="0.01" />
+                                TintLuminosityOpacity="0.1"
+                                TintOpacity="0.1" />
                             <SolidColorBrush
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"
@@ -355,9 +355,9 @@
                             <media:AcrylicBrush
                                 x:Key="LightBackgroundBrush"
                                 FallbackColor="Black"
-                                TintColor="#714aff"
-                                TintLuminosityOpacity="0.1"
-                                TintOpacity="0.01" />
+                                TintColor="#76B9ED"
+                                TintLuminosityOpacity="0.9"
+                                TintOpacity="0.9" />
                             <media:AcrylicBrush
                                 x:Key="DarkBackgroundBrush"
                                 FallbackColor="Black"

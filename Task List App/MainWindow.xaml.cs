@@ -6,12 +6,13 @@ using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
 
 using Task_List_App.Helpers;
+using Task_List_App.ViewModels;
 
 namespace Task_List_App;
 
 public sealed partial class MainWindow : Window
 {
-	public MainWindow()
+    public MainWindow()
     {
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
@@ -21,6 +22,16 @@ public sealed partial class MainWindow : Window
         //AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/WindowIcon.ico"));
         Content = null;
         Title = "AppDisplayName".GetLocalized();
+
+        #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502 and higher]
+        //if (ApplicationSettings != null && ApplicationSettings.AcrylicBackdrop)
+        //{
+        //    if (GeneralExtensions.IsWindows11OrGreater())
+        //        SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+        //    else
+        //        SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
+        //}
+        #endregion
     }
 
     #region [Superfluous testing]

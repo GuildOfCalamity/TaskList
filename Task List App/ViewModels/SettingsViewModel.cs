@@ -22,10 +22,17 @@ public class SettingsViewModel : ObservableRecipient
     private ElementTheme _elementTheme;
     private string _versionDescription;
     private bool _showNotifications;
+    private bool _acrylicBackdrop;
     private bool _persistLogin;
     private bool _isBusy = false;
 
     private readonly IThemeSelectorService _themeSelectorService;
+
+    public bool AcrylicBackdrop
+    {
+        get => _acrylicBackdrop;
+        set => SetProperty(ref _acrylicBackdrop, value);
+    }
 
     public bool PersistLogin
     {
@@ -58,11 +65,13 @@ public class SettingsViewModel : ObservableRecipient
         set => SetProperty(ref _isBusy, value);
     }
 
-
+    #region [Commands]
     public ICommand SwitchThemeCommand { get; }
     public ICommand ToggleNotificationsCommand { get; }
     public ICommand PersistLoginCommand { get; }
+    public ICommand AcrylicBackdropCommand { get; }
     public ICommand RestoreDataCommand { get; }
+    #endregion
 
     public Core.Services.FileService? fileService { get; private set; }
 
@@ -71,9 +80,12 @@ public class SettingsViewModel : ObservableRecipient
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
 		_themeSelectorService = themeSelectorService;
+        
+        // Setup LocalSettings.json values for other callers. 
         _elementTheme = _themeSelectorService.Theme;
         _showNotifications = _themeSelectorService.Notifications;
         _persistLogin = _themeSelectorService.PersistLogin;
+        _acrylicBackdrop = _themeSelectorService.AcrylicBackdrop;
         _versionDescription = GetVersionDescription();
 
         // Configure theme command.
@@ -100,6 +112,13 @@ public class SettingsViewModel : ObservableRecipient
             await _themeSelectorService.SetPersistLoginAsync(param);
         });
 
+        // Configure acrylic backdrop command.
+        AcrylicBackdropCommand = new RelayCommand<bool>(async (param) =>
+        {
+            AcrylicBackdrop = param;
+            await _themeSelectorService.SetAcrylicBackdropAsync(param);
+        });
+
         // Configure restore database command.
         RestoreDataCommand = new RelayCommand(async () =>
         {
@@ -114,8 +133,7 @@ public class SettingsViewModel : ObservableRecipient
         });
 
         try
-        {
-            // This should work as expected, but it does not. We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
+        {   // This should work as expected, but it does not. We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
             // It could be possible that the IServiceCollection does not like resolving it at compile time due to it being in a seperate project.
             fileService = App.GetService<Core.Services.FileService>();
         }
