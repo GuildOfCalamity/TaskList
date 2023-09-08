@@ -41,7 +41,7 @@ public sealed partial class ShellPage : Page
         if (App.MainWindow != null )
         {
             var appSettings = App.GetService<SettingsViewModel>();
-            #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502 and higher]
+            #region [Window.SystemBackdrop was added starting with WinAppSDK 1.3.230502+]
             if (appSettings != null && appSettings.AcrylicBackdrop)
             {
                 if (GeneralExtensions.IsWindows11OrGreater())
@@ -51,7 +51,14 @@ public sealed partial class ShellPage : Page
             }
             else
             {
-                gridRoot.Background = (SolidColorBrush)App.Current.Resources["BackgroundBrush"];
+                SolidColorBrush? bkgndBrsh = GeneralExtensions.GetThemeResource<SolidColorBrush>("BackgroundBrush", appSettings.ElementTheme);
+                if (bkgndBrsh is not null)
+                    ThisPage.Background = bkgndBrsh;
+                else
+                    ThisPage.Background = (SolidColorBrush)App.Current.Resources["ApplicationPageBackgroundThemeBrush"];
+
+                // NOTE: You could also access the resource like so...
+                //ThisPage.Background = (SolidColorBrush)App.Current.Resources["BackgroundBrush"];
             }
             #endregion
 

@@ -82,7 +82,8 @@
                             CommandParameter="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
                             Content="Toast Notifications"
                             FontSize="14"
-                            IsChecked="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}">
+                            IsChecked="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Create toast notification for past-due tasks">
                             <!--
                             <CheckBox.CommandParameter>
                                 <x:Boolean>False</x:Boolean>
@@ -94,7 +95,8 @@
                             CommandParameter="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}"
                             Content="Stay Logged In"
                             FontSize="14"
-                            IsChecked="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}">
+                            IsChecked="{x:Bind ViewModel.PersistLogin, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Prevent or enable the inactivity timeout">
                             <!--
                             <CheckBox.CommandParameter>
                                 <x:Boolean>False</x:Boolean>
@@ -104,9 +106,10 @@
                         <CheckBox
                             Command="{x:Bind ViewModel.AcrylicBackdropCommand}"
                             CommandParameter="{x:Bind ViewModel.AcrylicBackdrop, Mode=TwoWay}"
-                            Content="AcrylicBackdrop"
+                            Content="Use Acrylic Backdrop"
                             FontSize="14"
-                            IsChecked="{x:Bind ViewModel.AcrylicBackdrop, Mode=TwoWay}">
+                            IsChecked="{x:Bind ViewModel.AcrylicBackdrop, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Requires app restart">
                             <!--
                             <CheckBox.CommandParameter>
                                 <x:Boolean>False</x:Boolean>
@@ -126,7 +129,8 @@
                     FontSize="{StaticResource MediumFontSize}"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource LightBackgroundBrush}"
-                    IsEnabled="{x:Bind ViewModel.IsBusy, Converter={StaticResource BooleanInverter}, Mode=OneWay}">
+                    IsEnabled="{x:Bind ViewModel.IsBusy, Converter={StaticResource BooleanInverter}, Mode=OneWay}"
+                    ToolTipService.ToolTip="Replaces the current database with the backup database">
                     <Button.Resources>
                         <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
                         <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />

@@ -186,7 +186,8 @@ public partial class App : Application
 
         base.OnLaunched(args);
         //App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
-        
+
+        // This handles activating/showing our MainWindow from the ActivationService.
         await App.GetService<IActivationService>().ActivateAsync(args);
 
         Debug.WriteLine($"─── OnLaunched finished at {stopWatch.GetElapsedTime().ToTimeString()} ───");

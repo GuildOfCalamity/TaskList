@@ -25,7 +25,7 @@ public class SettingsViewModel : ObservableRecipient
     private bool _acrylicBackdrop;
     private bool _persistLogin;
     private bool _isBusy = false;
-
+    private Core.Services.FileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
 
     public bool AcrylicBackdrop
@@ -73,7 +73,6 @@ public class SettingsViewModel : ObservableRecipient
     public ICommand RestoreDataCommand { get; }
     #endregion
 
-    public Core.Services.FileService? fileService { get; private set; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService)
     {
@@ -144,6 +143,12 @@ public class SettingsViewModel : ObservableRecipient
         }
     }
 
+    /// <summary>
+    /// Gives the user the ability to restore a database from within the settings page.
+    /// </summary>
+    /// <remarks>
+    /// We'll need the <see cref="Core.Services.FileService"/> for this action.
+    /// </remarks>
     async Task RestoreDataAsync()
     {
         var baseFolder = "";

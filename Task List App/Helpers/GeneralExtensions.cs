@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -1015,6 +1016,12 @@ public static class GeneralExtensions
         }
     }
 
+    /// <summary>
+    /// Get OS version by way of <see cref="Environment.OSVersion"/>.
+    /// </summary>
+    /// <returns>true if Win11 or higher, false otherwise</returns>
+    public static bool IsWindows11OrGreater() => Environment.OSVersion.Version >= new Version(10, 0, 22000, 0);
+
     public static UInt16 ReverseBytes(this UInt16 value)
     {
         return (UInt16)((value & 0xFFU) << 8 | (value & 0xFF00U) >> 8);
@@ -1112,11 +1119,21 @@ public static class GeneralExtensions
     {
         try
         {
-            if (theme == null) { theme = ElementTheme.Default; }
+            theme ??= ElementTheme.Default;
 
             var dictionaries = Application.Current.Resources.MergedDictionaries;
             foreach (var item in dictionaries)
             {
+                // A typical IList<ResourceDictionary> will contain:
+                //   - 'Default'
+                //   - 'Light'
+                //   - 'Dark'
+                //   - 'HighContrast'
+                foreach (var kv in item.ThemeDictionaries.Keys)
+                {
+                    Debug.WriteLine($"ThemeDictionary is named '{kv}'", $"{nameof(GeneralExtensions)}");
+                }
+
                 // Do we have any themes in this resource dictionary?
                 if (item.ThemeDictionaries.Count > 0)
                 {

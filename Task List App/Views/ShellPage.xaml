@@ -11,7 +11,7 @@
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     Loaded="OnLoaded">
 
-    <Grid x:Name="gridRoot">
+    <Grid>
         <Grid
             x:Name="AppTitleBar"
             Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"

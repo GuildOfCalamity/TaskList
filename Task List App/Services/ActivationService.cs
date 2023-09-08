@@ -32,6 +32,9 @@ public class ActivationService : IActivationService
         _themeSelectorService = themeSelectorService;
     }
 
+    /// <summary>
+    /// Handles activating/showing our <see cref="MainWindow"/>.
+    /// </summary>
     public async Task ActivateAsync(object activationArgs)
     {
 		// Execute tasks before activation.
@@ -73,7 +76,7 @@ public class ActivationService : IActivationService
         try
         {
             App.MainWindow.Activate();
-            AppWin?.Resize(new Windows.Graphics.SizeInt32(1400, 800));
+            AppWin?.Resize(new Windows.Graphics.SizeInt32(1500, 800));
             CenterWindow(App.MainWindow);
         }
         catch (Exception ex)

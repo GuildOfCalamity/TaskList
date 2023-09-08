@@ -18,12 +18,13 @@ public sealed partial class MainWindow : Window
 
         InitializeComponent();
 
-        // We're setting the icon in the ActivationService now.
+        // I'm setting the icon in the ActivationService now.
         //AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/WindowIcon.ico"));
         Content = null;
         Title = "AppDisplayName".GetLocalized();
 
-        #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502 and higher]
+        #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502+]
+        // NOTE: I've moved this to the ShellPage constructor since we're using a Activation/Navigation style app.
         //if (ApplicationSettings != null && ApplicationSettings.AcrylicBackdrop)
         //{
         //    if (GeneralExtensions.IsWindows11OrGreater())

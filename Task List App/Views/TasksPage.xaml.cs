@@ -165,6 +165,7 @@ public sealed partial class TasksPage : Page
 
     void ShellPage_ShellPointerEvent(object? sender, Microsoft.UI.Input.PointerDeviceType e)
     {
+        Debug.WriteLine($"[ShellPage_ShellPointerEvent]");
         _lastActivity = DateTime.Now;
     }
 
@@ -208,6 +209,7 @@ public sealed partial class TasksPage : Page
 		}
         else
         {
+            Debug.WriteLine($"WARNING: Tasks failed to load. See debug log for details.");
             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Tasks failed to load. See debug log for details.", InfoBarSeverity.Error } });
         }
     }
@@ -409,7 +411,7 @@ public sealed partial class TasksPage : Page
     async void CheckBox_Checked(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not null && !ViewModel.IsBusy)
-            await ViewModel.SignalBusyCycle(TimeSpan.FromSeconds(1.5));
+            await ViewModel.SignalBusyCycle(TimeSpan.FromSeconds(1.1));
     }
 
 	/// <summary>

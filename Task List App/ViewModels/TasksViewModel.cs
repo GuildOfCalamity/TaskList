@@ -27,7 +27,8 @@ public partial class TasksViewModel : ObservableRecipient
 	/// </summary>
 	public event EventHandler<bool>? TasksLoadedEvent;
 
-	public List<TaskItem> TaskItems = new(); //public ObservableList<TaskItem> TaskItems = new();
+    #region [Properties]
+    public List<TaskItem> TaskItems = new(); //public ObservableList<TaskItem> TaskItems = new();
 
 	[ObservableProperty]
     List<string> status = new()
@@ -104,7 +105,8 @@ public partial class TasksViewModel : ObservableRecipient
 
     public ObservableCollection<string> Messages = new ObservableCollection<string>();
 
-    public Core.Services.FileService? fileService { get; private set; }
+    private Core.Services.FileService? fileService { get; set; }
+    #endregion
 
     public TasksViewModel()
     {
