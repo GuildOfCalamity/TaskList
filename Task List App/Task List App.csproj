@@ -12,6 +12,7 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	<UseWinUI>true</UseWinUI>
+	<LangVersion>latest</LangVersion>
     <EnableMsixTooling>true</EnableMsixTooling>
 	<Version>1.0.0.3</Version>
     <!-- 

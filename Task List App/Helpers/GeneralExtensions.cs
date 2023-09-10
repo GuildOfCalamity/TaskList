@@ -97,6 +97,31 @@ public static class GeneralExtensions
         return source;
     }
 
+
+    /// <summary>
+    /// Dictionary<char, int> charCount = GetCharacterCount("some input text string here");
+    /// foreach (var kvp in charCount) { Debug.WriteLine($"Character: {kvp.Key}, Count: {kvp.Value}"); }
+    /// </summary>
+    /// <param name="input">the text string to analyze</param>
+    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
+    public static Dictionary<char, int> GetCharacterCount(this string input)
+    {
+        Dictionary<char, int> charCount = new();
+
+        if (string.IsNullOrEmpty(input))
+            return charCount;
+
+        foreach (var ch in input)
+        {
+            if (charCount.ContainsKey(ch))
+                charCount[ch]++;
+            else
+                charCount[ch] = 1;
+        }
+
+        return charCount;
+    }
+
     /// <summary>
     /// Convert a <see cref="DateTime"/> object into an ISO 8601 formatted string.
     /// </summary>

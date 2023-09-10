@@ -10,7 +10,6 @@
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
-    
     mc:Ignorable="d">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -43,7 +42,7 @@
                 Grid.RowSpan="1"
                 Grid.ColumnSpan="1"
                 Margin="20"
-                Fill="{ThemeResource PrimaryBrush}"
+                Fill="{ThemeResource LoginAcrylicBrush}"
                 RadiusX="8"
                 RadiusY="8"
                 Stroke="{ThemeResource SecondaryBrush}"
