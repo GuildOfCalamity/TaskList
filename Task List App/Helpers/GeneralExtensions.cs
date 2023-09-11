@@ -97,7 +97,6 @@ public static class GeneralExtensions
         return source;
     }
 
-
     /// <summary>
     /// Dictionary<char, int> charCount = GetCharacterCount("some input text string here");
     /// foreach (var kvp in charCount) { Debug.WriteLine($"Character: {kvp.Key}, Count: {kvp.Value}"); }
@@ -120,6 +119,20 @@ public static class GeneralExtensions
         }
 
         return charCount;
+    }
+
+    /// <summary>
+    /// Gets all the paragraphs in a given markdown document.
+    /// </summary>
+    /// <param name="text">The input markdown document.</param>
+    /// <returns>The raw paragraphs from <paramref name="text"/>.</returns>
+    public static IReadOnlyDictionary<string, string> GetParagraphs(this string text)
+    {
+        return Regex.Matches(text, @"(?<=\W)#+ ([^\n]+).+?(?=\W#|$)", RegexOptions.Singleline)
+           .OfType<Match>()
+           .ToDictionary(
+             m => Regex.Replace(m.Groups[1].Value.Trim().Replace("&lt;", "<"), @"\[([^]]+)\]\([^)]+\)", m => m.Groups[1].Value),
+             m => m.Groups[0].Value.Trim().Replace("&lt;", "<").Replace("[!WARNING]", "**WARNING:**").Replace("[!NOTE]", "**NOTE:**"));
     }
 
     /// <summary>

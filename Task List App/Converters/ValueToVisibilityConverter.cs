@@ -24,3 +24,19 @@ public class ValueToVisibilityConverter : IValueConverter
         return Visibility.Visible;
     }
 }
+
+public class ValueToEnabledConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value != null || (value is string str && !string.IsNullOrEmpty(str)))
+            return true;
+        else
+            return false;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        return true;
+    }
+}

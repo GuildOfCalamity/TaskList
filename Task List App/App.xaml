@@ -19,7 +19,8 @@
             <local:LevelToImageConverter x:Key="LevelToImage" />
             <local:BooleanInverseConverter x:Key="BooleanInverter" />
             <local:BooleanToVisibilityConverter x:Key="BooleanVisibility" />
-            <local:ValueToVisibilityConverter x:Key="ValueVisibility" />
+            <local:ValueToVisibilityConverter x:Key="ValueToVisibility" />
+            <local:ValueToEnabledConverter x:Key="ValueToEnabled" />
             <local:BooleanToOpacityConverter x:Key="BooleanOpacity" />
             <local:BooleanToOpacityInverseConverter x:Key="BooleanOpacityInverse" />
             <local:BooleanToVisibilityInverseConverter x:Key="BooleanVisibilityInverse" />

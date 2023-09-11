@@ -128,7 +128,7 @@
                                     VerticalAlignment="Bottom"
                                     Orientation="Horizontal"
                                     Spacing="10"
-                                    Visibility="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay, Converter={StaticResource ValueVisibility}}">
+                                    Visibility="{Binding ElementName=ThisPage, Path=ViewModel.Average, Mode=OneWay, Converter={StaticResource ValueToVisibility}}">
                                     <TextBlock
                                         x:Uid="Shell_Average"
                                         FontSize="{ThemeResource MediumFontSize}"

@@ -210,6 +210,9 @@ If the title contains a URL then it will be opened in a browser when that task i
     <value>Remove done</value>
   </data>
   <data name="Settings_RestoreData.Content" xml:space="preserve">
-    <value>Restore database</value>
+    <value>Restore database from backup</value>
+  </data>
+  <data name="AppBar_Clone.Label" xml:space="preserve">
+    <value>Clone</value>
   </data>
 </root>

@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using static System.Reflection.Metadata.BlobBuilder;
 using Task_List_App.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace Task_List_App.ViewModels;
 
@@ -103,20 +105,25 @@ public partial class TasksViewModel : ObservableRecipient
     [ObservableProperty]
     int lastSelectedStatus = 1;
 
+    [ObservableProperty]
+    TaskItem? currentlySelectedTask = null;
+
     public ObservableCollection<string> Messages = new ObservableCollection<string>();
 
-    private Core.Services.FileService? fileService { get; set; }
+    private Core.Contracts.Services.IFileService? fileService { get; set; }
     #endregion
 
     public TasksViewModel()
     {
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
-
         try
         {
-            // This should work as expected, but it does not. We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
-            // It could be possible that the IServiceCollection does not like resolving it at compile time due to it being in a seperate project.
-            fileService = App.GetService<Core.Services.FileService>();
+            // IoC method...
+            //fileService = Ioc.Default.GetService<Core.Contracts.Services.IFileService>();
+            //fileService = App.Current.IoCServices.GetService<Core.Contracts.Services.IFileService>();
+
+            // DI method...
+            fileService = App.GetService<Core.Contracts.Services.IFileService>();
         }
         catch (Exception ex)
         {
@@ -219,11 +226,56 @@ public partial class TasksViewModel : ObservableRecipient
         RefreshNeeded = true;
 	}
 
-	/// <summary>
-	/// Traverses all items looking for task.Completed==True and sets the task.Status="Completed".
-	/// </summary>
-	/// <returns>true if successful, false otherwise</returns>
-	public bool CompleteSelectedTaskItems()
+    /// <summary>
+    /// Creates a copy of the task.
+    /// </summary>
+    /// <remarks>
+    /// Cloned tasks are considered to be renewed, i.e. if the previous status was completed, it will be reset to active.
+    /// </remarks>
+    /// <param name="item"><see cref="TaskItem"/></param>
+    [RelayCommand]
+    Task<bool> CloneTaskItem(TaskItem? item)
+    {
+        TaskCompletionSource<bool> tcs = new();
+
+        if (item is null)
+        {
+            tcs.SetResult(false);
+            return tcs.Task;
+        }
+
+        var idx = TaskItems.IndexOf(item);
+        if (idx != -1)
+        {
+            Debug.WriteLine($"Cloning '{item.Title}'");
+            TaskItems.Add(new TaskItem
+            {
+                Title = TaskItems[idx].Title + $" (copy of {idx})",
+                Time = TaskItems[idx].Time,
+                Created = TaskItems[idx].Created,
+                Status = TaskItems[idx].Status != status[0] ? TaskItems[idx].Status : status[1],
+                // Reset completion status
+                Completed = false,
+                Completion = null,
+            });
+            SaveTaskItemsJson();
+            LoadTaskItemsJson();
+            tcs.SetResult(true);
+        }
+        else
+        {
+            Debug.WriteLine($"No match found to copy.");
+            tcs.SetResult(false);
+        }
+
+        return tcs.Task;
+    }
+
+    /// <summary>
+    /// Traverses all items looking for task.Completed==True and sets the task.Status="Completed".
+    /// </summary>
+    /// <returns>true if successful, false otherwise</returns>
+    public bool CompleteSelectedTaskItems()
 	{
 		if (TaskItems.Count == 0 || App.IsClosing)
 			return false;
@@ -710,5 +762,4 @@ public partial class TasksViewModel : ObservableRecipient
         //MessageScrollViewer.ChangeView(null, MessageScrollViewer.ScrollableHeight, null);
     }
     #endregion
-
 }

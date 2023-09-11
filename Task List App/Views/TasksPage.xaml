@@ -65,6 +65,13 @@
                     Icon="Sort"
                     ToolTipService.ToolTip="Re-sort all tasks" />
                 <AppBarButton
+                    x:Name="DuplicateTask"
+                    x:Uid="AppBar_Clone"
+                    Click="CloneTask_Click"
+                    Icon="Copy"
+                    IsEnabled="{x:Bind Path=ViewModel.CurrentlySelectedTask, Mode=OneWay, Converter={StaticResource ValueToEnabled}}"
+                    ToolTipService.ToolTip="Creates a copy of the selected task" />
+                <AppBarButton
                     x:Name="RemoveCompletedTasks"
                     x:Uid="AppBar_Remove"
                     Click="RemoveCompletedTask_Click"

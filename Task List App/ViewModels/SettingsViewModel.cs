@@ -25,7 +25,7 @@ public class SettingsViewModel : ObservableRecipient
     private bool _acrylicBackdrop;
     private bool _persistLogin;
     private bool _isBusy = false;
-    private Core.Services.FileService? fileService { get; set; }
+    private Core.Contracts.Services.IFileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
 
     public bool AcrylicBackdrop
@@ -132,9 +132,8 @@ public class SettingsViewModel : ObservableRecipient
         });
 
         try
-        {   // This should work as expected, but it does not. We are injecting via App.xaml.cs with "services.AddSingleton<IFileService, FileService>".
-            // It could be possible that the IServiceCollection does not like resolving it at compile time due to it being in a seperate project.
-            fileService = App.GetService<Core.Services.FileService>();
+        {
+            fileService = App.GetService<Core.Contracts.Services.IFileService>();
         }
         catch (Exception ex)
         {

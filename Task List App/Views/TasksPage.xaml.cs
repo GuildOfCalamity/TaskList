@@ -16,6 +16,9 @@ using Task_List_App.Contracts.Services;
 using Task_List_App.Models;
 using Task_List_App.ViewModels;
 using Task_List_App.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Task_List_App.Views;
 
@@ -29,18 +32,18 @@ public sealed partial class TasksPage : Page
     #region [Properties]
     int closeCount = 0;
     int cycleCount = 4;
-    int notifyDelay = 6;
-    string newTaskPrompt = "Enter title here";
-	string toastTemplate = "<toast launch=\"action=ToastClick\"><visual><binding template=\"ToastGeneric\"><text>{0}</text><text>{1}</text><image placement=\"appLogoOverride\" hint-crop=\"circle\" src=\"{2}Assets/WindowIcon.ico\"/></binding></visual><actions><action content=\"Settings\" arguments=\"action=Settings\"/></actions></toast>";
-    string toastImage = Path.Combine(AppContext.BaseDirectory.Replace(@"\","/"), "Assets/StoreLogo.png");
+    readonly int notifyDelay = 6;
+    readonly string newTaskPrompt = "Enter title here";
+	readonly string toastTemplate = "<toast launch=\"action=ToastClick\"><visual><binding template=\"ToastGeneric\"><text>{0}</text><text>{1}</text><image placement=\"appLogoOverride\" hint-crop=\"circle\" src=\"{2}Assets/WindowIcon.ico\"/></binding></visual><actions><action content=\"Settings\" arguments=\"action=Settings\"/></actions></toast>";
+    readonly string toastImage = Path.Combine(AppContext.BaseDirectory.Replace(@"\","/"), "Assets/StoreLogo.png");
     bool initFinished = false;
-    bool useMessageBox = false;
-    bool useCodeBehindDialog = false;
+    readonly bool useMessageBox = false;
+    readonly bool useCodeBehindDialog = false;
     DateTime _lastActivity = DateTime.Now;
-    Queue<Dictionary<string,InfoBarSeverity>> noticeQueue = new();
+    readonly Queue<Dictionary<string,InfoBarSeverity>> noticeQueue = new();
 	DispatcherTimer? _timerPoll;
 	DispatcherTimer? _timerMsg;
-	public bool SaveNeeded { get; set; } = false; // for timer
+    public bool SaveNeeded { get; set; } = false; // for timer
     public static FrameworkElement? MainRoot { get; private set; } = null;
     public TasksViewModel ViewModel { get; private set; }
     public ShellViewModel ShellModel { get; private set; }
@@ -49,12 +52,17 @@ public sealed partial class TasksPage : Page
     public INavigationService? NavService { get; private set; }
     #endregion
 
+    /// <summary>
+    /// Think of the View as just displaying the state of the 
+    /// ViewModel, which translates the properties of the Model 
+    /// into values that are suitable for displaying. 
+    /// </summary>
     public TasksPage()
     {
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
         InitializeComponent();
-        
+
         // Ensure that the Page is only created once, and cached during navigation.
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
@@ -204,7 +212,8 @@ public sealed partial class TasksPage : Page
 			{
 				TaskListView.ItemsSource = null;
 				TaskListView.ItemsSource = ViewModel.TaskItems;
-			});
+                ViewModel.CurrentlySelectedTask = null;
+            });
 			noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Tasks have been loaded.", InfoBarSeverity.Informational } });
 		}
         else
@@ -216,6 +225,22 @@ public sealed partial class TasksPage : Page
     #endregion
 
     #region [AppBarButton Events]
+    void CloneTask_Click(object sender, RoutedEventArgs e)
+    {
+        _lastActivity = DateTime.Now;
+
+        if (ViewModel.CurrentlySelectedTask != null)
+        {
+            Debug.WriteLine($"Calling '{nameof(ViewModel.CloneTaskItemCommand)}'");
+            ViewModel.CloneTaskItemCommand.Execute(ViewModel.CurrentlySelectedTask);
+            noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Cloned task has been updated.", InfoBarSeverity.Success } });
+        }
+        else
+        {
+           noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Select a task to be cloned.", InfoBarSeverity.Warning } });
+        }
+    }
+
     void SaveTask_Click(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"Calling '{nameof(ViewModel.UpdateTaskItemCommand)}'");
@@ -332,6 +357,8 @@ public sealed partial class TasksPage : Page
 		    noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Re-sort was successful.", InfoBarSeverity.Informational } });
         else
             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Failed to re-sort task items.", InfoBarSeverity.Warning } });
+
+        ViewModel.CurrentlySelectedTask = null;
     }
 
     /// <summary>
@@ -433,6 +460,8 @@ public sealed partial class TasksPage : Page
             {
                 if (initFinished && item is TaskItem tsk)
                 {
+                    ViewModel.CurrentlySelectedTask = tsk;
+
                     if (tsk.Completion != null)
                     {
                         var diff = tsk.Completion - tsk.Created;
@@ -1228,5 +1257,6 @@ public sealed partial class TasksPage : Page
         return urls;
     }
     #endregion
+
 }
 

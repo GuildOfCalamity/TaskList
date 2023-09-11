@@ -1,6 +1,7 @@
 ﻿#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 
 using System.Reflection;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -89,7 +90,44 @@ public partial class App : Application
     }
 
 
-	public App()
+    #region [IoC]
+    /// <summary>
+    /// Gets the current <see cref="App"/> instance in use
+    /// </summary>
+    public static new App Current => (App)Application.Current;
+
+    /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
+    /// </summary>
+    public IServiceProvider IoCServices { get; }
+
+    /// <summary>
+    /// Configures the services for the application.
+    /// </summary>
+    private static IServiceProvider ConfigureServices()
+    {
+        // We could also use the CommunityToolkit's IoC Dependency Injection...
+        //Ioc.Default.ConfigureServices(new ServiceCollection()
+        //    .AddSingleton<IAppNotificationService, AppNotificationService>()
+        //    .AddSingleton<SettingsViewModel>()
+        //    .AddSingleton<SettingsPage>()
+        //    .BuildServiceProvider());
+
+        
+        // Using Dependency Injection...
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IAppNotificationService, AppNotificationService>();
+        services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+        services.AddSingleton<INavigationViewService, NavigationViewService>();
+        return services.BuildServiceProvider();
+    }
+
+    #endregion
+
+
+    public App()
     {
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
@@ -104,6 +142,10 @@ public partial class App : Application
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
         App.Current.DebugSettings.FailFastOnErrors = false;
+
+        // IoC testing
+        //IoCServices = ConfigureServices();
+
 
         Host = Microsoft.Extensions.Hosting.Host.
         CreateDefaultBuilder().
@@ -153,6 +195,12 @@ public partial class App : Application
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
+
+            // Dump all configs...
+            foreach(var cfg in context.Configuration.GetChildren())
+            {
+                Debug.WriteLine($"{cfg.Key} => {cfg.Value}");
+            }
         }).
         Build();
 
