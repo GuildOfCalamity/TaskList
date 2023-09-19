@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -28,6 +29,39 @@ namespace Task_List_App.Helpers;
 
 public static class GeneralExtensions
 {
+    /// <summary>
+    /// var stack = GeneralExtensions.GetStackTrace(new StackTrace());
+    /// </summary>
+    public static string GetStackTrace(StackTrace st)
+    {
+        string result = string.Empty;
+        for (int i = 0; i < st.FrameCount; i++)
+        {
+            StackFrame sf = st.GetFrame(i);
+            result += sf.GetMethod() + " <== ";
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Offers two ways to determine the local app folder.
+    /// </summary>
+    /// <returns></returns>
+    public static string LocalApplicationDataFolder()
+    {
+        WindowsIdentity? currentUser = WindowsIdentity.GetCurrent();
+        SecurityIdentifier? currentUserSID = currentUser.User;
+        SecurityIdentifier? localSystemSID = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+        if (currentUserSID != null && currentUserSID.Equals(localSystemSID))
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        }
+        else
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        }
+    }
+
     public static BitmapImage? GetImageFromAssets(this string assetName)
     {
         BitmapImage? img = null;

@@ -4,14 +4,15 @@ using Microsoft.UI.Xaml.Data;
 
 namespace Task_List_App;
 
+/// <summary>
+/// Removes a bracket preamble.
+/// </summary>
+/// <example>
+/// "[1]Some info here" => "Some info here"
+/// </example>
 public class PreambleConverter : IValueConverter
 {
-    /// <summary>
-    /// Removes a bracket preamble.
-    /// </summary>
-    /// <example>
-    /// "[1]Some info here" => "Some info here"
-    /// </example>
+    /// <inheritdoc/>
     public object? Convert(object value, Type targetType, object parameter, string language)
     {
         if (value == null)
@@ -47,6 +48,7 @@ public class PreambleConverter : IValueConverter
         return value;
     }
 
+    /// <inheritdoc/>
     public object? ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;

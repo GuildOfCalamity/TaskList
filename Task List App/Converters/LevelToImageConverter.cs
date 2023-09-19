@@ -14,6 +14,7 @@ namespace Task_List_App;
 /// </example>
 public class LevelToImageConverter : IValueConverter
 {
+    /// <inheritdoc/>
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         ImageSource result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Green.png", UriKind.Absolute));
@@ -55,6 +56,7 @@ public class LevelToImageConverter : IValueConverter
         return result;
     }
 
+    /// <inheritdoc/>
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;

@@ -145,7 +145,7 @@
             </ListView.Transitions>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="model:TaskItem">
-                    <StackPanel Opacity="{x:Bind Completed, Converter={StaticResource BooleanOpacityInverse}}">
+                    <StackPanel Margin="0,2" Opacity="{x:Bind Completed, Converter={StaticResource BooleanOpacityInverse}}">
                         <Grid ColumnDefinitions="1*,9*,2*,3*,1*,1*">
                             <!--
                                 [Shadow effect for the time-color rectangle below, you could also use my CompositionShadow control]
@@ -161,8 +161,8 @@
                                 Height="20"
                                 Margin="0,0,9,0"
                                 Fill="{x:Bind Time, Converter={StaticResource LevelToBrush}, Mode=OneWay}"
-                                RadiusX="10"
-                                RadiusY="10"
+                                RadiusX="5"
+                                RadiusY="5"
                                 Stroke="{x:Bind Time, Converter={StaticResource LevelToBrushBorder}, Mode=OneWay}"
                                 StrokeThickness="3" />
 

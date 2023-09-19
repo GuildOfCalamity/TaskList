@@ -469,8 +469,15 @@ public partial class TasksViewModel : ObservableRecipient
             return;
 
         IsBusy = true;
-		await Task.Delay(ts ?? TimeSpan.FromSeconds(2));
-		IsBusy = false;
+        
+        // Make it fancy...
+        TaskbarProgress.SetState(App.WindowHandle, TaskbarProgress.TaskbarStates.Indeterminate);
+
+        await Task.Delay(ts ?? TimeSpan.FromSeconds(2));
+
+        TaskbarProgress.SetState(App.WindowHandle, TaskbarProgress.TaskbarStates.NoProgress);
+
+        IsBusy = false;
 
         await Task.CompletedTask;
     }

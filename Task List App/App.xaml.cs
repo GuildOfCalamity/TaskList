@@ -251,6 +251,10 @@ public partial class App : Application
     /// var service1 = App.GetService{SomeViewModel}();
     /// var service2 = App.GetService{FileLogger}();
     /// </example>
+    /// <remarks>
+    /// This is an alternative for the packages "Microsoft.Extensions.DependencyInjection" 
+    /// and "Microsoft.Extensions.Hosting".
+    /// </remarks>
     public static T? GetServiceAlt<T>() where T : class
     {
         try
@@ -383,18 +387,19 @@ public partial class App : Application
         }
     }
 
-	#region [Dialog Helpers]
-	/// <summary>
-	/// The <see cref="Windows.UI.Popups.MessageDialog"/> does not look as nice as the
-	/// <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> and is not part of the native Microsoft.UI.Xaml.Controls.
-	/// The <see cref="Windows.UI.Popups.MessageDialog"/> offers the <see cref="Windows.UI.Popups.UICommandInvokedHandler"/> 
-	/// callback, but this could be replaced with actions. Both can be shown asynchronously.
-	/// </summary>
-	/// <remarks>
-	/// You'll need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Windows.UI.Popups.MessageDialog"/>,
-	/// because the <see cref="Microsoft.UI.Xaml.XamlRoot"/> does not exist and an owner must be defined.
-	/// </remarks>
-	public static async Task ShowMessageBox(string title, string message, string primaryText, string cancelText)
+    #region [Dialog Helpers]
+    /// <summary>
+    /// The <see cref="Windows.UI.Popups.MessageDialog"/> does not look as nice as the
+    /// <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> and is not part of the native Microsoft.UI.Xaml.Controls.
+    /// The <see cref="Windows.UI.Popups.MessageDialog"/> offers the <see cref="Windows.UI.Popups.UICommandInvokedHandler"/> 
+    /// callback, but this could be replaced with actions. Both can be shown asynchronously.
+    /// </summary>
+    /// <remarks>
+    /// You'll need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Windows.UI.Popups.MessageDialog"/>,
+    /// because the <see cref="Microsoft.UI.Xaml.XamlRoot"/> does not exist and an owner must be defined.
+    /// You'll find other implementations in the <see cref="Task_List_App.Core.Services.MessageService"/>.
+    /// </remarks>
+    public static async Task ShowMessageBox(string title, string message, string primaryText, string cancelText)
 	{
 		// Create the dialog.
 		var messageDialog = new MessageDialog($"{message}");
@@ -419,17 +424,17 @@ public partial class App : Application
 		Debug.WriteLine($"UICommand.Label => {command.Label}");
 	}
 
-	/// <summary>
-	/// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> looks much better than the
-	/// <see cref="Windows.UI.Popups.MessageDialog"/> and is part of the native Microsoft.UI.Xaml.Controls.
-	/// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> does not offer a <see cref="Windows.UI.Popups.UICommandInvokedHandler"/>
-	/// callback, but in this example was replaced with actions. Both can be shown asynchronously.
-	/// </summary>
-	/// <remarks>
-	/// There is no need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/>,
-	/// but a <see cref="Microsoft.UI.Xaml.XamlRoot"/> must be defined since it inherits from <see cref="Microsoft.UI.Xaml.Controls.Control"/>.
-	/// </remarks>
-	public static async Task ShowDialogBox(string title, string message, string primaryText, string cancelText, Action? onPrimary, Action? onCancel)
+    /// <summary>
+    /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> looks much better than the
+    /// <see cref="Windows.UI.Popups.MessageDialog"/> and is part of the native Microsoft.UI.Xaml.Controls.
+    /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> does not offer a <see cref="Windows.UI.Popups.UICommandInvokedHandler"/>
+    /// callback, but in this example was replaced with actions. Both can be shown asynchronously.
+    /// </summary>
+    /// <remarks>
+    /// There is no need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/>,
+    /// but a <see cref="Microsoft.UI.Xaml.XamlRoot"/> must be defined since it inherits from <see cref="Microsoft.UI.Xaml.Controls.Control"/>.
+    /// </remarks>
+    public static async Task ShowDialogBox(string title, string message, string primaryText, string cancelText, Action? onPrimary, Action? onCancel)
 	{
 		//Windows.UI.Popups.IUICommand defaultCommand = new Windows.UI.Popups.UICommand("OK");
 

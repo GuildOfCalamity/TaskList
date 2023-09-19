@@ -8,6 +8,7 @@ namespace Task_List_App;
 /// </summary>
 public class DaysToTimeConverter : IValueConverter
 {
+    /// <inheritdoc/>
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         string result = string.Empty;
@@ -72,6 +73,7 @@ public class DaysToTimeConverter : IValueConverter
         return result;
     }
 
+    /// <inheritdoc/>
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;
