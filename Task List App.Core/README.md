@@ -12,4 +12,3 @@ The **Core** project contains code that can be [reused across multiple applicati
 
 * If you are using an unpackaged project then you can get the current folder by calling `System.IO.Directory.GetCurrentDirectory()` or `System.AppContext.BaseDirectory`.
 
-*Recommended Markdown Viewer for VisualStudio: [Markdown Editor](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.MarkdownEditor2)*
