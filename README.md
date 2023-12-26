@@ -6,6 +6,8 @@
 
 ![Example Picture](./ScreenShot3.png)
 
+![Example Picture](./ScreenShot4.png)
+
 ### 📝 v1.0.0.3 - August 2023
 
 * I have reworked this entire project, which was originally from [Pdawg-bytes](https://github.com/Pdawg-bytes/WinUI3-TaskList)
