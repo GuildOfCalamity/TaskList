@@ -9,7 +9,7 @@ namespace Task_List_App.Core.Services;
 
 public class FileService : IFileService
 {
-    public int DaysUntilBackupReplaced { get; set; } = 1;
+    public int DaysUntilBackupReplaced { get; set; } = -1;
 
     public FileService() { }
 
@@ -69,8 +69,9 @@ public class FileService : IFileService
                 File.WriteAllText(Path.Combine(folderPath, $"{fileName}.bak"), fileContent, Encoding.UTF8);
             else
             {
+                var backDate = DateTime.Now.AddDays(DaysUntilBackupReplaced);
                 var fi = new FileInfo(Path.Combine(folderPath, $"{fileName}.bak")).LastWriteTime;
-                if (fi.TimeOfDay.TotalDays >= DaysUntilBackupReplaced)
+                if (fi <=  backDate)
                 {
                     File.Delete(Path.Combine(folderPath, $"{fileName}.bak"));
                     File.WriteAllText(Path.Combine(folderPath, $"{fileName}.bak"), fileContent, Encoding.UTF8);
