@@ -30,6 +30,38 @@ namespace Task_List_App.Helpers;
 public static class GeneralExtensions
 {
     /// <summary>
+    /// This method will find all occurrences of a string pattern that starts with a double 
+    /// quote, followed by any number of characters (non-greedy), and ends with a double 
+    /// quote followed by zero or more spaces and a colon. This pattern matches the typical 
+    /// format of keys in a JSON string.
+    /// </summary>
+    /// <param name="jsonString">JSON formatted text</param>
+    /// <returns><see cref="List{T}"/> of each key</returns>
+    public static List<string> ExtractKeys(string jsonString)
+    {
+        var keys = new List<string>();
+        var matches = Regex.Matches(jsonString, "[,\\{]\"(.*?)\"\\s*:");
+        foreach (Match match in matches) { keys.Add(match.Groups[1].Value); }
+        return keys;
+    }
+
+    /// <summary>
+    /// This method will find all occurrences of a string pattern that starts with a colon, 
+    /// followed by zero or more spaces, followed by any number of characters (non-greedy), 
+    /// and ends with a comma, closing brace, or closing bracket. This pattern matches the 
+    /// typical format of values in a JSON string.
+    /// </summary>
+    /// <param name="jsonString">JSON formatted text</param>
+    /// <returns><see cref="List{T}"/> of each value</returns>
+    public static List<string> ExtractValues(string jsonString)
+    {
+        var values = new List<string>();
+        var matches = Regex.Matches(jsonString, ":\\s*(.*?)(,|}|\\])");
+        foreach (Match match in matches) { values.Add(match.Groups[1].Value.Trim()); }
+        return values;
+    }
+
+    /// <summary>
     /// var stack = GeneralExtensions.GetStackTrace(new StackTrace());
     /// </summary>
     public static string GetStackTrace(StackTrace st)
@@ -738,6 +770,82 @@ public static class GeneralExtensions
         foreach (var controlType in controlTypes)
         {
             Debug.WriteLine($"[FrameworkElement] {controlType.FullName}", $"ControlInheritingFrom");
+        }
+    }
+
+    public static IEnumerable<Type?> GetHierarchyFromUIElement(this Type element)
+    {
+        if (element.GetTypeInfo().IsSubclassOf(typeof(UIElement)) != true)
+        {
+            yield break;
+        }
+
+        Type current = element;
+
+        while (current != null && current != typeof(UIElement))
+        {
+            yield return current;
+            current = current.GetTypeInfo().BaseType;
+        }
+    }
+
+    public static void DisplayRoutedEventsForUIElement()
+    {
+        Type uiElementType = typeof(UIElement);
+        var routedEvents = uiElementType.GetEvents();
+        Debug.WriteLine($"[All RoutedEvents for UIElement]");
+        foreach (var routedEvent in routedEvents)
+        {
+            if (routedEvent.EventHandlerType == typeof(RoutedEventHandler) ||
+                routedEvent.EventHandlerType == typeof(RoutedEvent) ||
+                routedEvent.EventHandlerType == typeof(EventHandler))
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
+            else if (routedEvent.MemberType == MemberTypes.Event)
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
+        }
+    }
+
+    public static void DisplayRoutedEventsForFrameworkElement()
+    {
+        Type fwElementType = typeof(FrameworkElement);
+        var routedEvents = fwElementType.GetEvents();
+        Debug.WriteLine($"[All RoutedEvents for FrameworkElement]");
+        foreach (var routedEvent in routedEvents)
+        {
+            if (routedEvent.EventHandlerType == typeof(RoutedEventHandler) ||
+                routedEvent.EventHandlerType == typeof(RoutedEvent) ||
+                routedEvent.EventHandlerType == typeof(EventHandler))
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
+            else if (routedEvent.MemberType == MemberTypes.Event)
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
+        }
+    }
+
+    public static void DisplayRoutedEventsForControl()
+    {
+        Type ctlElementType = typeof(Microsoft.UI.Xaml.Controls.Control);
+        var routedEvents = ctlElementType.GetEvents();
+        Debug.WriteLine($"[All RoutedEvents for Control]");
+        foreach (var routedEvent in routedEvents)
+        {
+            if (routedEvent.EventHandlerType == typeof(RoutedEventHandler) ||
+                routedEvent.EventHandlerType == typeof(RoutedEvent) ||
+                routedEvent.EventHandlerType == typeof(EventHandler))
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
+            else if (routedEvent.MemberType == MemberTypes.Event)
+            {
+                Debug.WriteLine($" - '{routedEvent.Name}'");
+            }
         }
     }
 

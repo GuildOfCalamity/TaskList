@@ -16,6 +16,7 @@ using static System.Reflection.Metadata.BlobBuilder;
 using Task_List_App.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using System.Text;
 
 namespace Task_List_App.ViewModels;
 
@@ -459,7 +460,7 @@ public partial class TasksViewModel : ObservableRecipient
     /// All of the ViewModel methods are fast, so this method can be used to 
 	/// trigger the busy flag in certain scenarios where you might want the 
 	/// user to see that some activity is occurring. If the database grows 
-	/// very large this might not be neccessary in the future.
+	/// very large this might not be necessary in the future.
     /// </summary>
     /// <param name="ts"><see cref="TimeSpan?"/></param>
     /// <returns><see cref="Task.CompletedTask"/></returns>
@@ -705,8 +706,9 @@ public partial class TasksViewModel : ObservableRecipient
 				else
 				{
                     var efi = new FileInfo(Path.Combine(baseFolder, @"TaskItems.xml.bak")).LastWriteTime;
+                    var backDate = DateTime.Now.AddDays(-1);
 					// If backup is older than 24 hours
-					if (efi.TimeOfDay.TotalDays >= 1)
+					if (efi <= backDate)
 					{
                         File.Delete(Path.Combine(baseFolder, @"TaskItems.xml.bak"));
                         File.WriteAllText(Path.Combine(baseFolder, @"TaskItems.xml.bak"), applicationData);

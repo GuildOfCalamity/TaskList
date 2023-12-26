@@ -9,19 +9,42 @@ namespace Task_List_App.ViewModels;
 
 public class ShellViewModel : ObservableRecipient
 {
+    #region [Properties]
     private bool _isBackEnabled;
     private bool _collapseOnActivate;
     private object? _selected;
     private int _badgeTotal = 0;
+    private string _average = "";
 
-    public INavigationService NavigationService
+    public INavigationService NavigationService { get; }
+
+    public INavigationViewService NavigationViewService { get; }
+
+    /// <summary>
+    /// Will contain the <see cref="Microsoft.UI.Xaml.Controls.NavigationViewItem"/>.
+    /// </summary>
+    public object? Selected
     {
-        get;
+        get => _selected;
+        set => SetProperty(ref _selected, value);
     }
 
-    public INavigationViewService NavigationViewService
+    /// <summary>
+    /// Will be displayed in the navbar as a number.
+    /// </summary>
+    public int BadgeTotal
     {
-        get;
+        get => _badgeTotal;
+        set => SetProperty(ref _badgeTotal, value);
+    }
+
+    /// <summary>
+    /// Will be displayed in the topmost right corner for statistics.
+    /// </summary>
+    public string Average
+    {
+        get => _average;
+        set => SetProperty(ref _average, value);
     }
 
     public bool IsBackEnabled
@@ -35,19 +58,7 @@ public class ShellViewModel : ObservableRecipient
         get => _collapseOnActivate;
         set => SetProperty(ref _collapseOnActivate, value);
     }
-
-    public object? Selected
-    {
-        get => _selected;
-        set => SetProperty(ref _selected, value);
-    }
-
-    public int BadgeTotal
-    {
-        get => _badgeTotal;
-        set => SetProperty(ref _badgeTotal, value);
-    }
-
+    #endregion
 
     public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
     {
@@ -58,10 +69,11 @@ public class ShellViewModel : ObservableRecipient
         NavigationViewService = navigationViewService;
     }
 
-    private void OnNavigated(object sender, NavigationEventArgs e)
+    void OnNavigated(object sender, NavigationEventArgs e)
     {
         IsBackEnabled = NavigationService.CanGoBack;
 
+        // We must treat settings page differently
         if (e.SourcePageType == typeof(SettingsPage))
         {
             Selected = NavigationViewService.SettingsItem;

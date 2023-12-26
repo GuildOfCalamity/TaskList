@@ -35,7 +35,7 @@ namespace Task_List_App.Controls;
 [ContentProperty(Name = nameof(CastingElement))]
 public sealed partial class CompositionShadow : UserControl
 {
-    FrameworkElement _castingElement;
+    FrameworkElement? _castingElement;
     readonly DropShadow _dropShadow;
     readonly SpriteVisual _shadowVisual;
 
@@ -313,7 +313,7 @@ public sealed partial class CompositionShadow : UserControl
                 mask = ((TextBlock)_castingElement).GetAlphaMask();
             }
 
-            _dropShadow.Mask = mask;
+			_dropShadow.Mask = mask;
         }
         else
         {
