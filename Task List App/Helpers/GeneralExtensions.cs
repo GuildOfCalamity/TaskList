@@ -30,6 +30,234 @@ namespace Task_List_App.Helpers;
 public static class GeneralExtensions
 {
     /// <summary>
+    /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
+    /// </summary>
+    public static InfoBarSeverity GetInfoBarSeverity(string value, TimeSpan? amount)
+    {
+        if (string.IsNullOrEmpty(value) || amount == null)
+            return InfoBarSeverity.Informational;
+
+        switch (value)
+        {
+            case string time when time.Contains("a year", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 172)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < 250)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < 365)
+                        return InfoBarSeverity.Warning;       // orange
+                    else
+                        return InfoBarSeverity.Error;         // red
+                }
+            case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 60)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 90)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 180)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 10)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 20)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 30)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 20)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 40)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 60)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 7)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 10)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 14)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3.5)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 5)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 7)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 4)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 5)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("tomorrow", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 2)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 3)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            case string time when time.Contains("soon", StringComparison.OrdinalIgnoreCase) || time.Contains("today", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1.0)
+                        return InfoBarSeverity.Success;   // green
+                    else if (amount?.TotalDays < 1.5)
+                        return InfoBarSeverity.Informational;  // yellow
+                    else if (amount?.TotalDays < 2.0)
+                        return InfoBarSeverity.Warning;  // orange
+                    else
+                        return InfoBarSeverity.Error;  // red
+                }
+            default:
+                return InfoBarSeverity.Informational;
+        }
+    }
+
+    /// <summary>
+    /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
+    /// </summary>
+    public static Windows.UI.Color GetColorTime(string value, TimeSpan? amount)
+    {
+        if (string.IsNullOrEmpty(value) || amount == null)
+            return Windows.UI.Color.FromArgb(255, 75, 10, 255);
+
+        switch (value)
+        {
+            case string time when time.Contains("a year", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 172)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 250)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 365)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 60)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 90)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 180)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 10)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 20)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 30)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 20)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 40)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 60)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 7)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 10)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 14)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3.5)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 5)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 7)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 3)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 4)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 5)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("tomorrow", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1.0)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 2.0)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 3.0)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            case string time when time.Contains("soon", StringComparison.OrdinalIgnoreCase) || time.Contains("today", StringComparison.OrdinalIgnoreCase):
+                {
+                    if (amount?.TotalDays < 1.0)
+                        return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
+                    else if (amount?.TotalDays < 1.5)
+                        return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
+                    else if (amount?.TotalDays < 2.0)
+                        return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
+                    else
+                        return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
+                }
+            default:
+                return Windows.UI.Color.FromArgb(255, 75, 10, 255);          // purple
+        }
+    }
+
+    /// <summary>
     /// This method will find all occurrences of a string pattern that starts with a double 
     /// quote, followed by any number of characters (non-greedy), and ends with a double 
     /// quote followed by zero or more spaces and a colon. This pattern matches the typical 

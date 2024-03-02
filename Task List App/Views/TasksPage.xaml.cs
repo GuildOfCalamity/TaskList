@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,9 +17,9 @@ using Task_List_App.Contracts.Services;
 using Task_List_App.Models;
 using Task_List_App.ViewModels;
 using Task_List_App.Helpers;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Task_List_App.Views;
 
@@ -39,10 +40,12 @@ public sealed partial class TasksPage : Page
     bool initFinished = false;
     readonly bool useMessageBox = false;
     readonly bool useCodeBehindDialog = false;
+    readonly double defaultBusyCycle = 2.1;
     DateTime _lastActivity = DateTime.Now;
     readonly Queue<Dictionary<string,InfoBarSeverity>> noticeQueue = new();
 	DispatcherTimer? _timerPoll;
 	DispatcherTimer? _timerMsg;
+    static DateTime _lastBusy = DateTime.MinValue;
     public bool SaveNeeded { get; set; } = false; // for timer
     public static FrameworkElement? MainRoot { get; private set; } = null;
     public TasksViewModel ViewModel { get; private set; }
@@ -173,7 +176,7 @@ public sealed partial class TasksPage : Page
 
     void ShellPage_ShellPointerEvent(object? sender, Microsoft.UI.Input.PointerDeviceType e)
     {
-        Debug.WriteLine($"[ShellPage_ShellPointerEvent]");
+        Debug.WriteLine($"[INFO] ShellPage_ShellPointerEvent");
         _lastActivity = DateTime.Now;
     }
 
@@ -182,13 +185,13 @@ public sealed partial class TasksPage : Page
     /// </summary>
     void MainWindow_ActivatedEvent(object? sender, WindowActivatedEventArgs e)
 	{
-        Debug.WriteLine($"[MainWindowActivatedEvent] {e.WindowActivationState}");
+        Debug.WriteLine($"[INFO] MainWindowActivatedEvent {e.WindowActivationState}");
 
         if (e.WindowActivationState == WindowActivationState.Deactivated && initFinished && !App.IsClosing)
         {
             // Add debounce in scenarios where this event could be hammered.
             var idleTime = DateTime.Now - _lastActivity;
-            if (idleTime.TotalSeconds >= 5 && !App.IsClosing && ViewModel != null)
+            if (idleTime.TotalSeconds >= 10 && !App.IsClosing && ViewModel != null)
             {
                 Debug.WriteLine($"[MainWindowActivatedEvent] Saving current tasks.");
                 // Make sure to commit any unsaved changes on exit.
@@ -205,7 +208,9 @@ public sealed partial class TasksPage : Page
 	/// </summary>
 	void ViewModel_TasksLoadedEvent(object? sender, bool success)
 	{
-		if (success)
+        Debug.WriteLine($"[INFO] ViewModel_TasksLoadedEvent");
+
+        if (success)
         {
 			// Since we're not using an ObservableCollection, we'll need to trigger the UI to refresh.
 			TaskListView.DispatcherQueue.TryEnqueue(() =>
@@ -435,10 +440,21 @@ public sealed partial class TasksPage : Page
     /// <summary>
     /// This will trigger an update by the viewmodel, so we're signaling that it'll be busy soon.
     /// </summary>
+    /// <remarks>
+    /// This has the potiential to be hammered since each <see cref="TaskItem"/> in
+    /// the <see cref="DataTemplate"/> has a checkbox that is linked to this event.
+    /// </remarks>
     async void CheckBox_Checked(object sender, RoutedEventArgs e)
     {
+        var idleTime = DateTime.Now - _lastBusy;
+        if (idleTime.TotalSeconds <= (defaultBusyCycle * 2.25) || App.IsClosing)
+            return;
+
         if (ViewModel is not null && !ViewModel.IsBusy)
-            await ViewModel.SignalBusyCycle(TimeSpan.FromSeconds(1.1));
+        {
+            _lastBusy = DateTime.Now;
+            await ViewModel.SignalBusyCycle(TimeSpan.FromSeconds(defaultBusyCycle));
+        }
     }
 
 	/// <summary>
@@ -466,16 +482,24 @@ public sealed partial class TasksPage : Page
                     {
                         var diff = tsk.Completion - tsk.Created;
                         if (diff.HasValue)
+                        {
+                            var severity = GeneralExtensions.GetInfoBarSeverity(tsk.Time, diff.Value);
+                            if (severity == InfoBarSeverity.Error && ApplicationSettings.ShowOverdueSummary)
+                                _ = ShowMessageBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
+
+                            //noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", severity } });
                             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", InfoBarSeverity.Informational } });
+                        }
                         else
                             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Created on {tsk.Created.ToLongDateString()}.  Completed on {tsk.Completion?.ToLongDateString()}", InfoBarSeverity.Informational } });
                     }
                     else
                     {
                         noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task created on {tsk.Created.ToLongDateString()}", InfoBarSeverity.Informational } });
+                        // Open link in browser if task contains a URL
+                        Task.Run(async () => { await LocateAndLaunchUrlFromString(tsk.Title); });
                     }
 
-                    Task.Run(async () => { await LocateAndLaunchUrlFromString(tsk.Title); });
                 }
             }
 		}
@@ -524,7 +548,7 @@ public sealed partial class TasksPage : Page
                 var td = ViewModel.FindTaskItem(cb?.Tag as string);
                 if (td != null)
                 {
-                    Debug.WriteLine($"Found task => {td}");
+                    Debug.WriteLine($"[INFO] Found task => {td}");
                     //noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Time was changed to '{e.AddedItems[0]}'", InfoBarSeverity.Informational } });
                 }
             }
@@ -541,7 +565,7 @@ public sealed partial class TasksPage : Page
         if (initFinished)
         {
             _lastActivity = DateTime.Now;
-            Debug.WriteLine($"[TaskListView_Tapped]");
+            Debug.WriteLine($"[INFO] TaskListView_Tapped");
         }
     }
     #endregion
@@ -600,9 +624,19 @@ public sealed partial class TasksPage : Page
         // Create the dialog.
         var messageDialog = new MessageDialog($"{message}");
         messageDialog.Title = title;
-        messageDialog.Commands.Add(new UICommand($"{yesText}", (opt) => { yesAction?.Invoke(); }));
-        messageDialog.Commands.Add(new UICommand($"{noText}", (opt) => { noAction?.Invoke(); }));
-        messageDialog.DefaultCommandIndex = 1;
+        
+        if (!string.IsNullOrEmpty(yesText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{yesText}", (opt) => { yesAction?.Invoke(); }));
+            messageDialog.DefaultCommandIndex = 0;
+        }
+
+        if (!string.IsNullOrEmpty(noText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{noText}", (opt) => { noAction?.Invoke(); }));
+            messageDialog.DefaultCommandIndex = 1;
+        }
+
         // We must initialize the dialog with an owner.
         WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
         // Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.
@@ -1137,14 +1171,14 @@ public sealed partial class TasksPage : Page
                                         break;
                                     default:
                                         closeCount = 0;
-                                        Debug.WriteLine($"No case match.");
+                                        Debug.WriteLine($"[WARNING] No case match.");
                                         break;
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"NoticeQueue: {ex.Message}");
+                            Debug.WriteLine($"[WARNING] NoticeQueue: {ex.Message}");
                         }
                     }
                     else // close any InfoBars that are still open
@@ -1172,7 +1206,7 @@ public sealed partial class TasksPage : Page
             }
             catch (Exception)
             {
-                Debug.WriteLine($"Application may be in the process of closing.");
+                Debug.WriteLine($"[WARNING] Application may be in the process of closing.");
             }
         };
         #endregion
@@ -1257,6 +1291,5 @@ public sealed partial class TasksPage : Page
         return urls;
     }
     #endregion
-
 }
 

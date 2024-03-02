@@ -2,6 +2,13 @@
 
 ![Example Picture](./ScreenShot.png)
 
+### 📝 v1.0.0.4 - February 2024
+
+* Fixed backup day count.
+* Added [MessageDialog](https://learn.microsoft.com/en-us/uwp/api/windows.ui.popups.messagedialog?view=winrt-22621) overdue summary.
+    - Added new config `ShowOverdueSummary` to SettingsViewModel.
+* Various improvements.
+
 ### 📝 v1.0.0.3 - August 2023
 
 * I have reworked this entire project, which was originally from [Pdawg-bytes](https://github.com/Pdawg-bytes/WinUI3-TaskList)
@@ -19,7 +26,7 @@
 * Application activation via **Toast Notifications** still needs work.
   - This can be handled through `Task_List_App.Services.ActivationService.HandleActivationAsync`.
   - I have added the logic, but a [Mutex](https://learn.microsoft.com/en-us/dotnet/api/system.threading.mutex?view=net-6.0) will need to be created and managed.
-* Finish language conversions and link additional `x:Uid` tags.
+* Additional language conversions and `x:Uid` tags.
 
 ## 🎛️ Usage
 * You can run this as a normal desktop app. Tooltps are provided for each action.
@@ -34,7 +41,7 @@
 * This carries the original License from [Pdawg-bytes](https://github.com/Pdawg-bytes/WinUI3-TaskList), but in the event that said license is absent:
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish and distribute copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 * The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the author or copyright holder be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
-* Copyright © 2022–2023. All rights reserved.
+* Copyright © 2022–2024. All rights reserved.
 
 ## 📋 Proofing
 * This application was compiled and tested using *VisualStudio* 2022 on *Windows 10* versions **22H2**, **21H2** and **21H1**.

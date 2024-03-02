@@ -14,7 +14,7 @@
 	<UseWinUI>true</UseWinUI>
 	<LangVersion>latest</LangVersion>
     <EnableMsixTooling>true</EnableMsixTooling>
-	<Version>1.0.0.3</Version>
+	<Version>1.0.0.4</Version>
     <!-- 
       WindowsPackageType defines whether your app is packaged (MSIX) or unpackaged (None) 
     -->
@@ -77,6 +77,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Task List App.Core\Task List App.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

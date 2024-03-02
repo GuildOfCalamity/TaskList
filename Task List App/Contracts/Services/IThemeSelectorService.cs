@@ -6,6 +6,7 @@ public interface IThemeSelectorService
 {
     ElementTheme Theme { get; }
     bool Notifications { get; }
+    bool OverdueSummary { get; }
     bool PersistLogin { get; }
     bool AcrylicBackdrop { get; }
 
@@ -13,6 +14,7 @@ public interface IThemeSelectorService
     Task SetThemeAsync(ElementTheme theme);
     Task SetRequestedThemeAsync();
     Task SetNotificationsAsync(bool enabled);
+    Task SetOverdueSummaryAsync(bool enabled);
     Task SetPersistLoginAsync(bool enabled);
     Task SetAcrylicBackdropAsync(bool enabled);
 }

@@ -19,9 +19,11 @@ namespace Task_List_App.ViewModels;
 /// </summary>
 public class SettingsViewModel : ObservableRecipient
 {
+    #region [Properties]
     private ElementTheme _elementTheme;
     private string _versionDescription;
     private bool _showNotifications;
+    private bool _showOverdueSummary;
     private bool _acrylicBackdrop;
     private bool _persistLogin;
     private bool _isBusy = false;
@@ -46,7 +48,13 @@ public class SettingsViewModel : ObservableRecipient
 		set => SetProperty(ref _showNotifications, value);
 	}
 
-	public ElementTheme ElementTheme
+    public bool ShowOverdueSummary
+    {
+        get => _showOverdueSummary;
+        set => SetProperty(ref _showOverdueSummary, value);
+    }
+
+    public ElementTheme ElementTheme
 
     {
         get => _elementTheme;
@@ -64,15 +72,16 @@ public class SettingsViewModel : ObservableRecipient
         get => _isBusy;
         set => SetProperty(ref _isBusy, value);
     }
+    #endregion
 
     #region [Commands]
     public ICommand SwitchThemeCommand { get; }
     public ICommand ToggleNotificationsCommand { get; }
+    public ICommand ToggleOverdueSummaryCommand { get; }
     public ICommand PersistLoginCommand { get; }
     public ICommand AcrylicBackdropCommand { get; }
     public ICommand RestoreDataCommand { get; }
     #endregion
-
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService)
     {
@@ -83,6 +92,7 @@ public class SettingsViewModel : ObservableRecipient
         // Setup LocalSettings.json values for other callers. 
         _elementTheme = _themeSelectorService.Theme;
         _showNotifications = _themeSelectorService.Notifications;
+        _showOverdueSummary = _themeSelectorService.OverdueSummary;
         _persistLogin = _themeSelectorService.PersistLogin;
         _acrylicBackdrop = _themeSelectorService.AcrylicBackdrop;
         _versionDescription = GetVersionDescription();
@@ -102,6 +112,13 @@ public class SettingsViewModel : ObservableRecipient
         {
             ShowNotifications = param;
             await _themeSelectorService.SetNotificationsAsync(param);
+        });
+
+        // Configure overdue summary command.
+        ToggleOverdueSummaryCommand = new RelayCommand<bool>(async (param) =>
+        {
+            ShowOverdueSummary = param;
+            await _themeSelectorService.SetOverdueSummaryAsync(param);
         });
 
         // Configure stay logged in command.
@@ -137,7 +154,7 @@ public class SettingsViewModel : ObservableRecipient
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"SettingsViewModel: {ex.Message}");
+            Debug.WriteLine($"[WARNING] SettingsViewModel: {ex.Message}");
             fileService = new Core.Services.FileService();
         }
     }
@@ -160,7 +177,7 @@ public class SettingsViewModel : ObservableRecipient
             baseFolder = Directory.GetCurrentDirectory();
 
         var result = fileService?.Restore(baseFolder, App.DatabaseName);
-        await Task.Delay(900); // prevent spamming
+        await Task.Delay(1000); // prevent spamming
         if (result.HasValue && result.Value)
         {
             App.DebugLog($"Database was restored from backup.");

@@ -10,13 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using Windows.Storage;
 
 using Task_List_App.Models;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using static System.Reflection.Metadata.BlobBuilder;
 using Task_List_App.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using System.Text;
 
 namespace Task_List_App.ViewModels;
 
@@ -86,8 +80,8 @@ public partial class TasksViewModel : ObservableRecipient
 		{ 2, "a few days" },
 		{ 3, "a week from now" },
 		{ 4, "two weeks from now" },
-		{ 5, "a month from now" },
-		{ 6, "six months from now" },
+        { 5, "a month from now" },
+        { 6, "six months from now" },
 		{ 7, "a year from now" },
     };
 
@@ -474,7 +468,7 @@ public partial class TasksViewModel : ObservableRecipient
         // Make it fancy...
         TaskbarProgress.SetState(App.WindowHandle, TaskbarProgress.TaskbarStates.Indeterminate);
 
-        await Task.Delay(ts ?? TimeSpan.FromSeconds(2));
+        await Task.Delay(ts ?? TimeSpan.FromSeconds(1.5));
 
         TaskbarProgress.SetState(App.WindowHandle, TaskbarProgress.TaskbarStates.NoProgress);
 
@@ -513,6 +507,8 @@ public partial class TasksViewModel : ObservableRecipient
 
         if (App.IsClosing)
             return;
+
+        Debug.WriteLine($"[INFO] LoadTaskItemsJson");
 
         try
         {
@@ -576,6 +572,8 @@ public partial class TasksViewModel : ObservableRecipient
 
         if (App.IsClosing)
             return;
+
+        Debug.WriteLine($"[INFO] SaveTaskItemsJson");
 
         try
         {

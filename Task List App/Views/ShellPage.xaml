@@ -56,6 +56,9 @@
                 TODO: Update item icons by updating FontIcon.Glyph properties.
                 https://docs.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font#icon-list
                 -->
+                <!--
+                    ** Tasks Page **
+                -->
                 <NavigationViewItem x:Uid="Shell_Tasks" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.TasksViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource CheckMark}" />
@@ -68,6 +71,7 @@
                         -->
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
+                        <!--  The color of the InfoBadge is determined by the user's preferred accent color in the OS.  -->
                         <InfoBadge
                             Margin="0"
                             Padding="0"
@@ -83,14 +87,20 @@
                         </InfoBadge>
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Page_Login" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.LoginViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource Shield}" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <!--
+                    ** Graph Page **
+                -->
                 <NavigationViewItem x:Uid="Page_Alternate" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.AlternateViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource AreaChart}" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!--
+                    ** Login Page **
+                -->
+                <NavigationViewItem x:Uid="Page_Login" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.LoginViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource Shield}" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <!--

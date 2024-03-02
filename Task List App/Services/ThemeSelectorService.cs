@@ -12,12 +12,14 @@ public class ThemeSelectorService : IThemeSelectorService
 {
     private const string SettingsKeyTheme = "AppBackgroundRequestedTheme";
     private const string SettingsKeyNotifications = "AppToastNotification";
+    private const string SettingsKeyOverdueSummary = "AppOverdueSummary";
     private const string SettingsKeyPersist = "AppPersistLogin";
     private const string SettingsKeyBackdrop = "AppAcrylicBackdrop";
 
     public ElementTheme Theme { get; set; } = ElementTheme.Dark;
 	public bool Notifications { get; set; } = true;
-	public bool PersistLogin { get; set; } = true;
+	public bool OverdueSummary { get; set; } = true;
+    public bool PersistLogin { get; set; } = true;
 	public bool AcrylicBackdrop { get; set; } = false;
 
     private readonly ILocalSettingsService _localSettingsService;
@@ -36,6 +38,7 @@ public class ThemeSelectorService : IThemeSelectorService
     {
         Theme = await LoadThemeFromSettingsAsync();
         Notifications = await LoadNotificationsFromSettingsAsync();
+        OverdueSummary = await LoadOverdueSummaryFromSettingsAsync();
         PersistLogin = await LoadPersistLoginFromSettingsAsync();
         AcrylicBackdrop = await LoadAcrylicBackdropFromSettingsAsync();
 
@@ -61,11 +64,20 @@ public class ThemeSelectorService : IThemeSelectorService
 		Notifications = enabled;
         await SaveNotificationsInSettingsAsync(Notifications);
     }
-	
+
     /// <summary>
-	/// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
-	/// </summary>
-	public async Task SetPersistLoginAsync(bool enabled)
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
+    public async Task SetOverdueSummaryAsync(bool enabled)
+    {
+        OverdueSummary = enabled;
+        await SaveOverdueSummaryInSettingsAsync(OverdueSummary);
+    }
+
+    /// <summary>
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
+    public async Task SetPersistLoginAsync(bool enabled)
     {
         PersistLogin = enabled;
         await SavePersistLoginInSettingsAsync(PersistLogin);
@@ -91,7 +103,6 @@ public class ThemeSelectorService : IThemeSelectorService
             rootElement.RequestedTheme = Theme;
             TitleBarHelper.UpdateTitleBar(Theme);
         }
-
         await Task.CompletedTask;
     }
     /// <summary>
@@ -102,9 +113,7 @@ public class ThemeSelectorService : IThemeSelectorService
         var themeName = await _localSettingsService.ReadSettingAsync<string>(SettingsKeyTheme);
 
         if (Enum.TryParse(themeName, out ElementTheme cacheTheme))
-        {
             return cacheTheme;
-        }
 
         return ElementTheme.Default;
     }
@@ -112,63 +121,50 @@ public class ThemeSelectorService : IThemeSelectorService
 	/// <summary>
 	/// Saves theme parameter
 	/// </summary>
-	async Task SaveThemeInSettingsAsync(ElementTheme theme)
-    {
-        await _localSettingsService.SaveSettingAsync(SettingsKeyTheme, $"{theme}");
-    }
+	async Task SaveThemeInSettingsAsync(ElementTheme theme) => await _localSettingsService.SaveSettingAsync(SettingsKeyTheme, $"{theme}");
 	#endregion
 
 	#region [Toast notification setting]
 	/// <summary>
 	/// Loads notification parameter
 	/// </summary>
-	async Task<bool> LoadNotificationsFromSettingsAsync()
-    {
-        var notify = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyNotifications);
-        return notify;
-    }
+	async Task<bool> LoadNotificationsFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyNotifications);
 	/// <summary>
 	/// Saves notification parameter
 	/// </summary>
-	async Task SaveNotificationsInSettingsAsync(bool notify)
-    {
-        await _localSettingsService.SaveSettingAsync(SettingsKeyNotifications, $"{notify}");
-    }
-	#endregion
+	async Task SaveNotificationsInSettingsAsync(bool notify) => await _localSettingsService.SaveSettingAsync(SettingsKeyNotifications, $"{notify}");
+    #endregion
 
-	#region [Persist login setting]
-	/// <summary>
-	/// Loads login parameter
-	/// </summary>
-	async Task<bool> LoadPersistLoginFromSettingsAsync()
-    {
-        var persist = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyPersist);
-        return persist;
-    }
+    #region [Overdue Summary setting]
+    /// <summary>
+    /// Loads notification parameter
+    /// </summary>
+    async Task<bool> LoadOverdueSummaryFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyOverdueSummary);
+    /// <summary>
+    /// Saves overdue summary parameter
+    /// </summary>
+    async Task SaveOverdueSummaryInSettingsAsync(bool summary) => await _localSettingsService.SaveSettingAsync(SettingsKeyOverdueSummary, $"{summary}");
+    #endregion
+
+    #region [Persist login setting]
+    /// <summary>
+    /// Loads login parameter
+    /// </summary>
+    async Task<bool> LoadPersistLoginFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyPersist);
 	/// <summary>
 	/// Saves login parameter
 	/// </summary>
-	async Task SavePersistLoginInSettingsAsync(bool persist)
-    {
-        await _localSettingsService.SaveSettingAsync(SettingsKeyPersist, $"{persist}");
-    }
+	async Task SavePersistLoginInSettingsAsync(bool persist) => await _localSettingsService.SaveSettingAsync(SettingsKeyPersist, $"{persist}");
     #endregion
 
     #region [AcrylicBackdrop setting]
     /// <summary>
     /// Loads acrylic backdrop parameter
     /// </summary>
-    async Task<bool> LoadAcrylicBackdropFromSettingsAsync()
-    {
-        var acrylic = await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyBackdrop);
-        return acrylic;
-    }
+    async Task<bool> LoadAcrylicBackdropFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyBackdrop);
     /// <summary>
     /// Saves acrylic backdrop parameter
     /// </summary>
-    async Task SaveAcrylicBackdropInSettingsAsync(bool acrylic)
-    {
-        await _localSettingsService.SaveSettingAsync(SettingsKeyBackdrop, $"{acrylic}");
-    }
+    async Task SaveAcrylicBackdropInSettingsAsync(bool acrylic) => await _localSettingsService.SaveSettingAsync(SettingsKeyBackdrop, $"{acrylic}");
     #endregion
 }

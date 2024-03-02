@@ -116,6 +116,19 @@
                             </CheckBox.CommandParameter>
                             -->
                         </CheckBox>
+                        <CheckBox
+                            Command="{x:Bind ViewModel.ToggleOverdueSummaryCommand}"
+                            CommandParameter="{x:Bind ViewModel.ShowOverdueSummary, Mode=TwoWay}"
+                            Content="Show Overdue Summary"
+                            FontSize="14"
+                            IsChecked="{x:Bind ViewModel.ShowOverdueSummary, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Dialog for overdue completed tasks">
+                            <!--
+                            <CheckBox.CommandParameter>
+                                <x:Boolean>False</x:Boolean>
+                            </CheckBox.CommandParameter>
+                            -->
+                        </CheckBox>
                     </StackPanel>
                 </StackPanel>
 
