@@ -49,6 +49,7 @@ public sealed partial class TasksPage : Page
     public bool SaveNeeded { get; set; } = false; // for timer
     public static FrameworkElement? MainRoot { get; private set; } = null;
     public TasksViewModel ViewModel { get; private set; }
+    public NotesViewModel NotesModel { get; private set; }
     public ShellViewModel ShellModel { get; private set; }
     public LoginViewModel LoginModel { get; private set; }
     public SettingsViewModel ApplicationSettings { get; private set; }
@@ -74,6 +75,7 @@ public sealed partial class TasksPage : Page
         ApplicationSettings = App.GetService<SettingsViewModel>();
         NavService = App.GetService<INavigationService>();
         LoginModel = App.GetService<LoginViewModel>();
+        NotesModel = App.GetService<NotesViewModel>();
         ViewModel.TasksLoadedEvent += ViewModel_TasksLoadedEvent;
 
         MainRoot = this.Content as FrameworkElement; // for local dialogs
@@ -191,13 +193,14 @@ public sealed partial class TasksPage : Page
         {
             // Add debounce in scenarios where this event could be hammered.
             var idleTime = DateTime.Now - _lastActivity;
-            if (idleTime.TotalSeconds >= 10 && !App.IsClosing && ViewModel != null)
+            if (idleTime.TotalSeconds >= 8 && !App.IsClosing && ViewModel != null)
             {
                 Debug.WriteLine($"[MainWindowActivatedEvent] Saving current tasks.");
                 // Make sure to commit any unsaved changes on exit.
                 noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Saving current tasks.", InfoBarSeverity.Informational } });
 				ViewModel.SignalBusyCycle(null);
                 ViewModel.SaveTaskItemsJson();
+                NotesModel.SaveNoteItemsJson();
             }
         }
 		_lastActivity = DateTime.Now;

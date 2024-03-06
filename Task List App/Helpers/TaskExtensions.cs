@@ -140,7 +140,7 @@ public static class TaskbarProgress
     }
 
     private static readonly bool taskbarSupported = IsWindows7OrLater;
-    private static readonly ITaskbarList3? taskbarInstance = taskbarSupported ? (ITaskbarList3)new TaskbarInstance() : null;
+    private static readonly ITaskbarList3 taskbarInstance = taskbarSupported ? (ITaskbarList3)new TaskbarInstance() : null;
 
     /// <summary>
     /// Sets the state of the taskbar progress.
@@ -151,21 +151,21 @@ public static class TaskbarProgress
     {
         if (taskbarSupported)
         {
-            taskbarInstance?.SetProgressState(windowHandle, taskbarState);
+            taskbarInstance.SetProgressState(windowHandle, taskbarState);
         }
     }
 
     /// <summary>
     /// Sets the value of the taskbar progress.
     /// </summary>
-    /// <param name="windowHandle">current form handle</param>
+    /// <param name="windowHandle">currnet form handle</param>
     /// <param name="progressValue">desired progress value</param>
     /// <param name="progressMax">maximum progress value</param>
     public static void SetValue(IntPtr windowHandle, double progressValue, double progressMax)
     {
         if (taskbarSupported)
         {
-            taskbarInstance?.SetProgressValue(windowHandle, (ulong)progressValue, (ulong)progressMax);
+            taskbarInstance.SetProgressValue(windowHandle, (ulong)progressValue, (ulong)progressMax);
         }
     }
 
@@ -175,7 +175,7 @@ public static class TaskbarProgress
     public static bool IsWindows7OrLater => Environment.OSVersion.Version >= new Version(6, 1);
 
     /// <summary>
-    /// Determines if current operating system is Vista+.
+    /// Deteremines if current operating system is Vista+.
     /// </summary>
     public static bool IsWindowsVistaOrLater => Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version >= new Version(6, 0, 6000);
 }

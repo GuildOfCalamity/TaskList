@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace Task_List_App.Models;
 
 /// <summary>
-/// This is a replacement for the <see cref="System.Collections.ObjectModel.ObservableCollection{TaskData}"/> currently being used.
+/// This is a replacement for the <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/> currently being used.
 /// </summary>
 public class TaskItem : INotifyPropertyChanged
 {
@@ -94,12 +94,12 @@ public class TaskItem : INotifyPropertyChanged
 
     public override string ToString()
 	{
-		return $"{Title}, {Status}, {Time}, Completed={Completed}";
+		return $"Title={Title}, Status={Status}, Time={Time}, Completed={Completed}";
 	}
 
 	#region [Support Mechanics]
 	public event PropertyChangedEventHandler? PropertyChanged;
-	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+	protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 	{
         try
         {
@@ -107,7 +107,7 @@ public class TaskItem : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"OnPropertyChanged: {ex.Message}");
+            Debug.WriteLine($"[WARNING] OnPropertyChanged: {ex.Message}");
         }
 	}
 	#endregion

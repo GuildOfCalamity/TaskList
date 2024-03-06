@@ -215,4 +215,7 @@ If the title contains a URL then it will be opened in a browser when that task i
   <data name="AppBar_Clone.Label" xml:space="preserve">
     <value>Clone</value>
   </data>
+  <data name="Page_Notes.Content" xml:space="preserve">
+    <value>Notes</value>
+  </data>
 </root>

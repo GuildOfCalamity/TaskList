@@ -86,12 +86,12 @@
                                             <DoubleAnimation
                                                 Storyboard.TargetName="ContentScale"
                                                 Storyboard.TargetProperty="ScaleX"
-                                                To="1.1"
+                                                To="1.05"
                                                 Duration="0:0:0.03" />
                                             <DoubleAnimation
                                                 Storyboard.TargetName="ContentScale"
                                                 Storyboard.TargetProperty="ScaleY"
-                                                To="1.1"
+                                                To="1.05"
                                                 Duration="0:0:0.03" />
                                         </Storyboard>
                                     </VisualTransition>
@@ -100,12 +100,12 @@
                                             <DoubleAnimation
                                                 Storyboard.TargetName="ContentScale"
                                                 Storyboard.TargetProperty="ScaleX"
-                                                To="0.9"
+                                                To="0.95"
                                                 Duration="0:0:0.03" />
                                             <DoubleAnimation
                                                 Storyboard.TargetName="ContentScale"
                                                 Storyboard.TargetProperty="ScaleY"
-                                                To="0.9"
+                                                To="0.95"
                                                 Duration="0:0:0.03" />
                                         </Storyboard>
                                     </VisualTransition>
@@ -116,12 +116,12 @@
                                         <DoubleAnimation
                                             Storyboard.TargetName="ContentScale"
                                             Storyboard.TargetProperty="ScaleX"
-                                            To="1.1"
+                                            To="1.05"
                                             Duration="0:0:0.03" />
                                         <DoubleAnimation
                                             Storyboard.TargetName="ContentScale"
                                             Storyboard.TargetProperty="ScaleY"
-                                            To="1.1"
+                                            To="1.05"
                                             Duration="0:0:0.03" />
                                     </Storyboard>
                                 </VisualState>
@@ -130,16 +130,20 @@
                                         <DoubleAnimation
                                             Storyboard.TargetName="ContentScale"
                                             Storyboard.TargetProperty="ScaleX"
-                                            To="0.9"
+                                            To="0.95"
                                             Duration="0:0:0.03" />
                                         <DoubleAnimation
                                             Storyboard.TargetName="ContentScale"
                                             Storyboard.TargetProperty="ScaleY"
-                                            To="0.9"
+                                            To="0.95"
                                             Duration="0:0:0.03" />
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="Disabled" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.4" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                     </Grid>
