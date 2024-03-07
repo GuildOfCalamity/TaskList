@@ -1,7 +1,7 @@
 ﻿#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 
-using System.Reflection;
 using CommunityToolkit.Mvvm.DependencyInjection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -52,7 +52,8 @@ namespace Task_List_App;
 public partial class App : Application
 {
     public static UIElement? shell = null;
-    public static string DatabaseName { get; private set; } = "TaskItems.json";
+    public static string DatabaseTasks { get; private set; } = "TaskItems.json";
+    public static string DatabaseNotes { get; private set; } = "NoteItems.json";
     public static Window? MainWindow { get; set; } = new MainWindow();
     public static IntPtr WindowHandle { get; set; }
     public static FrameworkElement? MainRoot { get; set; }
@@ -72,39 +73,46 @@ public partial class App : Application
     // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
     // https://docs.microsoft.com/dotnet/core/extensions/configuration
     // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host { get; }
+    public Microsoft.Extensions.Hosting.IHost Host { get; }
 
+    /// <summary>
+    /// Uses the <see cref="Microsoft.Extensions.Hosting.IHost"/>
+    /// and <see cref="System.IServiceProvider"/> to return a service
+    /// object of type <typeparamref name="T"/> -or- null if there is
+    /// no service object of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">the service type</typeparam>
     public static T GetService<T>() where T : class
     {
         if (typeof(T).IsGenericType)
-            Debug.WriteLine($"'{typeof(T).Name}' is a generic type");
+            Debug.WriteLine($"[NOTE] '{typeof(T).Name}' is a generic type.");
         else
-            Debug.WriteLine($"'{typeof(T).Name}' is not a generic type");
+            Debug.WriteLine($"[NOTE] '{typeof(T).Name}' is not a generic type.");
 
         if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
         }
-
+        
         return service;
     }
 
 
     #region [IoC]
     /// <summary>
-    /// Gets the current <see cref="App"/> instance in use
+    /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
     public static new App Current => (App)Application.Current;
 
     /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
+    /// Gets the <see cref="System.IServiceProvider"/> instance to resolve application services.
     /// </summary>
-    public IServiceProvider IoCServices { get; }
+    public System.IServiceProvider? IoCServices { get; }
 
     /// <summary>
     /// Configures the services for the application.
     /// </summary>
-    private static IServiceProvider ConfigureServices()
+    static System.IServiceProvider ConfigureServices()
     {
         // We could also use the CommunityToolkit's IoC Dependency Injection...
         //Ioc.Default.ConfigureServices(new ServiceCollection()
@@ -113,9 +121,8 @@ public partial class App : Application
         //    .AddSingleton<SettingsPage>()
         //    .BuildServiceProvider());
 
-        
-        // Using Dependency Injection...
-        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        // Using Dependency Injection with IServiceProvider...
+        ServiceCollection? services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
         services.AddSingleton<IFileService, FileService>();
         services.AddSingleton<IAppNotificationService, AppNotificationService>();
         services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
@@ -123,13 +130,16 @@ public partial class App : Application
         services.AddSingleton<INavigationViewService, NavigationViewService>();
         return services.BuildServiceProvider();
     }
-
     #endregion
 
-
+    /// <summary>
+    /// ctor
+    /// </summary>
     public App()
     {
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
+
+        App.Current.DebugSettings.FailFastOnErrors = false;
 
         #region [Exception handlers]
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
@@ -139,13 +149,11 @@ public partial class App : Application
         UnhandledException += ApplicationUnhandledException;
         #endregion
 
+        // May not be needed with newer Microsoft.WindowsAppSDK ?
         WinRT.ComWrappersSupport.InitializeComWrappers();
-
-        App.Current.DebugSettings.FailFastOnErrors = false;
-
+        
         // IoC testing
         //IoCServices = ConfigureServices();
-
 
         Host = Microsoft.Extensions.Hosting.Host.
         CreateDefaultBuilder().
@@ -191,15 +199,19 @@ public partial class App : Application
             services.AddSingleton<AlternateViewModel>();
             services.AddSingleton<AlternatePage>();
 
+            services.AddSingleton<NotesViewModel>();
+            services.AddSingleton<NotesPage>();
+
+            // NOTE: Don't forget to visit the "Task_List_App.Services.PageService" ctor and add any new pages.
             #endregion
 
-            // Configuration
+            // Register config using the Task_List_App.Services.LocalSettingsService
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 
-            // Dump all configs...
-            foreach(var cfg in context.Configuration.GetChildren())
+            // Dump all configs from Microsoft.Extensions.Configuration.IConfiguration
+            foreach (var cfg in context.Configuration.GetChildren())
             {
-                Debug.WriteLine($"{cfg.Key} => {cfg.Value}");
+                Debug.WriteLine($"[INFO] {cfg.Key} => {cfg.Value}");
             }
         }).
         Build();
@@ -246,11 +258,11 @@ public partial class App : Application
     /// Returns an instance of the desired service type. Use this if you can't/won't pass
     /// the service through the target's constructor. Can be used from any window/page/model.
     /// The 1st call to this method will add and instantiate the pre-defined services.
-    /// </summary>
-    /// <example>
+    /// <example><code>
     /// var service1 = App.GetService{SomeViewModel}();
     /// var service2 = App.GetService{FileLogger}();
-    /// </example>
+    /// </code></example>
+    /// </summary>
     /// <remarks>
     /// This is an alternative for the packages "Microsoft.Extensions.DependencyInjection" 
     /// and "Microsoft.Extensions.Hosting".
@@ -267,6 +279,14 @@ public partial class App : Application
             if (ServicesHost.Count == 0)
             {
                 ServicesHost?.Add(new ShellViewModel(App.GetService<INavigationService>(), App.GetService<INavigationViewService>()));
+                ServicesHost?.Add(new SettingsViewModel(App.GetService<IThemeSelectorService>()));
+                ServicesHost?.Add(new NavigationService(App.GetService<IPageService>()));
+                ServicesHost?.Add(new PageService());
+                ServicesHost?.Add(new FileService());
+                ServicesHost?.Add(new AlternateViewModel());
+                ServicesHost?.Add(new NotesViewModel());
+                ServicesHost?.Add(new LoginViewModel());
+                ServicesHost?.Add(new TasksViewModel());
             }
 
             // Try and locate the desired service. We're not using FirstOrDefault
@@ -276,11 +296,11 @@ public partial class App : Application
             if (vm != null)
                 return (T)vm;
             else
-                throw new ArgumentException($"{typeof(T)} must be registered first within {MethodBase.GetCurrentMethod()?.Name}.");
+                throw new ArgumentException($"{typeof(T)} must be registered first within {System.Reflection.MethodBase.GetCurrentMethod()?.Name}.");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{MethodBase.GetCurrentMethod()?.Name}: {ex.Message}");
+            Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.Name}: {ex.Message}");
             return null;
         }
     }
@@ -371,7 +391,7 @@ public partial class App : Application
     /// <summary>
     /// Simplified debug logger for app-wide use.
     /// </summary>
-    /// <param name="message">the text to write into the file</param>
+    /// <param name="message">the text to append to the file</param>
     public static void DebugLog(string message)
     {
         try
@@ -397,6 +417,44 @@ public partial class App : Application
     /// <remarks>
     /// You'll need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Windows.UI.Popups.MessageDialog"/>,
     /// because the <see cref="Microsoft.UI.Xaml.XamlRoot"/> does not exist and an owner must be defined.
+    /// </remarks>
+    public static async Task ShowMessageBox(string title, string message, string yesText, string noText, Action? yesAction, Action? noAction)
+    {
+        if (App.WindowHandle == IntPtr.Zero) { return; }
+
+        // Create the dialog.
+        var messageDialog = new MessageDialog($"{message}");
+        messageDialog.Title = title;
+
+        if (!string.IsNullOrEmpty(yesText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{yesText}", (opt) => { yesAction?.Invoke(); }));
+            messageDialog.DefaultCommandIndex = 0;
+        }
+
+        if (!string.IsNullOrEmpty(noText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{noText}", (opt) => { noAction?.Invoke(); }));
+            messageDialog.DefaultCommandIndex = 1;
+        }
+
+        // We must initialize the dialog with an owner.
+        WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
+        // Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.
+        await messageDialog.ShowAsync();
+        // We could force the result in a separate timer...
+        //DialogDismissedHandler(new UICommand("time-out"));
+    }
+
+    /// <summary>
+    /// The <see cref="Windows.UI.Popups.MessageDialog"/> does not look as nice as the
+    /// <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> and is not part of the native Microsoft.UI.Xaml.Controls.
+    /// The <see cref="Windows.UI.Popups.MessageDialog"/> offers the <see cref="Windows.UI.Popups.UICommandInvokedHandler"/> 
+    /// callback, but this could be replaced with actions. Both can be shown asynchronously.
+    /// </summary>
+    /// <remarks>
+    /// You'll need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Windows.UI.Popups.MessageDialog"/>,
+    /// because the <see cref="Microsoft.UI.Xaml.XamlRoot"/> does not exist and an owner must be defined.
     /// You'll find other implementations in the <see cref="Task_List_App.Core.Services.MessageService"/>.
     /// </remarks>
     public static async Task ShowMessageBox(string title, string message, string primaryText, string cancelText)
@@ -404,9 +462,18 @@ public partial class App : Application
 		// Create the dialog.
 		var messageDialog = new MessageDialog($"{message}");
 		messageDialog.Title = title;
-		messageDialog.Commands.Add(new UICommand($"{primaryText}", new UICommandInvokedHandler(DialogDismissedHandler)));
-		messageDialog.Commands.Add(new UICommand($"{cancelText}", new UICommandInvokedHandler(DialogDismissedHandler)));
-		messageDialog.DefaultCommandIndex = 1;
+
+        if (!string.IsNullOrEmpty(primaryText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{primaryText}", new UICommandInvokedHandler(DialogDismissedHandler)));
+            messageDialog.DefaultCommandIndex = 0;
+        }
+
+        if (!string.IsNullOrEmpty(cancelText))
+        {
+            messageDialog.Commands.Add(new UICommand($"{cancelText}", new UICommandInvokedHandler(DialogDismissedHandler)));
+            messageDialog.DefaultCommandIndex = 1;
+        }
 		// We must initialize the dialog with an owner.
 		WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
 		// Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.

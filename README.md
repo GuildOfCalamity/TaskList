@@ -12,6 +12,9 @@
 
 ### 📝 v1.0.0.4 - February 2024
 
+* Fixed backup day count.
+* Added [MessageDialog](https://learn.microsoft.com/en-us/uwp/api/windows.ui.popups.messagedialog?view=winrt-22621) overdue summary.
+    - Added new config `ShowOverdueSummary` to SettingsViewModel.
 * Added new feature: `Notes`
 
 ### 📝 v1.0.0.3 - August 2023

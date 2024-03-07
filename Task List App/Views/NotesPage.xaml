@@ -135,8 +135,10 @@
                 <PopupThemeTransition />
             </TransitionCollection>
         </Grid.Transitions>
-        <Grid Grid.Row="0" ColumnDefinitions="2*,1*,2*">
-            <!--  Note Title  -->
+        <Grid Grid.Row="0" ColumnDefinitions="6*,1*,2*">
+            <!--  
+                [Note Title]
+            -->
             <TextBox
                 Grid.Column="0"
                 MaxHeight="44"
@@ -150,15 +152,19 @@
                 Foreground="{ThemeResource HeaderBrush}"
                 Text="{x:Bind ViewModel.CurrentNote.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="TextBox_TitleChanged" />
-            <!--  Note Changed  -->
+            <!--  
+                [Note Changed]
+            -->
             <TextBlock
                 Grid.Column="1"
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 FontSize="28"
                 Text="✏️"
                 Visibility="{x:Bind ViewModel.CurrentNote.Changed, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
-            <!--  Note Date  -->
+            <!--  
+                [Note Date]
+            -->
             <StackPanel
                 Grid.Column="2"
                 Margin="{StaticResource SmallTopBottomMargin}"
@@ -175,11 +181,18 @@
                     Text="{x:Bind ViewModel.CurrentNote.Updated, Mode=OneWay, Converter={StaticResource StringToFormat}, ConverterParameter='{}{0:ddd, dd MMM yyyy – hh:mm tt}'}" />
             </StackPanel>
         </Grid>
-        <!--  Note Data  -->
+        <!--  
+            [Note Data]
+            The property TextWrapping="WrapWholeWords" fails painfully for this control?
+        -->
         <TextBox
             Grid.Row="1"
             AcceptsReturn="True"
             FontSize="20"
+            ScrollViewer.HorizontalScrollMode="Auto"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollMode="Auto"
             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
             KeyDown="TextBox_KeyDown"
             Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

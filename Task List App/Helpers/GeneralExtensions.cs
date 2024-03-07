@@ -30,6 +30,48 @@ namespace Task_List_App.Helpers;
 public static class GeneralExtensions
 {
     /// <summary>
+    /// Copies one <see cref="List{T}"/> to another <see cref="List{T}"/> by value (deep copy).
+    /// </summary>
+    /// <returns><see cref="List{T}"/></returns>
+    /// <remarks>
+    /// If your model does not inherit from <see cref="ICloneable"/>
+    /// then a manual DTO copying technique could be used instead.
+    /// </remarks>
+    public static List<T> DeepCopy<T>(this List<T> source) where T : ICloneable
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        List<T> destination = new List<T>(source.Count);
+        foreach (T item in source)
+        {
+            if (item is ICloneable cloneable)
+                destination.Add((T)cloneable.Clone());
+            else
+                throw new InvalidOperationException($"Type {typeof(T).FullName} does not implement ICloneable.");
+        }
+
+        return destination;
+    }
+
+    /// <summary>
+    /// BinaryFormatting is obsolete and should not be used.
+    /// </summary>
+    public static List<T> DeepCopyWithoutICloneable<T>(this List<T> source)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        System.Runtime.Serialization.IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+        using (MemoryStream stream = new MemoryStream())
+        {
+            formatter.Serialize(stream, source);
+            stream.Seek(0, SeekOrigin.Begin);
+            return (List<T>)formatter.Deserialize(stream);
+        }
+    }
+
+    /// <summary>
     /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
     /// </summary>
     public static InfoBarSeverity GetInfoBarSeverity(string value, TimeSpan? amount)
@@ -257,6 +299,14 @@ public static class GeneralExtensions
         }
     }
 
+    public static bool IsCompatible(this Version v, Version minimumVersion, Version exactVersion = null)
+    {
+        if (exactVersion != null)
+            return v.Equals(exactVersion);
+
+        return v >= minimumVersion;
+    }
+
     /// <summary>
     /// This method will find all occurrences of a string pattern that starts with a double 
     /// quote, followed by any number of characters (non-greedy), and ends with a double 
@@ -321,6 +371,60 @@ public static class GeneralExtensions
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
     }
+
+    public static string GetSelectedText(this ComboBox comboBox)
+    {
+        var item = comboBox.SelectedItem as ComboBoxItem;
+        if (item != null)
+        {
+            return (string)item.Content;
+        }
+
+        return "";
+    }
+
+    /// <summary>
+    /// Enables or disables the Header.
+    /// </summary>
+    public static void IsLocked(this Expander expander, bool locked)
+    {
+        var ctrl = (expander.Header as FrameworkElement)?.Parent as Control;
+        if (ctrl != null)
+            ctrl.IsEnabled = locked;
+    }
+
+    /// <summary>
+    /// Sets the desired Height for content when expanded.
+    /// </summary>
+    public static void SetContentHeight(this Expander expander, double contentHeight)
+    {
+        var ctrl = expander.Content as FrameworkElement;
+        if (ctrl != null)
+            ctrl.Height = contentHeight;
+    }
+
+    public static void SetOrientation(this VirtualizingLayout layout, Orientation orientation)
+    {
+        // Note:
+        // The public properties of UniformGridLayout and FlowLayout interpret
+        // orientation the opposite to how FlowLayoutAlgorithm interprets it. 
+        // For simplicity, our validation code is written in terms that match
+        // the implementation. For this reason, we need to switch the orientation
+        // whenever we set UniformGridLayout.Orientation or StackLayout.Orientation.
+        if (layout is StackLayout)
+        {
+            ((StackLayout)layout).Orientation = orientation;
+        }
+        else if (layout is UniformGridLayout)
+        {
+            ((UniformGridLayout)layout).Orientation = orientation;
+        }
+        else
+        {
+            throw new InvalidOperationException("layout unknown");
+        }
+    }
+
 
     public static BitmapImage? GetImageFromAssets(this string assetName)
     {
@@ -392,6 +496,24 @@ public static class GeneralExtensions
     }
 
     /// <summary>
+    /// To populate parameters with a typical URI assigning format.
+    /// This method assumes the format is like "mode=1,state=2,theme=dark"
+    /// </summary>
+    public static Dictionary<string, string> ParseAssignedValues(string inputString, string delimiter = ",")
+    {
+        Dictionary<string, string> parameters = new();
+
+        try
+        {
+            var parts = inputString.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
+            parameters = parts.Select(x => x.Split("=")).ToDictionary(x => x.First(), x => x.Last());
+        }
+        catch (Exception ex) { Debug.WriteLine($"ParseAssignedValues: {ex.Message}"); }
+
+        return parameters;
+    }
+
+    /// <summary>
     /// Dictionary<char, int> charCount = GetCharacterCount("some input text string here");
     /// foreach (var kvp in charCount) { Debug.WriteLine($"Character: {kvp.Key}, Count: {kvp.Value}"); }
     /// </summary>
@@ -437,6 +559,26 @@ public static class GeneralExtensions
     public static string ToJsonFriendlyFormat(this DateTime dateTime)
     {
         return dateTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
+    }
+
+    public static T? ParseEnum<T>(this string value)
+    {
+        try
+        {
+            return (T)Enum.Parse(typeof(T), value, true);
+        }
+        catch (Exception)
+        {
+            return default(T);
+        }
+    }
+
+    public static TEnum GetEnum<TEnum>(this string text) where TEnum : struct
+    {
+        if (!typeof(TEnum).GetTypeInfo().IsEnum)
+            throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
+
+        return (TEnum)Enum.Parse(typeof(TEnum), text);
     }
 
     /// <summary>
@@ -1499,7 +1641,7 @@ public static class GeneralExtensions
     }
 
     /// <summary>
-    /// Use this if you only have a root resource dictionary.
+    /// Can be useful if you only have a root (not merged) resource dictionary.
     /// var rdBrush = Extensions.GetResource{SolidColorBrush}("PrimaryBrush");
     /// </summary>
     public static T? GetResource<T>(string resourceName) where T : class
@@ -1519,7 +1661,7 @@ public static class GeneralExtensions
     }
 
     /// <summary>
-    /// Use this if you have merged theme resource dictionaries.
+    /// Can be useful if you have merged theme resource dictionaries.
     /// var darkBrush = Extensions.GetThemeResource{SolidColorBrush}("PrimaryBrush", ElementTheme.Dark);
     /// var lightBrush = Extensions.GetThemeResource{SolidColorBrush}("PrimaryBrush", ElementTheme.Light);
     /// </summary>
@@ -1539,6 +1681,7 @@ public static class GeneralExtensions
                 //   - 'HighContrast'
                 foreach (var kv in item.ThemeDictionaries.Keys)
                 {
+                    // Examine the ICollection<T> for the key names.
                     Debug.WriteLine($"ThemeDictionary is named '{kv}'", $"{nameof(GeneralExtensions)}");
                 }
 

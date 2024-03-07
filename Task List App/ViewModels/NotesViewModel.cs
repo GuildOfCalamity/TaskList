@@ -97,23 +97,27 @@ namespace Task_List_App.ViewModels
                     {
                         try
                         {
-                            // Check for reentry attempts.
+                            // Check for reentry attempts (similar to lock technique)
                             if (_copying)
                                 return;
 
+                            #region [Update our compare/undo set]
                             _copying = true;
                             CompareItems.Clear();
-                            foreach (var item in NoteItems)
-                            {
-                                CompareItems.Add(new NoteItem
-                                {
-                                    Title = item.Title,
-                                    Data = item.Data,
-                                    Changed = item.Changed,
-                                    Created = item.Created,
-                                    Updated = item.Updated,
-                                });
-                            }
+                            // Manual DTO method.
+                            //foreach (var item in NoteItems)
+                            //{
+                            //    CompareItems.Add(new NoteItem
+                            //    {
+                            //        Title = item.Title,
+                            //        Data = item.Data,
+                            //        Changed = item.Changed,
+                            //        Created = item.Created,
+                            //        Updated = item.Updated,
+                            //    });
+                            //}
+                            CompareItems = NoteItems.DeepCopy();
+                            #endregion
                         }
                         catch (Exception ex)
                         {
@@ -258,15 +262,19 @@ namespace Task_List_App.ViewModels
                         foreach (var item in sorted)
                         {
                             NoteItems.Add(item);
-                            CompareItems.Add(new NoteItem
-                            {
-                                Title = item.Title,
-                                Data = item.Data,
-                                Changed = item.Changed,
-                                Created = item.Created,
-                                Updated = item.Updated,
-                            });
+                            // Manual DTO method.
+                            //CompareItems.Add(new NoteItem
+                            //{
+                            //    Title = item.Title,
+                            //    Data = item.Data,
+                            //    Changed = item.Changed,
+                            //    Created = item.Created,
+                            //    Updated = item.Updated,
+                            //});
                         }
+
+                        // Update our compare/undo set (we don't want a reference copy)
+                        CompareItems = NoteItems.DeepCopy();
                         CurrentCount = NoteItems.Count;
                     }
                     else
@@ -275,7 +283,8 @@ namespace Task_List_App.ViewModels
                 else
                 {   
                     // Inject some dummy data if file was not found.
-                    NoteItems = CompareItems = GenerateDefaultNoteItems();
+                    NoteItems = GenerateDefaultNoteItems();
+                    CompareItems = GenerateDefaultNoteItems();
                     SaveNoteItemsJson();
                 }
                 // Signal any listeners.
@@ -317,20 +326,31 @@ namespace Task_List_App.ViewModels
 
                 if (NoteItems.Count > 0)
                 {
+                    // We could use our DeepCopy() helper, but we'll
+                    // want to filter the current notes to see if there
+                    // are any that should be automatically removed.
                     List<NoteItem> toSave = new();
                     foreach (var item in NoteItems)
                     {
-                        item.Changed = false; // reset the "is modified" flag
+                        // Reset the "is modified" flag.
+                        item.Changed = false;
+                        // Don't commit notes that do not have body data.
                         if (!string.IsNullOrEmpty(item.Data))
-                            toSave.Add(item); 
+                            toSave.Add(item);
                     }
-                    // Use the FileService
+
+                    // Use our FileService for reading/writing.
                     fileService?.Save(baseFolder, App.DatabaseNotes, toSave);
                     CurrentCount = toSave.Count;
+
+                    // Update our compare/undo set.
+                    CompareItems.Clear();
+                    CompareItems = toSave.DeepCopy();
                 }
                 else
                 {
                     Debug.WriteLine($"No {nameof(NoteItem)}s to save.");
+                    _ = App.ShowMessageBox("SaveNoteItems", $"There are no {nameof(NoteItem)}s to save.", "OK", string.Empty, null, null);
                 }
             }
             catch (Exception ex)
@@ -354,10 +374,10 @@ namespace Task_List_App.ViewModels
         {
             return new List<NoteItem>
             {
-                new NoteItem { Title = "Title number 1", Data = $"📌 Here is a sample note with data for day 1.", Created = DateTime.Now.AddDays(-1), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Title number 2", Data = $"📔 Here is a sample note with data for day 2.", Created = DateTime.Now.AddDays(-2), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Title number 3", Data = $"🔔 Here is a sample note with data for day 3.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Title number 4", Data = $"✔️ Here is a sample note with data for day 4.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #1", Data = $"📌 Here is a sample note with data for cycle 1.", Created = DateTime.Now.AddDays(-1), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #2", Data = $"📔 Here is a sample note with data for cycle 2.", Created = DateTime.Now.AddDays(-2), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #3", Data = $"🔔 Here is a sample note with data for cycle 3.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #4", Data = $"✔️ Here is a sample note with data for cycle 4.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
             };
         }
     }

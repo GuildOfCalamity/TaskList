@@ -52,6 +52,7 @@
                             -->
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
                             <Brush x:Key="ShadowBrush">#101013</Brush>
+                            <Brush x:Key="HeaderBrush">#A3A3B0</Brush>
                             <Brush x:Key="BorderBrush">#686874</Brush>
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
                             <Brush x:Key="SecondaryBrush">#8F1FDF</Brush>
@@ -333,6 +334,7 @@
                             -->
                             <Brush x:Key="ShadowBrush">#a7a7aa</Brush>
                             <Brush x:Key="BackgroundBrush">WhiteSmoke</Brush>
+                            <Brush x:Key="HeaderBrush">#535360</Brush>
                             <Brush x:Key="BorderBrush">#232330</Brush>
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>
                             <Brush x:Key="SecondaryBrush">#6800FF</Brush>

@@ -269,7 +269,7 @@ public sealed partial class TasksPage : Page
 
         if (amount > 0 && useMessageBox)
         {
-            await ShowMessageBox("Finished?", $"Confirm completion of marked tasks.", "Yes", "No", 
+            await App.ShowMessageBox("Finished?", $"Confirm completion of marked tasks.", "Yes", "No", 
             () => // User selected 'YES'
 			{
                 var result = ViewModel.CompleteSelectedTaskItems();
@@ -316,7 +316,7 @@ public sealed partial class TasksPage : Page
 
         if (amount > 0 && useMessageBox)
         {
-            await ShowMessageBox("Are you sure?", $"Confirm removal of all completed tasks.", "Yes", "No",
+            await App.ShowMessageBox("Are you sure?", $"Confirm removal of all completed tasks.", "Yes", "No",
             () => // User selected 'YES'
             {
                 var result = ViewModel.RemoveCompletedTaskItems();
@@ -488,7 +488,7 @@ public sealed partial class TasksPage : Page
                         {
                             var severity = GeneralExtensions.GetInfoBarSeverity(tsk.Time, diff.Value);
                             if (severity == InfoBarSeverity.Error && ApplicationSettings.ShowOverdueSummary)
-                                _ = ShowMessageBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
+                                _ = App.ShowMessageBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
 
                             //noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", severity } });
                             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", InfoBarSeverity.Informational } });
@@ -610,44 +610,6 @@ public sealed partial class TasksPage : Page
     #endregion
 
     #region [Dialog Helpers]
-    /// <summary>
-    /// The <see cref="Windows.UI.Popups.MessageDialog"/> does not look as nice as the
-    /// <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> and is not part of the native Microsoft.UI.Xaml.Controls.
-    /// The <see cref="Windows.UI.Popups.MessageDialog"/> offers the <see cref="Windows.UI.Popups.UICommandInvokedHandler"/> 
-    /// callback, but this could be replaced with actions. Both can be shown asynchronously.
-    /// </summary>
-    /// <remarks>
-    /// You'll need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Windows.UI.Popups.MessageDialog"/>,
-    /// because the <see cref="Microsoft.UI.Xaml.XamlRoot"/> does not exist and an owner must be defined.
-    /// </remarks>
-    public static async Task ShowMessageBox(string title, string message, string yesText, string noText, Action? yesAction, Action? noAction)
-    {
-        if (App.WindowHandle == IntPtr.Zero) { return; }
-
-        // Create the dialog.
-        var messageDialog = new MessageDialog($"{message}");
-        messageDialog.Title = title;
-        
-        if (!string.IsNullOrEmpty(yesText))
-        {
-            messageDialog.Commands.Add(new UICommand($"{yesText}", (opt) => { yesAction?.Invoke(); }));
-            messageDialog.DefaultCommandIndex = 0;
-        }
-
-        if (!string.IsNullOrEmpty(noText))
-        {
-            messageDialog.Commands.Add(new UICommand($"{noText}", (opt) => { noAction?.Invoke(); }));
-            messageDialog.DefaultCommandIndex = 1;
-        }
-
-        // We must initialize the dialog with an owner.
-        WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
-        // Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.
-        await messageDialog.ShowAsync();
-        // We could force the result in a separate timer...
-        //DialogDismissedHandler(new UICommand("time-out"));
-    }
-
     /// <summary>
     /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> looks much better than the
     /// <see cref="Windows.UI.Popups.MessageDialog"/> and is part of the native Microsoft.UI.Xaml.Controls.
