@@ -61,6 +61,9 @@
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
                             <Brush x:Key="SelectedBrush">#3976B9ED</Brush>
+                            <Brush x:Key="GlowModified">#30ffb900</Brush>
+                            <Brush x:Key="GlowSelectedPip">#806800ff</Brush>
+                            <Brush x:Key="GlowPip">#80808080</Brush>
                             <SolidColorBrush
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"
@@ -343,6 +346,9 @@
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
                             <Brush x:Key="SenaryBrush">#dc7d5e</Brush>
                             <Brush x:Key="SelectedBrush">#3976B9ED</Brush>
+                            <Brush x:Key="GlowModified">#30ffb900</Brush>
+                            <Brush x:Key="GlowSelectedPip">#806800ff</Brush>
+                            <Brush x:Key="GlowPip">#80808080</Brush>
                             <SolidColorBrush
                                 x:Key="CustomTextBoxBackground"
                                 Opacity="0.7"

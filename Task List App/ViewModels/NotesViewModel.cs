@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,7 +14,11 @@ using Task_List_App.Models;
 using Task_List_App.Helpers;
 using Task_List_App.Core.Services;
 using Task_List_App.Views;
-using System.Globalization;
+
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Windows.Services.Maps;
+using Task_List_App.Contracts.Services;
 
 namespace Task_List_App.ViewModels
 {
@@ -21,6 +26,7 @@ namespace Task_List_App.ViewModels
     {
         #region [Properties]
         static bool _copying = false;
+        static bool _loaded = false;
 
         public event EventHandler<bool>? NotesLoadedEvent;
 
@@ -45,7 +51,27 @@ namespace Task_List_App.ViewModels
         [ObservableProperty]
         bool canGoBack = true;
 
+        [ObservableProperty]
+        bool editRequest = false;
+
+        bool _canThrowError = false;
+        public bool CanThrowError
+        {
+            get => _canThrowError;
+            set
+            {
+                SetProperty(ref _canThrowError, value);
+                ThrowExCommand?.NotifyCanExecuteChanged();
+            }
+        }
+
+        public List<string> SortBy { get; set; } = new() { "Updated", "Created", "Natural" };
         Core.Contracts.Services.IFileService? fileService { get; set; }
+        public INavigationService? NavService { get; private set; }
+        public ShellViewModel ShellModel { get; private set; }
+        public ICommand? TestCommand1 { get; }
+        public ICommand? TestCommand2 { get; }
+        public RelayCommand? ThrowExCommand { get; }
         #endregion
 
         /// <summary>
@@ -56,6 +82,14 @@ namespace Task_List_App.ViewModels
             Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
             try
             {
+                // For future use.
+                NavService = App.GetService<INavigationService>();
+
+                // For testing home-brew relay commands
+                TestCommand1 = new RelayCommand<NoteItem>(async (item) => await UpdateNote(item));
+                TestCommand2 = new RelayCommand(async () => await UpdateNote(null));
+                ThrowExCommand = new RelayCommand(async () => await ThrowError(), () => CanThrowError);
+
                 // IoC method...
                 //fileService = Ioc.Default.GetService<Core.Contracts.Services.IFileService>();
                 //fileService = App.Current.IoCServices.GetService<Core.Contracts.Services.IFileService>();
@@ -69,17 +103,12 @@ namespace Task_List_App.ViewModels
                 fileService = new Core.Services.FileService();
             }
 
-            // Make sure we save on exit.
-            NotesPage.PageUnloadedEvent += (s, e) =>
+            #region [Deferred Page Events]
+            NotesPage.FinishedLoadingEvent += (s, e) => { _loaded = e; };
+            NotesPage.EditRequestEvent += (s, e) => { EditRequest = e; };
+            NotesPage.TextChangedEvent += (s, e) => // Make sure we save on note updated.
             {
-                if (NoteItems.Count > 0)
-                    SaveNoteItemsJson();
-            };
-
-            // Make sure we save on note updated.
-            NotesPage.TextChangedEvent += (s, e) =>
-            {
-                if (CurrentNote == null || e == false)
+                if (CurrentNote == null || e == false || !_loaded)
                     return;
 
                 for (int i = 0; i < NoteItems.Count; i++)
@@ -104,7 +133,7 @@ namespace Task_List_App.ViewModels
                             #region [Update our compare/undo set]
                             _copying = true;
                             CompareItems.Clear();
-                            // Manual DTO method.
+                            // Manual DTO method:
                             //foreach (var item in NoteItems)
                             //{
                             //    CompareItems.Add(new NoteItem
@@ -130,14 +159,106 @@ namespace Task_List_App.ViewModels
                     }
                 }
             };
+            #endregion
 
             LoadNoteItemsJson();
-
             if (NoteItems.Count > 0)
                 CurrentNote = NoteItems[CurrentIndex];
             else
                 CurrentNote = new NoteItem { Title = "No data available", Data = "Enter some data to create a note.", Updated = DateTime.Now, Created = DateTime.Now, Changed = false };
+
+            // Update the count on app startup.
+            ShellModel = App.GetService<ShellViewModel>();
+            UpdateNoteBadgeIcon(NoteItems.Count);
         }
+
+        #region [Bound Events]
+        /// <summary>
+        /// Make sure we save on exit.
+        /// </summary>
+        public void NotesPageUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (NoteItems.Count > 0)
+                SaveNoteItemsJson();
+        }
+
+        /// <summary>
+        /// <see cref="ComboBox"/> event for sorting.
+        /// </summary>
+        public void SortingSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_loaded && CurrentNote != null)
+            {
+                if (EditRequest)
+                    EditRequest = false;
+
+                try
+                {
+                    var selection = e.AddedItems[0] as string;
+                    if (!string.IsNullOrEmpty(selection))
+                    {
+                        LoadNoteItemsJson(selection);
+                        if (NoteItems.Count > 0)
+                        {
+                            CurrentIndex = 0;
+                            CurrentNote = NoteItems[CurrentIndex];
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _ = App.ShowMessageBox("Exception", $"SortingSelectionChanged: {ex.Message}", "OK", string.Empty, null, null);
+                }
+            }
+        }
+        #endregion
+
+        #region [Misc Routines]
+        void UpdateNoteBadgeIcon(int count)
+        {
+            if (ShellModel != null && ShellModel.NoteTotal != count)
+                ShellModel.NoteTotal = count;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="List{T}"/> object with example data.
+        /// </summary>
+        /// <returns><see cref="List{T}"/></returns>
+        List<NoteItem> GenerateDefaultNoteItems()
+        {
+            return new List<NoteItem>
+            {
+                new NoteItem { Title = "Note title #1", Data = $"📌 Here is a sample note with data for cycle 1.", Created = DateTime.Now.AddDays(-1), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #2", Data = $"📔 Here is a sample note with data for cycle 2.", Created = DateTime.Now.AddDays(-2), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #3", Data = $"🔔 Here is a sample note with data for cycle 3.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
+                new NoteItem { Title = "Note title #4", Data = $"✔️ Here is a sample note with data for cycle 4.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
+            };
+        }
+
+        /// <summary>
+        /// Command testing method.
+        /// </summary>
+        async Task ThrowError()
+        {
+            IsBusy = true;
+            Func<int> testFunc = () => {
+                int test = Random.Shared.Next(1, 11);
+                if (test < 8) { throw new Exception("I don't like this number."); }
+                return test;
+            };
+            try
+            {
+                int result = testFunc.Retry(3);
+                Debug.WriteLine($"Passed: {result}");
+            }
+            catch (Exception) 
+            { 
+                Debug.WriteLine($"Retry attempts were exhausted!"); 
+            }
+            await Task.Delay(500);
+            IsBusy = false;
+        }
+        #endregion
 
         #region [ICommands]
         [RelayCommand]
@@ -164,6 +285,8 @@ namespace Task_List_App.ViewModels
             {
                 CanGoBack = false;
             }
+            // Hide edit textbox
+            EditRequest = false;
         }
 
         [RelayCommand]
@@ -179,6 +302,8 @@ namespace Task_List_App.ViewModels
                 }
                 CanGoBack = true;
                 CurrentNote = NoteItems[++CurrentIndex];
+                // Hide edit textbox
+                EditRequest = false;
             }
             else
             {
@@ -196,6 +321,8 @@ namespace Task_List_App.ViewModels
                 NoteItems.Add(newNote);
                 SaveNoteItemsJson();
                 CanGoForward = false;
+                // Hide markdown textblock
+                EditRequest = true;
             }
         }
 
@@ -204,12 +331,15 @@ namespace Task_List_App.ViewModels
         /// </summary>
         /// <param name="item"><see cref="NoteItem"/></param>
         [RelayCommand]
-        void UpdateNote(NoteItem item)
+        async Task<bool> UpdateNote(NoteItem? item)
         {
+            TaskCompletionSource<bool> tcs = new();
+
             if (NoteItems.Count > 0 && item == null)
             {
                 SaveNoteItemsJson();
                 LoadNoteItemsJson();
+                tcs.SetResult(false);
             }
             else if (NoteItems.Count > 0 && item != null)
             {
@@ -219,8 +349,15 @@ namespace Task_List_App.ViewModels
                     NoteItems.RemoveAt(idx);
                     NoteItems.Add(item);
                     SaveNoteItemsJson();
+                    tcs.SetResult(true);
+                }
+                else
+                {
+                    tcs.SetResult(false);
                 }
             }
+
+            return await tcs.Task;
         }
         #endregion
 
@@ -229,7 +366,7 @@ namespace Task_List_App.ViewModels
         /// Loads the <see cref="TaskItem"/> collection.
         /// Requires <see cref="Core.Services.FileService"/>.
         /// </summary>
-        public void LoadNoteItemsJson()
+        public void LoadNoteItemsJson(string sortBy = "updated")
         {
             string baseFolder = "";
 
@@ -247,9 +384,7 @@ namespace Task_List_App.ViewModels
 
                 if (File.Exists(Path.Combine(baseFolder, App.DatabaseNotes)))
                 {
-                    Debug.WriteLine($"DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
-
-                    // FileService testing.
+                    // Use our FileService for reading/writing.
                     var jdata = fileService?.Read<List<NoteItem>>(baseFolder, App.DatabaseNotes);
                     if (jdata != null)
                     {
@@ -257,12 +392,20 @@ namespace Task_List_App.ViewModels
                         NoteItems.Clear();
                         CompareItems.Clear();
 
+                        IOrderedEnumerable<NoteItem>? sorted = Enumerable.Empty<NoteItem>().OrderBy(x => 1);
+                        
                         // Sort and then validate each item.
-                        var sorted = jdata.Select(t => t).OrderByDescending(t => t.Updated);
+                        if (sortBy.StartsWith("updated", StringComparison.OrdinalIgnoreCase))
+                            sorted = jdata.Select(t => t).OrderByDescending(t => t.Updated);
+                        else if (sortBy.StartsWith("created", StringComparison.OrdinalIgnoreCase))
+                            sorted = jdata.Select(t => t).OrderByDescending(t => t.Created);
+                        else
+                            sorted = jdata.Select(t => t).OrderBy(x => 1); // file order
+
                         foreach (var item in sorted)
                         {
                             NoteItems.Add(item);
-                            // Manual DTO method.
+                            // Manual DTO method:
                             //CompareItems.Add(new NoteItem
                             //{
                             //    Title = item.Title,
@@ -346,6 +489,9 @@ namespace Task_List_App.ViewModels
                     // Update our compare/undo set.
                     CompareItems.Clear();
                     CompareItems = toSave.DeepCopy();
+
+                    // Update nav menu badge icon
+                    UpdateNoteBadgeIcon(CurrentCount);
                 }
                 else
                 {
@@ -365,20 +511,5 @@ namespace Task_List_App.ViewModels
             }
         }
         #endregion
-
-        /// <summary>
-        /// Creates a new <see cref="List{T}"/> object with example data.
-        /// </summary>
-        /// <returns><see cref="List{T}"/></returns>
-        List<NoteItem> GenerateDefaultNoteItems()
-        {
-            return new List<NoteItem>
-            {
-                new NoteItem { Title = "Note title #1", Data = $"📌 Here is a sample note with data for cycle 1.", Created = DateTime.Now.AddDays(-1), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Note title #2", Data = $"📔 Here is a sample note with data for cycle 2.", Created = DateTime.Now.AddDays(-2), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Note title #3", Data = $"🔔 Here is a sample note with data for cycle 3.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
-                new NoteItem { Title = "Note title #4", Data = $"✔️ Here is a sample note with data for cycle 4.", Created = DateTime.Now.AddDays(-3), Updated = DateTime.Now, Changed = false },
-            };
-        }
     }
 }

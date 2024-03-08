@@ -3,16 +3,19 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="using:Task_List_App.Behaviors"
+    xmlns:ctrls="using:Task_List_App.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:extras="using:Task_List_App.Controls"
+    xmlns:extras="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:Task_List_App.Models"
     x:Name="ThisPage"
-    behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
+    behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
+    Unloaded="{x:Bind ViewModel.NotesPageUnloaded, Mode=OneWay}"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <!--  A base style for the PipPager  -->
         <Style
             x:Key="NavButtonBaseStyle"
             BasedOn="{StaticResource PipsPagerNavigationButtonBaseStyle}"
@@ -36,7 +39,7 @@
             <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}" />
         </Style>
 
-        <!--  A standard feeling stlye for the PipPager  -->
+        <!--  A standard feeling style for the PipPager  -->
         <Style
             x:Key="NormalStyle"
             BasedOn="{StaticResource NavButtonBaseStyle}"
@@ -46,7 +49,7 @@
             <Setter Property="Content" Value="{StaticResource CircleFill}" />
             <Setter Target="RootPanel" Property="Opacity" Value="0.6" />
         </Style>
-        <!--  A custom feeling stlye for the PipPager  -->
+        <!--  A custom feeling style for the PipPager  -->
         <Style x:Key="NormalStyleCustom" TargetType="Button">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="Background" Value="Transparent" />
@@ -88,7 +91,7 @@
             <Setter Target="RootPanel" Property="Opacity" Value="1" />
             <Setter Target="RootPanel" Property="CornerRadius" Value="15" />
         </Style>
-        <!--  A custom feeling stlye for the PipPager  -->
+        <!--  A custom feeling style for the PipPager  -->
         <Style x:Key="SelectedStyleCustom" TargetType="Button">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="Background" Value="Transparent" />
@@ -129,20 +132,22 @@
         FocusVisualPrimaryThickness="1"
         FocusVisualSecondaryBrush="{ThemeResource SecondaryBrush}"
         FocusVisualSecondaryThickness="0"
+        PointerPressed="ContentArea_PointerPressed"
         RowDefinitions="1*,8*,1*">
         <Grid.Transitions>
             <TransitionCollection>
                 <PopupThemeTransition />
             </TransitionCollection>
         </Grid.Transitions>
-        <Grid Grid.Row="0" ColumnDefinitions="6*,1*,2*">
-            <!--  
+        <Grid Grid.Row="0" ColumnDefinitions="6*,2*,1*,3*">
+            <!--
                 [Note Title]
             -->
             <TextBox
+                x:Name="tbTitle"
                 Grid.Column="0"
                 MaxHeight="44"
-                Margin="0,0,0,10"
+                Margin="{StaticResource NoteWithBottomMargin}"
                 Padding="20,6,20,6"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
@@ -150,24 +155,60 @@
                 AcceptsReturn="False"
                 FontSize="20"
                 Foreground="{ThemeResource HeaderBrush}"
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
+                IsSpellCheckEnabled="False"
                 Text="{x:Bind ViewModel.CurrentNote.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="TextBox_TitleChanged" />
-            <!--  
+            <!--
+                [Note Sorting]
+            -->
+            <ComboBox
+                Grid.Column="1"
+                MaxWidth="180"
+                MaxHeight="50"
+                Margin="{StaticResource NoteWithBottomMargin}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                ItemsSource="{x:Bind ViewModel.SortBy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedIndex="0"
+                SelectionChanged="{x:Bind ViewModel.SortingSelectionChanged, Mode=OneWay}"
+                ToolTipService.ToolTip="Select note sorting method">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="3">
+                            <TextBlock Foreground="{ThemeResource HeaderBrush}" Text="Sort by " />
+                            <TextBlock Foreground="{ThemeResource HeaderBrush}" Text="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <!--
                 [Note Changed]
             -->
-            <TextBlock
-                Grid.Column="1"
+            <ctrls:SimpleGlowPanel
+                Grid.Column="2"
+                Margin="{StaticResource NoteWithBottomMargin}"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                FontSize="28"
-                Text="✏️"
-                Visibility="{x:Bind ViewModel.CurrentNote.Changed, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
-            <!--  
+                VerticalAlignment="Bottom"
+                Background="{ThemeResource GlowModified}"
+                BlurRadius="40"
+                Visibility="{x:Bind ViewModel.CurrentNote.Changed, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}">
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="{StaticResource NoteWithBottomMargin}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    FontSize="28"
+                    Text="✏️"
+                    Visibility="{x:Bind ViewModel.CurrentNote.Changed, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
+            </ctrls:SimpleGlowPanel>
+            <!--
                 [Note Date]
             -->
             <StackPanel
-                Grid.Column="2"
-                Margin="{StaticResource SmallTopBottomMargin}"
+                Grid.Column="3"
+                Margin="{StaticResource NoteWithBottomMargin}"
+                VerticalAlignment="Bottom"
                 Orientation="Vertical">
                 <TextBlock
                     HorizontalAlignment="Right"
@@ -181,22 +222,52 @@
                     Text="{x:Bind ViewModel.CurrentNote.Updated, Mode=OneWay, Converter={StaticResource StringToFormat}, ConverterParameter='{}{0:ddd, dd MMM yyyy – hh:mm tt}'}" />
             </StackPanel>
         </Grid>
-        <!--  
-            [Note Data]
-            The property TextWrapping="WrapWholeWords" fails painfully for this control?
-        -->
-        <TextBox
-            Grid.Row="1"
-            AcceptsReturn="True"
-            FontSize="20"
-            ScrollViewer.HorizontalScrollMode="Auto"
-            ScrollViewer.HorizontalScrollBarVisibility="Auto"
-            ScrollViewer.VerticalScrollBarVisibility="Auto"
-            ScrollViewer.VerticalScrollMode="Auto"
-            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
-            KeyDown="TextBox_KeyDown"
-            Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            TextChanged="TextBox_TitleChanged" />
+
+        <Grid Grid.Row="1">
+            <!--
+                [Note Data]
+                The property TextWrapping="WrapWholeWords" fails painfully for this control?
+            -->
+            <TextBox
+                AcceptsReturn="True"
+                FontSize="20"
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
+                IsSpellCheckEnabled="False"
+                KeyDown="TextBox_KeyDown"
+                LostFocus="TextBox_LostFocus"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.VerticalScrollMode="Auto"
+                Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="TextBox_TitleChanged"
+                Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
+            <!--
+                We can add a system to detect the click and switch to the textbox for editing and then the markdown for displaying.
+            -->
+            <extras:MarkdownTextBlock
+                x:Name="mdTextBlock"
+                Padding="5"
+                Background="Transparent"
+                CodeBackground="Transparent"
+                CornerRadius="4"
+                FontSize="19"
+                ImageClicked="mdTextBlock_ImageClicked"
+                ImageMaxHeight="600"
+                ImageMaxWidth="600"
+                ImageResolving="mdTextBlock_ImageResolving"
+                IsFocusEngagementEnabled="True"
+                IsHitTestVisible="True"
+                LinkClicked="mdTextBlock_LinkClicked"
+                SchemeList="uwpct"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.VerticalScrollMode="Auto"
+                Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                UseSystemFocusVisuals="True"
+                Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
+        </Grid>
 
         <!-- #region [Testing FlipView] https://learn.microsoft.com/en-us/windows/apps/design/controls/flipview#specify-the-look-of-the-items
         <FlipView
@@ -258,24 +329,6 @@
 
         <!--  Navigation Control  -->
         <Grid Grid.Row="2" ColumnDefinitions="1*,1*,5*">
-            <!--
-            <extras:SimpleGlowPanel
-                Grid.Column="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Background="{ThemeResource SecondaryBrush}"
-                BlurRadius="30">
-                <Rectangle
-                    Grid.RowSpan="1"
-                    Grid.ColumnSpan="1"
-                    Margin="20"
-                    Fill="{ThemeResource LoginAcrylicBrush}"
-                    RadiusX="8"
-                    RadiusY="8"
-                    Stroke="{ThemeResource SecondaryBrush}"
-                    StrokeThickness="1" />
-            </extras:SimpleGlowPanel>
-            -->
             <Button
                 Grid.Column="0"
                 MinWidth="160"

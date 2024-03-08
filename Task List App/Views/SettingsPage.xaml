@@ -229,6 +229,7 @@
                         ImageMaxWidth="600"
                         ImageResolving="mdReadMe_ImageResolving"
                         IsFocusEngagementEnabled="False"
+                        IsHitTestVisible="True"
                         LinkClicked="mdReadMe_LinkClicked"
                         SchemeList="uwpct" />
                 </Expander>

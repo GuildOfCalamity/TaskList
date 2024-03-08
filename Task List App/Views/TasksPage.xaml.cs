@@ -178,7 +178,8 @@ public sealed partial class TasksPage : Page
 
     void ShellPage_ShellPointerEvent(object? sender, Microsoft.UI.Input.PointerDeviceType e)
     {
-        Debug.WriteLine($"[INFO] ShellPage_ShellPointerEvent");
+        if (e == Microsoft.UI.Input.PointerDeviceType.Mouse)
+            Debug.WriteLine($"[INFO] ShellPage_ShellPointerEvent (mouse click)");
         _lastActivity = DateTime.Now;
     }
 

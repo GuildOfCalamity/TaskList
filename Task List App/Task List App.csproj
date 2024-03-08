@@ -45,6 +45,10 @@
     <None Remove="Assets\Fonts\Aptos.ttf" />
     <None Remove="Assets\README.md" />
     <None Remove="Assets\ScreenShot.png" />
+    <None Remove="Assets\ScreenShot2.png" />
+    <None Remove="Assets\ScreenShot3.png" />
+    <None Remove="Assets\ScreenShot4.png" />
+    <None Remove="Assets\ScreenShot5.png" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\SampleControl.xaml" />
     <None Remove="Styles\Buttons.xaml" />
@@ -81,7 +85,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Assets\MarkdownCheatSheet.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Assets\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\ScreenShot.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\ScreenShot2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\ScreenShot3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\ScreenShot4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\ScreenShot5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

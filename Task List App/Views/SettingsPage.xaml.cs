@@ -80,7 +80,8 @@ public sealed partial class SettingsPage : Page
         var link = e.Link;
         if (Uri.TryCreate(link, UriKind.Absolute, out Uri result))
         {
-            await Launcher.LaunchUriAsync(result);
+            if (result != null)
+                await Launcher.LaunchUriAsync(result);
         }
     }
 
@@ -99,117 +100,157 @@ public sealed partial class SettingsPage : Page
     /// </remarks>
     async void mdReadMe_ImageResolving(object sender, CommunityToolkit.WinUI.UI.Controls.ImageResolvingEventArgs e)
     {
+        bool notUNC = true;
         var deferral = e.GetDeferral();
         BitmapImage? image = null;
 
-        // Determine if the link is not absolute, meaning it is relative.
-        if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri url))
+        // Check if we have a UNC asset first.
+        if (Uri.TryCreate(e.Url, UriKind.Relative, out Uri urlRel))
         {
-            try
+            if (urlRel != null && urlRel.OriginalString.StartsWith("\\"))
             {
-                var imageStream = await GetImageStream(new Uri(e.Url));
-                if (imageStream != null)
-                {
-                    image = new BitmapImage();
-                    await image.SetSourceAsync(imageStream);
-                }
-            }
-            catch (UriFormatException fex)
-            {
-                Debug.WriteLine($"GetImageStream: {fex.Message}");
-                
-                if (url != null)
-                    Debug.WriteLine($"Trying local image from scheme '{url.Scheme}' ...");
+                notUNC = false;
 
                 try
                 {
-                    if (App.IsPackaged)
+                    // https://learn.microsoft.com/en-us/uwp/api/windows.storage.storagefolder.getfolderfrompathasync?view=winrt-22621#parameters
+                    string fullFileName = $"{urlRel.OriginalString}";
+                    var fullPathName = $"\\{Path.GetDirectoryName(fullFileName)}";
+                    StorageFolder workingFolder = await StorageFolder.GetFolderFromPathAsync(fullPathName);
+                    var fileName = Path.GetFileName(fullFileName);
+                    var working = await GetSubFolderAsync(fileName, workingFolder);
+                    var file = await working.GetFileAsync(fileName);
+                    var imgStream = await file.OpenAsync(FileAccessMode.Read);
+                    if (imgStream != null)
                     {
-                        string target = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "Assets", e.Url.Replace("./", ""));
-                        // https://github.com/MicrosoftDocs/WindowsCommunityToolkitDocs/blob/main/dotnet/xml/CommunityToolkit.WinUI.Helpers/StreamHelper.xml
-                        var imageStream = await StreamHelper.GetPackagedFileStreamAsync(target);
-                        if (imageStream != null)
-                        {
-                            image = new BitmapImage();
-                            await image.SetSourceAsync(imageStream);
-                        }
-                    }
-                    else // Check local "Assets" folder.
-                    {
-                        try
-                        {
-                            /* 
-                             *  Unfortunately this throws an InvalidOperationException with no explanation.
-                             *  The problem is the method still assumes the app is packaged.
-                             *  The documentation is sorely lacking...
-                             *  https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.helpers.streamhelper.getlocalfilestreamasync?view=win-comm-toolkit-dotnet-7.0#communitytoolkit-winui-helpers-streamhelper-getlocalfilestreamasync(system-string-windows-storage-fileaccessmode)
-                             */
-                            //string target = Path.Combine(AppContext.BaseDirectory, "Assets", e.Url.Replace("./", ""));
-                            //var imageStream = await StreamHelper.GetLocalFileStreamAsync(target);
-                            //if (imageStream != null)
-                            //{
-                            //    image = new BitmapImage();
-                            //    await image.SetSourceAsync(imageStream);
-                            //    Debug.WriteLine($"Image resolved!");
-                            //}
-
-                            #region [Fixing the CommunityToolkit method]
-                            string target = Path.Combine("Assets", e.Url.Replace("./", ""));
-                            var imageStream = await GetLocalFileStreamAsync(target);
-                            if (imageStream != null)
-                            {
-                                image = new BitmapImage();
-                                await image.SetSourceAsync(imageStream);
-                                Debug.WriteLine($"Image resolved!");
-                            }
-                            #endregion
-
-                            #region [Simpler extension method]
-                            //image = e.Url.GetImageFromAssets();
-                            #endregion
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"{ex.Message}");
-                        }
+                        image = new BitmapImage();
+                        await image.SetSourceAsync(imgStream);
+                        Debug.WriteLine($"[SUCCESS] UNC image resolved => '{e.Url}'");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"StreamHelper: {ex.Message}");
+                    Debug.WriteLine($"[WARNING] ImageResolving: {ex.Message}");
                 }
             }
-            catch (Exception ex) 
+            else
             {
-                App.DebugLog($"MarkDown_ImageResolving: {ex.Message}");
+                notUNC = true;
             }
         }
-        else if (url != null && url.Scheme == "ms-appx")
+
+        // Proceed as if local asset.
+        if (notUNC)
         {
-            try
+            // Determine if the link is not absolute, meaning it is relative.
+            if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri url))
             {
-                image = new BitmapImage(url);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"{url.Scheme}: {ex.Message}");
-            }
-        }
-        else
-        {
-            try
-            {
-                // Cache a remote image from the internet.
-                var imageStream = await GetImageStream(url);
-                if (imageStream != null)
+                try
                 {
-                    image = new BitmapImage();
-                    await image.SetSourceAsync(imageStream);
+                    var imageStream = await new Uri(e.Url).GetImageStream();
+                    if (imageStream != null)
+                    {
+                        image = new BitmapImage();
+                        await image.SetSourceAsync(imageStream);
+                    }
+                }
+                catch (UriFormatException fex)
+                {
+                    Debug.WriteLine($"GetImageStream: {fex.Message}");
+
+                    if (url != null)
+                        Debug.WriteLine($"Trying local image from scheme '{url.Scheme}' ...");
+
+                    try
+                    {
+                        if (App.IsPackaged)
+                        {
+                            string target = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "Assets", e.Url.Replace("./", ""));
+                            // https://github.com/MicrosoftDocs/WindowsCommunityToolkitDocs/blob/main/dotnet/xml/CommunityToolkit.WinUI.Helpers/StreamHelper.xml
+                            var imageStream = await StreamHelper.GetPackagedFileStreamAsync(target);
+                            if (imageStream != null)
+                            {
+                                image = new BitmapImage();
+                                await image.SetSourceAsync(imageStream);
+                            }
+                        }
+                        else // Check local "Assets" folder.
+                        {
+                            try
+                            {
+                                /* 
+                                 *  Unfortunately this throws an InvalidOperationException with no explanation.
+                                 *  The problem is the method still assumes the app is packaged.
+                                 *  The documentation is sorely lacking...
+                                 *  https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.helpers.streamhelper.getlocalfilestreamasync?view=win-comm-toolkit-dotnet-7.0#communitytoolkit-winui-helpers-streamhelper-getlocalfilestreamasync(system-string-windows-storage-fileaccessmode)
+                                 */
+                                //string target = Path.Combine(AppContext.BaseDirectory, "Assets", e.Url.Replace("./", ""));
+                                //var imageStream = await StreamHelper.GetLocalFileStreamAsync(target);
+                                //if (imageStream != null)
+                                //{
+                                //    image = new BitmapImage();
+                                //    await image.SetSourceAsync(imageStream);
+                                //    Debug.WriteLine($"Image resolved!");
+                                //}
+
+                                #region [Fixing the CommunityToolkit method]
+                                string target = Path.Combine("Assets", e.Url.Replace("./", ""));
+                                var imageStream = await GetLocalFileStreamAsync(target);
+                                if (imageStream != null)
+                                {
+                                    image = new BitmapImage();
+                                    await image.SetSourceAsync(imageStream);
+                                    Debug.WriteLine($"Image resolved!");
+                                }
+                                #endregion
+
+                                #region [Simpler extension method]
+                                //image = e.Url.GetImageFromAssets();
+                                #endregion
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"{ex.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"StreamHelper: {ex.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    App.DebugLog($"MarkDown_ImageResolving: {ex.Message}");
                 }
             }
-            catch (Exception ex)
+            else if (url != null && url.Scheme == "ms-appx")
             {
-                Debug.WriteLine($"GetImageStream: {ex.Message}");
+                try
+                {
+                    image = new BitmapImage(url);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"{url.Scheme}: {ex.Message}");
+                }
+            }
+            else
+            {
+                try
+                {
+                    // Cache a remote image from the internet.
+                    var imageStream = await url.GetImageStream();
+                    if (imageStream != null)
+                    {
+                        image = new BitmapImage();
+                        await image.SetSourceAsync(imageStream);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"GetImageStream: {ex.Message}");
+                }
             }
         }
 
@@ -224,47 +265,6 @@ public sealed partial class SettingsPage : Page
     }
     #endregion
 
-    /// <summary>
-    /// Gets the image data from a Uri.
-    /// NOTE: The issue with many of the CommunityToolkit file access routines is that they do not
-    /// handle unpackaged apps, so you will see I added logic switches for most of these methods.
-    /// </summary>
-    /// <param name="uri">Image Uri</param>
-    /// <returns>Image Stream as <see cref="IRandomAccessStream"/></returns>
-    public async Task<IRandomAccessStream?> GetImageStream(Uri uri)
-    {
-        IRandomAccessStream? imageStream = null;
-        var localPath = $"{uri.Host}/{uri.LocalPath}".Replace("//", "/");
-
-        // If we don't have internet, then try to see if we have a packaged copy
-        try
-        {
-            if (App.IsPackaged)
-            {
-                /*
-                    "StreamHelper.GetPackagedFileStreamAsync" contains the following...
-                    StorageFolder workingFolder = Package.Current.InstalledLocation;
-                    return GetFileStreamAsync(fileName, accessMode, workingFolder);
-                */
-                imageStream = await StreamHelper.GetPackagedFileStreamAsync(localPath);
-            }
-            else
-            {
-                /*
-                    "StreamHelper.GetLocalFileStreamAsync" contains the following...
-                    StorageFolder workingFolder = ApplicationData.Current.LocalFolder;
-                    return GetFileStreamAsync(fileName, accessMode, workingFolder);
-                */
-                imageStream = await StreamHelper.GetLocalFileStreamAsync(localPath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"GetImageStream: {ex.Message}");
-        }
-
-        return imageStream;
-    }
 
     #region [Customized from CommunityToolkit]
     /// <summary>

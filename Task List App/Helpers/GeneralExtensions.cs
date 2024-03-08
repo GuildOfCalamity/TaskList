@@ -71,6 +71,82 @@ public static class GeneralExtensions
         }
     }
 
+    #region [Helper for CummunityToolkit]
+    /// <summary>
+    /// <para>
+    /// Gets the image data from a Uri.
+    /// </para>
+    /// <para>
+    /// The issue with many of the CommunityToolkit file access routines is that they do not
+    /// handle unpackaged apps, so you will see I added logic switches for most of these methods.
+    /// </para>
+    /// </summary>
+    /// <param name="uri">Image Uri</param>
+    /// <returns>Image Stream as <see cref="IRandomAccessStream"/></returns>
+    public static async Task<IRandomAccessStream?> GetImageStream(this Uri uri)
+    {
+        IRandomAccessStream? imageStream = null;
+        string localPath = string.Empty;
+        if (uri.LocalPath.StartsWith("\\\\"))
+            localPath = $"{uri.LocalPath}".Replace("//", "/");
+        else
+            localPath = $"{uri.Host}/{uri.LocalPath}".Replace("//", "/");
+
+        // If we don't have internet, then try to see if we have a packaged copy
+        try
+        {
+            if (App.IsPackaged)
+            {
+                /*
+                    "StreamHelper.GetPackagedFileStreamAsync" contains the following...
+                    StorageFolder workingFolder = Package.Current.InstalledLocation;
+                    return GetFileStreamAsync(fileName, accessMode, workingFolder);
+                */
+                imageStream = await CommunityToolkit.WinUI.Helpers.StreamHelper.GetPackagedFileStreamAsync(localPath);
+            }
+            else
+            {
+                /*
+                    "StreamHelper.GetLocalFileStreamAsync" contains the following...
+                    StorageFolder workingFolder = ApplicationData.Current.LocalFolder;
+                    return GetFileStreamAsync(fileName, accessMode, workingFolder);
+                */
+                imageStream = await CommunityToolkit.WinUI.Helpers.StreamHelper.GetLocalFileStreamAsync(localPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[INFO] {localPath}");
+            Debug.WriteLine($"[WARNING] GetImageStream: {ex.Message}");
+        }
+
+        return imageStream;
+    }
+    #endregion
+
+    /// <summary>
+    /// This assumes your images reside in an "Assets" folder.
+    /// </summary>
+    /// <param name="assetName"></param>
+    /// <returns><see cref="BitmapImage"/></returns>
+    public static BitmapImage? GetImageFromAssets(this string assetName)
+    {
+        BitmapImage? img = null;
+
+        try
+        {
+            Uri? uri = new Uri("ms-appx:///Assets/" + assetName.Replace("./", ""));
+            img = new BitmapImage(uri);
+            Debug.WriteLine($"[SUCCESS] Image resolved!");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[WARNING] GetImageFromAssets: {ex.Message}");
+        }
+
+        return img;
+    }
+
     /// <summary>
     /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
     /// </summary>
@@ -83,102 +159,102 @@ public static class GeneralExtensions
         {
             case string time when time.Contains("a year", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 172)
+                    if (amount?.TotalDays < Constants.ONE_YEAR_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < 250)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MED)
                         return InfoBarSeverity.Informational; // yellow
-                    else if (amount?.TotalDays < 365)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MAX)
                         return InfoBarSeverity.Warning;       // orange
                     else
                         return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 60)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 90)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 180)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.SIX_MONTH_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 10)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 20)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 30)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.ONE_MONTH_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 20)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 40)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 60)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.TWO_MONTH_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 7)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 10)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 14)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.TWO_WEEK_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 3.5)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 5)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 7)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.ONE_WEEK_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 3)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 4)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 5)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.FEW_DAYS_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("tomorrow", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 1)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 2)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 3)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.TOMORROW_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.TOMORROW_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.TOMORROW_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             case string time when time.Contains("soon", StringComparison.OrdinalIgnoreCase) || time.Contains("today", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 1.0)
-                        return InfoBarSeverity.Success;   // green
-                    else if (amount?.TotalDays < 1.5)
-                        return InfoBarSeverity.Informational;  // yellow
-                    else if (amount?.TotalDays < 2.0)
-                        return InfoBarSeverity.Warning;  // orange
+                    if (amount?.TotalDays < Constants.SOON_MIN)
+                        return InfoBarSeverity.Success;       // green
+                    else if (amount?.TotalDays < Constants.SOON_MED)
+                        return InfoBarSeverity.Informational; // yellow
+                    else if (amount?.TotalDays < Constants.SOON_MAX)
+                        return InfoBarSeverity.Warning;       // orange
                     else
-                        return InfoBarSeverity.Error;  // red
+                        return InfoBarSeverity.Error;         // red
                 }
             default:
                 return InfoBarSeverity.Informational;
@@ -197,99 +273,99 @@ public static class GeneralExtensions
         {
             case string time when time.Contains("a year", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 172)
+                    if (amount?.TotalDays < Constants.ONE_YEAR_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 250)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 365)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 60)
+                    if (amount?.TotalDays < Constants.SIX_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 90)
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 180)
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 10)
+                    if (amount?.TotalDays < Constants.ONE_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 20)
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 30)
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 20)
+                    if (amount?.TotalDays < Constants.TWO_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 40)
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 60)
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 7)
+                    if (amount?.TotalDays < Constants.TWO_WEEK_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 10)
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 14)
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 3.5)
+                    if (amount?.TotalDays < Constants.ONE_WEEK_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 5)
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 7)
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 3)
+                    if (amount?.TotalDays < Constants.FEW_DAYS_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 4)
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 5)
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("tomorrow", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 1.0)
+                    if (amount?.TotalDays < Constants.TOMORROW_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 2.0)
+                    else if (amount?.TotalDays < Constants.TOMORROW_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 3.0)
+                    else if (amount?.TotalDays < Constants.TOMORROW_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
                 }
             case string time when time.Contains("soon", StringComparison.OrdinalIgnoreCase) || time.Contains("today", StringComparison.OrdinalIgnoreCase):
                 {
-                    if (amount?.TotalDays < 1.0)
+                    if (amount?.TotalDays < Constants.SOON_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < 1.5)
+                    else if (amount?.TotalDays < Constants.SOON_MED)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
-                    else if (amount?.TotalDays < 2.0)
+                    else if (amount?.TotalDays < Constants.SOON_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
                     else
                         return Windows.UI.Color.FromArgb(255, 255, 10, 10);  // red
@@ -423,25 +499,6 @@ public static class GeneralExtensions
         {
             throw new InvalidOperationException("layout unknown");
         }
-    }
-
-
-    public static BitmapImage? GetImageFromAssets(this string assetName)
-    {
-        BitmapImage? img = null;
-
-        try
-        {
-            Uri? uri = new Uri("ms-appx:///Assets/" + assetName.Replace("./", ""));
-            img = new BitmapImage(uri);
-            Debug.WriteLine($"Image resolved!");
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"GetImageFromAssets: {ex.Message}");
-        }
-
-        return img;
     }
 
     public static void BindCenterPoint(this Microsoft.UI.Composition.Visual target)
