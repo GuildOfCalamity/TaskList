@@ -48,6 +48,7 @@ public sealed partial class LoginPage : Page
         if (tbPassword.Password.Length > 0 && e.Key == Windows.System.VirtualKey.Enter)
         {
             ViewModel.IsLoggedIn = true;
+            // TODO: Add setting to remember last used page and navigate to that.
             NavService?.NavigateTo(typeof(TasksViewModel).FullName!);
         }
         else
@@ -72,6 +73,7 @@ public sealed partial class LoginPage : Page
         if (tbPassword.Password.Length > 0)
         {
             ViewModel.IsLoggedIn = true;
+            // TODO: Add setting to remember last used page and navigate to that.
             NavService?.NavigateTo(typeof(TasksViewModel).FullName!);
         }
         else

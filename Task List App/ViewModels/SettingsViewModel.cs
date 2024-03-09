@@ -176,7 +176,7 @@ public class SettingsViewModel : ObservableRecipient
         else
             baseFolder = Directory.GetCurrentDirectory();
 
-        var result = fileService?.Restore(baseFolder, App.DatabaseName);
+        var result = fileService?.Restore(baseFolder, App.DatabaseTasks);
         await Task.Delay(1000); // prevent spamming
         if (result.HasValue && result.Value)
         {

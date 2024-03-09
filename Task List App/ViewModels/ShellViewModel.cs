@@ -7,6 +7,16 @@ using Task_List_App.Views;
 
 namespace Task_List_App.ViewModels;
 
+/// <summary>
+/// Navigation View Model
+/// </summary>
+/// <remarks>
+/// The properties contained within this class could be decorated with the 
+/// <see cref="CommunityToolkit.Mvvm.ComponentModel.ObservablePropertyAttribute"/>
+/// e.g. "[ObservableProperty]", but I have chosen to show both techniques in this
+/// project. To see the classic method, refer to <see cref="Task_List_App.Models.NoteItem"/>
+/// or <see cref="Task_List_App.Models.TaskItem"/>.
+/// </remarks>
 public class ShellViewModel : ObservableRecipient
 {
     #region [Properties]
@@ -14,6 +24,7 @@ public class ShellViewModel : ObservableRecipient
     private bool _collapseOnActivate;
     private object? _selected;
     private int _badgeTotal = 0;
+    private int _noteTotal = 0;
     private string _average = "";
 
     public INavigationService NavigationService { get; }
@@ -36,6 +47,15 @@ public class ShellViewModel : ObservableRecipient
     {
         get => _badgeTotal;
         set => SetProperty(ref _badgeTotal, value);
+    }
+
+    /// <summary>
+    /// Will be displayed in the navbar as a number.
+    /// </summary>
+    public int NoteTotal
+    {
+        get => _noteTotal;
+        set => SetProperty(ref _noteTotal, value);
     }
 
     /// <summary>

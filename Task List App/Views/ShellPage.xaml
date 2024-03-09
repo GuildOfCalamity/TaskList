@@ -10,7 +10,9 @@
     x:Name="ThisPage"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     Loaded="OnLoaded">
-
+    <!--
+        This page serves as the navigation menu for the application.
+    -->
     <Grid>
         <Grid
             x:Name="AppTitleBar"
@@ -79,6 +81,34 @@
                             VerticalAlignment="Top"
                             Style="{ThemeResource AttentionValueInfoBadgeStyle}"
                             Value="{x:Bind ViewModel.BadgeTotal, Mode=OneWay}">
+                            <!--
+                            <InfoBadge.IconSource>
+                                <FontIconSource Glyph="{StaticResource CheckMark}" />
+                            </InfoBadge.IconSource>
+                            -->
+                        </InfoBadge>
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
+                <!--
+                    ** Notes Page **
+                    Glyph="{StaticResource Comment}"
+                    Glyph="{StaticResource Handwriting}"
+                    Glyph="{StaticResource ReportDocument}"
+                    Glyph="{StaticResource StorageTape}"
+                -->
+                <NavigationViewItem x:Uid="Page_Notes" helpers:NavigationHelper.NavigateTo="Task_List_App.ViewModels.NotesViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource Memo}" />
+                    </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <!--  The color of the InfoBadge is determined by the user's preferred accent color in the OS.  -->
+                        <InfoBadge
+                            Margin="0"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Style="{ThemeResource AttentionValueInfoBadgeStyle}"
+                            Value="{x:Bind ViewModel.NoteTotal, Mode=OneWay}">
                             <!--
                             <InfoBadge.IconSource>
                                 <FontIconSource Glyph="{StaticResource CheckMark}" />

@@ -269,7 +269,8 @@
                 Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
         </Grid>
 
-        <!-- #region [Testing FlipView] https://learn.microsoft.com/en-us/windows/apps/design/controls/flipview#specify-the-look-of-the-items
+        <!--#region [Testing FlipView]
+            https://learn.microsoft.com/en-us/windows/apps/design/controls/flipview#specify-the-look-of-the-items
         <FlipView
             x:Name="flipView"
             Grid.Row="1"
@@ -328,27 +329,53 @@
         #endregion-->
 
         <!--  Navigation Control  -->
-        <Grid Grid.Row="2" ColumnDefinitions="1*,1*,5*">
+        <Grid Grid.Row="2" ColumnDefinitions="1*,1*,9*">
             <Button
                 Grid.Column="0"
-                MinWidth="160"
+                MinWidth="90"
                 HorizontalAlignment="Left"
                 Command="{Binding ElementName=ThisPage, Path=ViewModel.PreviousNoteCommand}"
-                Content="⇦ Previous"
                 CornerRadius="5"
-                FontSize="18"
+                FontSize="20"
                 IsEnabled="{x:Bind ViewModel.CanGoBack, Mode=OneWay}"
-                Style="{StaticResource GrowButton}" />
+                Style="{StaticResource GrowButton}"
+                ToolTipService.ToolTip="Go back one">
+                <Button.KeyboardAccelerators>
+                    <!--
+                        https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.uielement.keyboardaccelerators?view=winrt-22621#windows-ui-xaml-uielement-keyboardaccelerators
+                    -->
+                    <KeyboardAccelerator Key="Left" />
+                </Button.KeyboardAccelerators>
+                <!--
+                    Was: Content="⇦ Previous"
+                    https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.symbolicon?view=windows-app-sdk-1.4
+                    https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.symbol?view=winrt-22621#fields
+                -->
+                <SymbolIcon HorizontalAlignment="Stretch" Symbol="Back" />
+            </Button>
             <Button
                 Grid.Column="1"
-                MinWidth="160"
+                MinWidth="90"
                 HorizontalAlignment="Left"
                 Command="{Binding ElementName=ThisPage, Path=ViewModel.NextNoteCommand}"
-                Content="Next ⇨"
                 CornerRadius="5"
-                FontSize="18"
+                FontSize="20"
                 IsEnabled="{x:Bind ViewModel.CanGoForward, Mode=OneWay}"
-                Style="{StaticResource GrowButton}" />
+                Style="{StaticResource GrowButton}"
+                ToolTipService.ToolTip="Go forward one">
+                <Button.KeyboardAccelerators>
+                    <!--
+                        https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.uielement.keyboardaccelerators?view=winrt-22621#windows-ui-xaml-uielement-keyboardaccelerators
+                    -->
+                    <KeyboardAccelerator Key="Right" />
+                </Button.KeyboardAccelerators>
+                <!--
+                    Was: Content="Next ⇨"
+                    https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.symbolicon?view=windows-app-sdk-1.4
+                    https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.symbol?view=winrt-22621#fields
+                -->
+                <SymbolIcon HorizontalAlignment="Stretch" Symbol="Forward" />
+            </Button>
             <StackPanel
                 Grid.Column="2"
                 HorizontalAlignment="Right"

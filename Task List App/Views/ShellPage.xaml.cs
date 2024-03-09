@@ -92,7 +92,8 @@ public sealed partial class ShellPage : Page
     void ShellPage_ProcessKeyboardAccelerators(UIElement sender, ProcessKeyboardAcceleratorEventArgs args)
     {
         Debug.WriteLine($"[ShellPage] {args.Modifiers} {args.Key}");
-        if (args.Modifiers == VirtualKeyModifiers.Menu || args.Modifiers == VirtualKeyModifiers.Control)
+        //if (args.Modifiers == VirtualKeyModifiers.Menu || args.Modifiers == VirtualKeyModifiers.Control)
+        if (args.Modifiers == VirtualKeyModifiers.Menu)
         {
             ShellKeyboardEvent?.Invoke(this, args.Key);
             args.Handled = true;
@@ -102,7 +103,6 @@ public sealed partial class ShellPage : Page
     void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
-
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
     }

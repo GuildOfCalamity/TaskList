@@ -129,7 +129,7 @@ public partial class TasksViewModel : ObservableRecipient
         LoadTaskItemsJson();
     }
 
-    #region [Methods supporting our INotifyPropertyChanged]
+    #region [ICommands]
     /// <summary>
     /// Passing null to this command indicates to update all and re-load data.
     /// </summary>
@@ -517,12 +517,12 @@ public partial class TasksViewModel : ObservableRecipient
             else
                 baseFolder = Directory.GetCurrentDirectory();
 
-            if (File.Exists(Path.Combine(baseFolder, App.DatabaseName)))
+            if (File.Exists(Path.Combine(baseFolder, App.DatabaseTasks)))
             {
 				Debug.WriteLine($"DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
 
                 // FileService testing.
-                var jdata = fileService?.Read<List<TaskItem>>(baseFolder, App.DatabaseName);
+                var jdata = fileService?.Read<List<TaskItem>>(baseFolder, App.DatabaseTasks);
                 if (jdata != null)
                 {
                     // Look out for duplication bugs.
@@ -542,7 +542,7 @@ public partial class TasksViewModel : ObservableRecipient
                     }
                 }
                 else
-                    Debug.WriteLine($"Json data was null.");
+                    Debug.WriteLine($"Json data was null ({App.DatabaseTasks})");
             }
             else
             {   // Inject some dummy data if file was not found.
@@ -589,7 +589,7 @@ public partial class TasksViewModel : ObservableRecipient
                 foreach (var item in TaskItems) { toSave.Add(item); }
 
                 // Use the FileService
-                fileService?.Save(baseFolder, App.DatabaseName, toSave);
+                fileService?.Save(baseFolder, App.DatabaseTasks, toSave);
             }
             else
             {
