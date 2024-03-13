@@ -9,6 +9,7 @@ public interface IThemeSelectorService
     bool OverdueSummary { get; }
     bool PersistLogin { get; }
     bool AcrylicBackdrop { get; }
+    Type? LastPage { get; }
 
     Task InitializeAsync();
     Task SetThemeAsync(ElementTheme theme);
@@ -17,4 +18,5 @@ public interface IThemeSelectorService
     Task SetOverdueSummaryAsync(bool enabled);
     Task SetPersistLoginAsync(bool enabled);
     Task SetAcrylicBackdropAsync(bool enabled);
+    Task SetLastPageAsync(Type? page);
 }

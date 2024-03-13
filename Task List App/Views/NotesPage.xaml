@@ -224,6 +224,33 @@
         </Grid>
 
         <Grid Grid.Row="1">
+            <ScrollViewer>
+                <!--
+                    We can add a system to detect the click and switch to the textbox for editing and then the markdown for displaying.
+                -->
+                <extras:MarkdownTextBlock
+                    x:Name="mdTextBlock"
+                    Padding="5"
+                    Background="Transparent"
+                    CodeBackground="Transparent"
+                    CornerRadius="4"
+                    FontSize="19"
+                    ImageClicked="mdTextBlock_ImageClicked"
+                    ImageMaxHeight="600"
+                    ImageMaxWidth="800"
+                    ImageResolving="mdTextBlock_ImageResolving"
+                    IsFocusEngagementEnabled="True"
+                    IsHitTestVisible="True"
+                    LinkClicked="mdTextBlock_LinkClicked"
+                    SchemeList="uwpct"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.HorizontalScrollMode="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollMode="Auto"
+                    Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    UseSystemFocusVisuals="True"
+                    Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
+            </ScrollViewer>
             <!--
                 [Note Data]
                 The property TextWrapping="WrapWholeWords" fails painfully for this control?
@@ -232,6 +259,7 @@
                 AcceptsReturn="True"
                 FontSize="20"
                 IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}"
+                IsHitTestVisible="True"
                 IsSpellCheckEnabled="False"
                 KeyDown="TextBox_KeyDown"
                 LostFocus="TextBox_LostFocus"
@@ -242,31 +270,6 @@
                 Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="TextBox_TitleChanged"
                 Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
-            <!--
-                We can add a system to detect the click and switch to the textbox for editing and then the markdown for displaying.
-            -->
-            <extras:MarkdownTextBlock
-                x:Name="mdTextBlock"
-                Padding="5"
-                Background="Transparent"
-                CodeBackground="Transparent"
-                CornerRadius="4"
-                FontSize="19"
-                ImageClicked="mdTextBlock_ImageClicked"
-                ImageMaxHeight="600"
-                ImageMaxWidth="600"
-                ImageResolving="mdTextBlock_ImageResolving"
-                IsFocusEngagementEnabled="True"
-                IsHitTestVisible="True"
-                LinkClicked="mdTextBlock_LinkClicked"
-                SchemeList="uwpct"
-                ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                ScrollViewer.HorizontalScrollMode="Auto"
-                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                ScrollViewer.VerticalScrollMode="Auto"
-                Text="{x:Bind ViewModel.CurrentNote.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                UseSystemFocusVisuals="True"
-                Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibility}}" />
         </Grid>
 
         <!--#region [Testing FlipView]

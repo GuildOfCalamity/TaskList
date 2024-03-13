@@ -13,6 +13,15 @@
     <None Update="Controls\CompositionShadow.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Controls\EditBox.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\SeparatorLine.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\TabHeader.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\NotesPage.xaml">
       <SubType>Designer</SubType>
     </Page>

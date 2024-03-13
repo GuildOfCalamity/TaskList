@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 using Task_List_App.Contracts.Services;
 using Task_List_App.Views;
+using Windows.Services.Maps;
 
 namespace Task_List_App.ViewModels;
 
@@ -28,8 +29,8 @@ public class ShellViewModel : ObservableRecipient
     private string _average = "";
 
     public INavigationService NavigationService { get; }
-
     public INavigationViewService NavigationViewService { get; }
+    public SettingsViewModel ApplicationSettings { get; private set; }
 
     /// <summary>
     /// Will contain the <see cref="Microsoft.UI.Xaml.Controls.NavigationViewItem"/>.
@@ -84,6 +85,8 @@ public class ShellViewModel : ObservableRecipient
     {
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
+        ApplicationSettings = App.GetService<SettingsViewModel>();
+
 		NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;
@@ -103,6 +106,11 @@ public class ShellViewModel : ObservableRecipient
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)
         {
+            // Save our last page for next login attempt.
+            if (e.SourcePageType != typeof(LoginPage))
+                ApplicationSettings.LastPage = e.SourcePageType;
+
+            Debug.WriteLine($"[INFO] {e.SourcePageType.FullName}");
             Selected = selectedItem;
         }
     }

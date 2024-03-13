@@ -27,6 +27,7 @@ namespace Task_List_App.Views;
 public sealed partial class LoginPage : Page
 {
     public LoginViewModel ViewModel { get; private set; }
+    public SettingsViewModel ApplicationSettings { get; private set; }
     public INavigationService? NavService { get; private set; }
 
     public LoginPage()
@@ -37,24 +38,11 @@ public sealed partial class LoginPage : Page
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
         ViewModel = App.GetService<LoginViewModel>();
+        ApplicationSettings = App.GetService<SettingsViewModel>();
         NavService = App.GetService<INavigationService>();
 
         this.Loaded += LoginPage_Loaded;
         tbPassword.KeyDown += tbPassword_KeyDown;
-    }
-
-    void tbPassword_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (tbPassword.Password.Length > 0 && e.Key == Windows.System.VirtualKey.Enter)
-        {
-            ViewModel.IsLoggedIn = true;
-            // TODO: Add setting to remember last used page and navigate to that.
-            NavService?.NavigateTo(typeof(TasksViewModel).FullName!);
-        }
-        else
-        {
-            ViewModel.IsLoggedIn = false;
-        }
     }
 
     void LoginPage_Loaded(object sender, RoutedEventArgs e)
@@ -67,19 +55,28 @@ public sealed partial class LoginPage : Page
         tbPassword.SelectAll();
     }
 
+
+    void tbPassword_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (tbPassword.Password.Length > 0 && e.Key == Windows.System.VirtualKey.Enter)
+        {
+            ViewModel.IsLoggedIn = true;
+            PerformLoginNavigation();
+        }
+        else
+            ViewModel.IsLoggedIn = false;
+    }
+
     #region [TODO: Consolidate to one button]
     void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         if (tbPassword.Password.Length > 0)
         {
             ViewModel.IsLoggedIn = true;
-            // TODO: Add setting to remember last used page and navigate to that.
-            NavService?.NavigateTo(typeof(TasksViewModel).FullName!);
+            PerformLoginNavigation();
         }
         else
-        {
             ViewModel.IsLoggedIn = false;
-        }
     }
 
     void LogoutButton_Click(object sender, RoutedEventArgs e)
@@ -92,4 +89,16 @@ public sealed partial class LoginPage : Page
         }
     }
     #endregion
+
+    void PerformLoginNavigation()
+    {
+        if (ApplicationSettings.LastPage != null)
+        {   // Alternative navigation.
+            NavService?.NavigateTo(ApplicationSettings.LastPage);
+        }
+        else
+        {   // Standard navigation.
+            NavService?.NavigateTo(typeof(TasksViewModel).FullName!);
+        }
+    }
 }

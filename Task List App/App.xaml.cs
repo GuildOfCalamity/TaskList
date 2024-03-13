@@ -48,6 +48,8 @@ namespace Task_List_App;
 /// The Windows App SDK is currently backward compatible to Windows 10 version 1809.
 /// For more info on the SDK visit https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/release-channels
 /// For latest release notes visit https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel
+/// For latest downloads visit https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel#downloads-for-windows-app-sdk
+/// WinUI3 Apps (TemplateStudio) https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/readme.md
 /// </summary>
 public partial class App : Application
 {
@@ -140,6 +142,12 @@ public partial class App : Application
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
         App.Current.DebugSettings.FailFastOnErrors = false;
+
+        #region [New in SDK v1.5.x]
+        // https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel#improved-functionality-for-debugging-layout-cycles
+        App.Current.DebugSettings.LayoutCycleTracingLevel = LayoutCycleTracingLevel.Low;
+        App.Current.DebugSettings.LayoutCycleDebugBreakLevel = LayoutCycleDebugBreakLevel.Low;
+        #endregion
 
         #region [Exception handlers]
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;

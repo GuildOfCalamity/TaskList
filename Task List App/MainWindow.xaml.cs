@@ -7,6 +7,7 @@ using Windows.UI.Popups;
 
 using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
+using Microsoft.UI.Xaml.Hosting;
 
 namespace Task_List_App;
 
@@ -23,6 +24,11 @@ public sealed partial class MainWindow : Window
         Content = null;
         Title = "AppDisplayName".GetLocalized();
 
+        var wxm = WindowsXamlManager.InitializeForCurrentThread();
+
+        DispatcherQueue.ShutdownStarting += DispatcherQueue_ShutdownStarting;
+        DispatcherQueue.FrameworkShutdownStarting += DispatcherQueue_FrameworkShutdownStarting;
+
         #region [SystemBackdrop was added starting with WinAppSDK 1.3.230502+]
         // NOTE: I've moved this to the ShellPage constructor since we're using a Activation/Navigation style app.
         //if (ApplicationSettings != null && ApplicationSettings.AcrylicBackdrop)
@@ -33,6 +39,16 @@ public sealed partial class MainWindow : Window
         //        SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
         //}
         #endregion
+    }
+
+    void DispatcherQueue_ShutdownStarting(Microsoft.UI.Dispatching.DispatcherQueue sender, Microsoft.UI.Dispatching.DispatcherQueueShutdownStartingEventArgs args)
+    {
+        Debug.WriteLine($"[INFO] DispatcherQueue_ShutdownStarting at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+    }
+
+    void DispatcherQueue_FrameworkShutdownStarting(Microsoft.UI.Dispatching.DispatcherQueue sender, Microsoft.UI.Dispatching.DispatcherQueueShutdownStartingEventArgs args)
+    {
+        Debug.WriteLine($"[INFO] DispatcherQueue_FrameworkShutdownStarting at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
     }
 
     #region [Superfluous testing]

@@ -83,25 +83,35 @@ public sealed partial class TasksPage : Page
         this.Loaded += TasksPage_Loaded;
         this.Unloaded += TasksPage_Unloaded;
         TaskListView.Tapped += TaskListView_Tapped;
-		ShellPage.MainWindowActivatedEvent += MainWindow_ActivatedEvent;
+        // Listen for app-wide window events.
+        ShellPage.MainWindowActivatedEvent += MainWindow_ActivatedEvent;
+        // Listen for app-wide keypress events.
         ShellPage.ShellKeyboardEvent += ShellPage_ShellKeyboardEvent;
+        // Listen for app-wide mouse events.
         ShellPage.ShellPointerEvent += ShellPage_ShellPointerEvent;
 
+        UpdateBadgeIcon(ViewModel.TallyUncompletedTaskItems());
         ConfigureSystemTimers();
 	}
 
     #region [External Events]
+    /// <summary>
+    /// After adding the NotesPage, this event will be shared now, so we'll 
+    /// need to add an additional check to the CurrentRoute logic for avoiding 
+    /// uneccessary saving when on a non-focused page.
+    /// </summary>
     async void ShellPage_ShellKeyboardEvent(object? sender, Windows.System.VirtualKey e)
     {
         _lastActivity = DateTime.Now;
 
         // Don't trigger action shortcuts if we're at the login page.
-        if (!string.IsNullOrEmpty(NavService?.CurrentRoute) && NavService.CurrentRoute.Contains(nameof(LoginViewModel)))
+        if (!string.IsNullOrEmpty(NavService?.CurrentRoute) && 
+           (NavService.CurrentRoute.Contains(nameof(LoginViewModel)) || NavService.CurrentRoute.Contains(nameof(NotesViewModel))))
             return;
 
         if (e == Windows.System.VirtualKey.A)
         {
-            Debug.WriteLine($"[Received Keyboard Add Event]");
+            Debug.WriteLine($"[INFO] Received Keyboard Add Event ({NavService?.CurrentRoute})");
             if (useCodeBehindDialog)
             {
                 await ShowAddTaskDialogBox("Add Task", $"{newTaskPrompt}", "OK", "Cancel", (result) =>
@@ -158,13 +168,14 @@ public sealed partial class TasksPage : Page
         }
         else if (e == Windows.System.VirtualKey.S)
         {
-            Debug.WriteLine($"[Received Keyboard Save/Update Event]");
+            Debug.WriteLine($"[INFO] Received Keyboard Save/Update Event ({NavService?.CurrentRoute})");
             SaveTask_Click(this, new RoutedEventArgs());
         }
         else if (e == Windows.System.VirtualKey.X)
         {
             if (!SaveNeeded)
             {
+                Debug.WriteLine($"[INFO] Received Keyboard Exit Event ({NavService?.CurrentRoute})");
                 App.DebugLog($"User exited through keypress.");
                 await Task.Delay(1000);
                 App.Current.Exit();
@@ -189,14 +200,21 @@ public sealed partial class TasksPage : Page
     void MainWindow_ActivatedEvent(object? sender, WindowActivatedEventArgs e)
 	{
         Debug.WriteLine($"[INFO] MainWindowActivatedEvent {e.WindowActivationState}");
+		_lastActivity = DateTime.Now;
 
         if (e.WindowActivationState == WindowActivationState.Deactivated && initFinished && !App.IsClosing)
         {
+            // Don't trigger actions if we're at the login page or not on the Tasks page.
+            if (!string.IsNullOrEmpty(NavService?.CurrentRoute) &&
+               (NavService.CurrentRoute.Contains(nameof(LoginViewModel)) || 
+                NavService.CurrentRoute.Contains(nameof(NotesViewModel))))
+                return;
+
             // Add debounce in scenarios where this event could be hammered.
             var idleTime = DateTime.Now - _lastActivity;
-            if (idleTime.TotalSeconds >= 8 && !App.IsClosing && ViewModel != null)
+            if (idleTime.TotalSeconds >= 8 && ViewModel != null)
             {
-                Debug.WriteLine($"[MainWindowActivatedEvent] Saving current tasks.");
+                Debug.WriteLine($"[INFO] Saving current tasks.");
                 // Make sure to commit any unsaved changes on exit.
                 noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Saving current tasks.", InfoBarSeverity.Informational } });
 				ViewModel.SignalBusyCycle(null);
@@ -204,7 +222,6 @@ public sealed partial class TasksPage : Page
                 NotesModel.SaveNoteItemsJson();
             }
         }
-		_lastActivity = DateTime.Now;
     }
 
 	/// <summary>
@@ -227,7 +244,7 @@ public sealed partial class TasksPage : Page
 		}
         else
         {
-            Debug.WriteLine($"WARNING: Tasks failed to load. See debug log for details.");
+            Debug.WriteLine($"[WARNING] Tasks failed to load. See debug log for details.");
             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { "Tasks failed to load. See debug log for details.", InfoBarSeverity.Error } });
         }
     }
@@ -586,7 +603,6 @@ public sealed partial class TasksPage : Page
         //RemoveCompletedTasks.Icon = new BitmapIcon() { UriSource = new Uri("ms-appx:///Assets/Check_Logo.png") };
 
         _lastActivity = DateTime.Now;
-        UpdateBadgeIcon(ViewModel.TallyUncompletedTaskItems());
 
         if (!LoginModel.IsLoggedIn)
         {
@@ -603,9 +619,8 @@ public sealed partial class TasksPage : Page
     /// </summary>
     void TasksPage_Unloaded(object sender, RoutedEventArgs e)
 	{
-        Debug.WriteLine($"TasksPage_Unloaded");
-
-		_timerPoll?.Stop();
+        Debug.WriteLine($"[INFO] TasksPage_Unloaded");
+		//_timerPoll?.Stop();
 		_timerMsg?.Stop();
 	}
     #endregion
@@ -1076,7 +1091,7 @@ public sealed partial class TasksPage : Page
             }
             catch (Exception)
             {
-                Debug.WriteLine($"Application may be in the process of closing.");
+                Debug.WriteLine($"[WARNING] Application may be in the process of closing.");
             }
         };
         #endregion
@@ -1226,7 +1241,7 @@ public sealed partial class TasksPage : Page
     {
         string text = "";
         textBox.DispatcherQueue.TryEnqueue(() => { text = textBox.Text; });
-        List<string> urls = ExtractUrls(text);
+        List<string> urls = text.ExtractUrls();
         if (urls.Count > 0)
         {
             Uri uriResult = new Uri(urls[0]);
@@ -1238,7 +1253,7 @@ public sealed partial class TasksPage : Page
 
     async Task LocateAndLaunchUrlFromString(string text)
     {
-        List<string> urls = ExtractUrls(text);
+        List<string> urls = text.ExtractUrls();
         if (urls.Count > 0)
         {
             Uri uriResult = new Uri(urls[0]);
@@ -1246,15 +1261,6 @@ public sealed partial class TasksPage : Page
         }
         else
             await Task.CompletedTask;
-    }
-
-    List<string> ExtractUrls(string text)
-    {
-        List<string> urls = new List<string>();
-        Regex urlRx = new Regex(@"((https?|ftp|file)\://|www\.)[A-Za-z0-9\.\-]+(/[A-Za-z0-9\?\&\=;\+!'\\(\)\*\-\._~%]*)*", RegexOptions.IgnoreCase);
-        MatchCollection matches = urlRx.Matches(text);
-        foreach (Match match in matches) { urls.Add(match.Value); }
-        return urls;
     }
     #endregion
 }

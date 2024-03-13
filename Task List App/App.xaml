@@ -30,6 +30,7 @@
             <local:EnumToBooleanConverter x:Key="EnumToBoolean" />
             <local:LevelToBrushBorderConverter x:Key="LevelToBrushBorder" />
             <local:PreambleConverter x:Key="Preamble" />
+            <local:IsReadOnlyToBrushConverter x:Key="IsReadOnlyToBrush" />
 
             <!--
                 === MERGED DICTIONARIES ===
@@ -56,6 +57,7 @@
                             <Brush x:Key="BorderBrush">#686874</Brush>
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
                             <Brush x:Key="SecondaryBrush">#8F1FDF</Brush>
+                            <Brush x:Key="SecondaryBorderBrush">#AA8F1FDF</Brush>
                             <Brush x:Key="TertiaryBrush">#a43e4b</Brush>
                             <Brush x:Key="QuaternaryBrush">#76B9ED</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>
@@ -341,6 +343,7 @@
                             <Brush x:Key="BorderBrush">#232330</Brush>
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>
                             <Brush x:Key="SecondaryBrush">#6800FF</Brush>
+                            <Brush x:Key="SecondaryBorderBrush">#AA6800FF</Brush>
                             <Brush x:Key="TertiaryBrush">#512031</Brush>
                             <Brush x:Key="QuaternaryBrush">#4689BD</Brush>
                             <Brush x:Key="QuinaryBrush">#94d446</Brush>

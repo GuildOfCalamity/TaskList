@@ -90,8 +90,16 @@ public class NavigationService : INavigationService
         return false;
     }
 
+    /// <summary>
+    /// The core navigation method which utilizes the <see cref="PageService"/>
+    /// to resolve the page type based on the viewmodel.
+    /// </summary>
+    /// <param name="pageKey">the viewmodel, not the page type</param>
+    /// <param name="parameter">optional</param>
+    /// <returns>true if navigated successfully, false otherwise</returns>
     public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
+        Debug.WriteLine($"[INFO] Getting page type for '{pageKey}'");
         var pageType = _pageService.GetPageType(pageKey);
 
         if (_frame != null && (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed))))
@@ -112,6 +120,34 @@ public class NavigationService : INavigationService
             return navigated;
         }
 
+        return false;
+    }
+
+    /// <summary>
+    /// I added this as a way to navigate to the last used page 
+    /// without the need to use the <see cref="PageService"/>.
+    /// </summary>
+    /// <param name="pageType">the page type, not the viewmodel</param>
+    /// <param name="parameter">optional</param>
+    /// <returns>true if navigated successfully, false otherwise</returns>
+    public bool NavigateTo(Type pageType, object? parameter = null)
+    {
+        Debug.WriteLine($"[INFO] Alternative navigation for '{pageType.FullName}'");
+
+        if (_frame != null && (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed))))
+        {
+            _currentRoute = pageType.FullName;
+            var vmBeforeNavigation = _frame.GetPageViewModel();
+            var navigated = _frame.Navigate(pageType, parameter);
+            if (navigated)
+            {
+                if (vmBeforeNavigation is INavigationAware navigationAware)
+                {
+                    navigationAware.OnNavigatedFrom();
+                }
+            }
+            return navigated;
+        }
         return false;
     }
 

@@ -71,6 +71,76 @@ public static class GeneralExtensions
         }
     }
 
+
+    public static List<string> ExtractUrls(this string text)
+    {
+        List<string> urls = new List<string>();
+        Regex urlRx = new Regex(@"((https?|ftp|file)\://|www\.)[A-Za-z0-9\.\-]+(/[A-Za-z0-9\?\&\=;\+!'\\(\)\*\-\._~%]*)*", RegexOptions.IgnoreCase);
+        MatchCollection matches = urlRx.Matches(text);
+        foreach (Match match in matches) { urls.Add(match.Value); }
+        return urls;
+    }
+
+    /// <summary>
+    /// Determine if one number is greater than another.
+    /// </summary>
+    /// <param name="left">First number.</param>
+    /// <param name="right">Second number.</param>
+    /// <returns>
+    /// True if the first number is greater than the second, false otherwise.
+    /// </returns>
+    public static bool IsGreaterThan(double left, double right)
+    {
+        return (left > right) && !AreClose(left, right);
+    }
+
+    /// <summary>
+    /// Determine if one number is less than or close to another.
+    /// </summary>
+    /// <param name="left">First number.</param>
+    /// <param name="right">Second number.</param>
+    /// <returns>
+    /// True if the first number is less than or close to the second, false otherwise.
+    /// </returns>
+    public static bool IsLessThanOrClose(double left, double right)
+    {
+        return (left < right) || AreClose(left, right);
+    }
+
+    /// <summary>
+    /// Determine if two numbers are close in value.
+    /// </summary>
+    /// <param name="left">First number.</param>
+    /// <param name="right">Second number.</param>
+    /// <returns>
+    /// True if the first number is close in value to the second, false otherwise.
+    /// </returns>
+    public static bool AreClose(double left, double right)
+    {
+        if (left == right)
+        {
+            return true;
+        }
+
+        double a = (Math.Abs(left) + Math.Abs(right) + 10.0) * Epsilon;
+        double b = left - right;
+        return (-a < b) && (a > b);
+    }
+
+    /// <summary>
+    /// Check if a number is zero.
+    /// </summary>
+    /// <param name="value">The number to check.</param>
+    /// <returns>
+    /// True if the number is zero, false otherwise.
+    /// </returns>
+    public static bool IsZero(this double value)
+    {
+        // We actually consider anything within an order of magnitude of epsilon to be zero
+        return Math.Abs(value) < Epsilon;
+    }
+    public const double Epsilon = 0.000000000001;
+
     #region [Helper for CummunityToolkit]
     /// <summary>
     /// <para>
@@ -137,7 +207,7 @@ public static class GeneralExtensions
         {
             Uri? uri = new Uri("ms-appx:///Assets/" + assetName.Replace("./", ""));
             img = new BitmapImage(uri);
-            Debug.WriteLine($"[SUCCESS] Image resolved!");
+            Debug.WriteLine($"[INFO] Image resolved for '{assetName}'");
         }
         catch (Exception ex)
         {
@@ -459,6 +529,7 @@ public static class GeneralExtensions
         return "";
     }
 
+    #region [Expander Extensions]
     /// <summary>
     /// Enables or disables the Header.
     /// </summary>
@@ -478,6 +549,7 @@ public static class GeneralExtensions
         if (ctrl != null)
             ctrl.Height = contentHeight;
     }
+    #endregion
 
     public static void SetOrientation(this VirtualizingLayout layout, Orientation orientation)
     {

@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.UI.Xaml;
-
+using Microsoft.UI.Xaml.Controls;
 using Task_List_App.Contracts.Services;
 using Task_List_App.Helpers;
 using Task_List_App.Models;
@@ -26,7 +26,9 @@ public class SettingsViewModel : ObservableRecipient
     private bool _showOverdueSummary;
     private bool _acrylicBackdrop;
     private bool _persistLogin;
+    private Type? _lastPage;
     private bool _isBusy = false;
+    private SelectorBarItem _barItem;
     private Core.Contracts.Services.IFileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
 
@@ -72,6 +74,25 @@ public class SettingsViewModel : ObservableRecipient
         get => _isBusy;
         set => SetProperty(ref _isBusy, value);
     }
+
+    public SelectorBarItem BarItem
+    {
+        get => _barItem;
+        set => SetProperty(ref _barItem, value);
+    }
+
+    public Type? LastPage
+    {
+        get => _lastPage;
+        set
+        {
+            // There is no UI control for this parameter so
+            // we'll save it when ever it's value is updated.
+            _ = _themeSelectorService.SetLastPageAsync(value);
+
+            SetProperty(ref _lastPage, value);
+        }
+    }
     #endregion
 
     #region [Commands]
@@ -94,8 +115,10 @@ public class SettingsViewModel : ObservableRecipient
         _showNotifications = _themeSelectorService.Notifications;
         _showOverdueSummary = _themeSelectorService.OverdueSummary;
         _persistLogin = _themeSelectorService.PersistLogin;
+        _lastPage = _themeSelectorService.LastPage;
         _acrylicBackdrop = _themeSelectorService.AcrylicBackdrop;
         _versionDescription = GetVersionDescription();
+        _lastPage = _themeSelectorService.LastPage;
 
         // Configure theme command.
         SwitchThemeCommand = new RelayCommand<ElementTheme>(async (param) =>

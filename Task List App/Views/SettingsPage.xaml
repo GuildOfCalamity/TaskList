@@ -6,18 +6,51 @@
     xmlns:ctrls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:extras="using:Task_List_App.Controls"
+    xmlns:input="using:Microsoft.UI.Input"
     xmlns:interact="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:Task_List_App.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:xaml="using:Microsoft.UI.Xaml"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <Style TargetType="extras:CursorGrid">
+            <Setter Property="BorderBrush" Value="{ThemeResource SecondaryBrush}" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Margin" Value="1,20,20,20" />
+            <Setter Property="RowSpacing" Value="30" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style BasedOn="{StaticResource DefaultToggleSwitchStyle}" TargetType="ToggleSwitch">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="OnContent" Value="Enabled" />
+            <Setter Property="OffContent" Value="Disabled" />
+        </Style>
+        <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="ComboBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="SelectedIndex" Value="0" />
+            <!-- [this was throwing a null exception]
+            <Setter Property="ItemsSource" Value="{x:Bind extras:CursorGrid.CursorOptions}" />
+            -->
+        </Style>
+    </Page.Resources>
+
     <Grid>
         <ScrollViewer>
             <StackPanel x:Name="ContentArea">
+                <StackPanel.ChildrenTransitions>
+                    <TransitionCollection>
+                        <AddDeleteThemeTransition />
+                    </TransitionCollection>
+                </StackPanel.ChildrenTransitions>
 
+                <!--
+                    [Personalization]
+                -->
                 <extras:CompositionShadow
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
@@ -132,11 +165,14 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!--  Restore from backup  -->
+                <!--
+                    [Restore button using Microsoft.Xaml.Interactivity]
+                -->
                 <Button
                     x:Name="btnRestore"
                     x:Uid="Settings_RestoreData"
                     Margin="1,10,1,26"
+                    ui:FrameworkElementExtensions.Cursor="Hand"
                     Command="{x:Bind ViewModel.RestoreDataCommand}"
                     CornerRadius="5"
                     FontSize="{StaticResource MediumFontSize}"
@@ -178,6 +214,7 @@
                     <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
                 </StackPanel>
 
+
                 <!--
                     [Formatted Date]
                 -->
@@ -188,6 +225,273 @@
                     FontSize="{ThemeResource LargeFontSize}"
                     Foreground="{ThemeResource QuaternaryBrush}"
                     Text="{x:Bind local:AssemblyHelper.GetFormattedDate()}" />
+
+                <!--  separator line  -->
+                <extras:SeparatorLine />
+
+                <!--
+                    [Control Testing]
+                -->
+                <extras:CompositionShadow
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    BlurRadius="6"
+                    Brush="{ThemeResource SecondaryBrush}"
+                    OffsetX="3"
+                    OffsetY="2">
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Pivot" />
+                </extras:CompositionShadow>
+                <Pivot
+                    x:Name="settingPivot"
+                    Margin="0,10"
+                    SelectionChanged="settingPivotOnSelectionChanged">
+                    <!--
+                    <Pivot.Title>
+                        <TextBlock
+                            Margin="0"
+                            Padding="0"
+                            FontWeight="Medium"
+                            Foreground="{ThemeResource HeaderBrush}"
+                            Text="Statistics" />
+                    </Pivot.Title>
+                    -->
+                    <PivotItem ScrollViewer.VerticalScrollMode="Auto">
+                        <PivotItem.Header>
+                            <extras:TabHeader
+                                x:Name="tab"
+                                Height="200"
+                                HoverEffect="False"
+                                HoverStrength="1"
+                                ImageHeight="27"
+                                ImageWidth="27"
+                                Label="Item1"
+                                SelectedImage="/Assets/ItemEnabled.png"
+                                UnselectedImage="/Assets/ItemDisabled.png" />
+                        </PivotItem.Header>
+                        <TextBlock
+                            Margin="3,4"
+                            FontSize="14"
+                            Foreground="WhiteSmoke"
+                            Text="Content area for PivotItem #1" />
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <extras:TabHeader
+                                Height="200"
+                                HoverEffect="False"
+                                HoverStrength="1"
+                                ImageHeight="27"
+                                ImageWidth="27"
+                                Label="Item2"
+                                SelectedImage="/Assets/ItemEnabled.png"
+                                UnselectedImage="/Assets/ItemDisabled.png" />
+                        </PivotItem.Header>
+                        <TextBlock
+                            Margin="3,4"
+                            FontSize="14"
+                            Foreground="WhiteSmoke"
+                            Text="Content area for PivotItem #2" />
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <extras:TabHeader
+                                Height="200"
+                                HoverEffect="False"
+                                HoverStrength="1"
+                                ImageHeight="27"
+                                ImageWidth="27"
+                                Label="Item3"
+                                SelectedImage="/Assets/ItemEnabled.png"
+                                UnselectedImage="/Assets/ItemDisabled.png" />
+                        </PivotItem.Header>
+                        <TextBlock
+                            Margin="3,4"
+                            FontSize="14"
+                            Foreground="WhiteSmoke"
+                            Text="Content area for PivotItem #3" />
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <extras:TabHeader
+                                Height="200"
+                                HoverEffect="False"
+                                HoverStrength="1"
+                                ImageHeight="27"
+                                ImageWidth="27"
+                                Label="Item4"
+                                SelectedImage="/Assets/ItemEnabled.png"
+                                UnselectedImage="/Assets/ItemDisabled.png" />
+                        </PivotItem.Header>
+                        <TextBlock
+                            Margin="3,4"
+                            FontSize="14"
+                            Foreground="WhiteSmoke"
+                            Text="Content area for PivotItem #4" />
+                    </PivotItem>
+                </Pivot>
+
+
+                <extras:CompositionShadow
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    BlurRadius="6"
+                    Brush="{ThemeResource SecondaryBrush}"
+                    OffsetX="3"
+                    OffsetY="2">
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="SelectorBar" />
+                </extras:CompositionShadow>
+                <SelectorBar
+                    x:Name="sbTest"
+                    Margin="2"
+                    SelectedItem="{x:Bind ViewModel.BarItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectionChanged="sbTest_SelectionChanged">
+                    <SelectorBar.ContextFlyout>
+                        <CommandBarFlyout
+                            AlwaysExpanded="True"
+                            Placement="Right"
+                            ShowMode="Auto">
+                            <AppBarButton
+                                Click="AppBarButton_Click"
+                                Icon="Copy"
+                                Label="Copy"
+                                LabelPosition="Default"
+                                Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
+                                ToolTipService.ToolTip="Copy" />
+                            <AppBarButton
+                                Click="AppBarButton_Click"
+                                Icon="Save"
+                                Label="Save"
+                                LabelPosition="Default"
+                                Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
+                                ToolTipService.ToolTip="Save" />
+                            <AppBarButton
+                                x:Name="Share"
+                                Click="AppBarButton_Click"
+                                Icon="Share"
+                                Label="Share"
+                                Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
+                                ToolTipService.ToolTip="Share" />
+                            <AppBarButton
+                                x:Name="Print"
+                                Click="AppBarButton_Click"
+                                Icon="Print"
+                                Label="Print"
+                                Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
+                                ToolTipService.ToolTip="Print" />
+                        </CommandBarFlyout>
+                    </SelectorBar.ContextFlyout>
+                    <SelectorBarItem Text="1">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource Airplane}" />
+                            <!--  [Other icon options]  -->
+                            <!-- <ImageIcon Source="ms-appx:///Assets/Check_Logo.png" /> -->
+                            <!-- <BitmapIcon UriSource="ms-appx:///Assets/Check_Logo.png" /> -->
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem Text="2">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource Accident}" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem Text="3">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource Apps}" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem Text="4">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource AdjustHologram}" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem Text="5">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource AreaChart}" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem Text="6">
+                        <SelectorBarItem.Icon>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{StaticResource Audio}" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                </SelectorBar>
+
+                <Grid
+                    Margin="0,24"
+                    ColumnDefinitions="Auto,Auto,Auto,Auto"
+                    ColumnSpacing="28">
+                    <extras:EditBox
+                        Title="Tasks Database"
+                        Grid.Column="0"
+                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
+                        Data="{x:Bind local:SettingsPage.LocalMethodSample(1)}" />
+                    <extras:EditBox
+                        Title="Notes Database"
+                        Grid.Column="1"
+                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
+                        Data="{x:Bind local:SettingsPage.LocalMethodSample(2)}" />
+                    <extras:EditBox
+                        Title="Last Page"
+                        Grid.Column="2"
+                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
+                        Data="{x:Bind ViewModel.LastPage, Mode=OneWay}" />
+                    <extras:EditBox
+                        Title="Current Theme"
+                        Grid.Column="3"
+                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
+                        Data="{x:Bind ViewModel.ElementTheme, Mode=OneWay}" />
+                </Grid>
+
+
+                <!--
+                    [ProtectedCursor Test]
+                -->
+                <extras:CursorGrid EnableCursorOverride="{x:Bind GrandParentAreaToggleSwitch.IsOn, Mode=OneWay}" InputSystemCursorShape="{x:Bind (input:InputSystemCursorShape)GrandParentAreaComboBox.SelectedValue, Mode=OneWay}">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <ToggleSwitch x:Name="GrandParentAreaToggleSwitch" Header="Enable cursor override" />
+                        <ComboBox
+                            x:Name="GrandParentAreaComboBox"
+                            IsEnabled="{x:Bind GrandParentAreaToggleSwitch.IsOn, Mode=OneWay}"
+                            ItemsSource="{x:Bind extras:CursorGrid.CursorOptions, Mode=OneWay}" />
+                        <Border
+                            Width="42"
+                            Height="42"
+                            Margin="50,0,0,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            BorderThickness="0">
+                            <Border.Background>
+                                <ImageBrush ImageSource="ms-appx:///Assets/Check_Logo.png" />
+                            </Border.Background>
+                        </Border>
+                    </StackPanel>
+                </extras:CursorGrid>
+
+                <!--  separator line  -->
+                <extras:SeparatorLine />
+
+                <!--
+                    [This is a test of the Community Toolkit shadow. My shadow control is easier and more effecive.]
+                <Grid>
+                    <Border x:Name="ShadowTarget" />
+                    <Border
+                        Width="32"
+                        Height="32"
+                        BorderThickness="0"
+                        CornerRadius="32">
+                        <Border.Background>
+                            <ImageBrush ImageSource="ms-appx:///Assets/Check_Logo.png" />
+                        </Border.Background>
+                        <ui:Effects.Shadow>
+                            <ui:AttachedDropShadow
+                                CastTo="{x:Bind ShadowTarget}"
+                                CornerRadius="32"
+                                Offset="0,0"
+                                Color="#80FFFFFF" />
+                        </ui:Effects.Shadow>
+                    </Border>
+                </Grid>
+                -->
 
                 <Expander
                     Margin="0,12,30,8"

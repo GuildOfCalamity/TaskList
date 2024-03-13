@@ -12,6 +12,14 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	<UseWinUI>true</UseWinUI>
+    <!-- 
+        [for SDK v1.5 specifically]
+        https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel#other-new-features-from-across-the-winappsdk
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
+        https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel#known-issues
+        <ShouldComputeInputPris>true</ShouldComputeInputPris>
+    -->
 	<LangVersion>latest</LangVersion>
     <EnableMsixTooling>true</EnableMsixTooling>
 	<Version>1.0.0.4</Version>
@@ -43,6 +51,8 @@
     <None Remove="Assets\Check_Red.png" />
     <None Remove="Assets\Check_Yellow.png" />
     <None Remove="Assets\Fonts\Aptos.ttf" />
+    <None Remove="Assets\ItemDisabled.png" />
+    <None Remove="Assets\ItemEnabled.png" />
     <None Remove="Assets\README.md" />
     <None Remove="Assets\ScreenShot.png" />
     <None Remove="Assets\ScreenShot2.png" />
@@ -50,7 +60,10 @@
     <None Remove="Assets\ScreenShot4.png" />
     <None Remove="Assets\ScreenShot5.png" />
     <None Remove="Controls\CardControl.xaml" />
+    <None Remove="Controls\EditBox.xaml" />
     <None Remove="Controls\SampleControl.xaml" />
+    <None Remove="Controls\SeparatorLine.xaml" />
+    <None Remove="Controls\TabHeader.xaml" />
     <None Remove="Styles\Buttons.xaml" />
     <None Remove="Views\AlternatePage.xaml" />
     <None Remove="Views\CreateTaskDialog.xaml" />
@@ -68,16 +81,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Common" Version="8.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+    <PackageReference Include="CommunityToolkit.Common" Version="8.2.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageReference Include="Microcharts" Version="0.9.5.9" />
-    <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.3" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230502000" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -111,6 +126,15 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Controls\EditBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\SeparatorLine.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\TabHeader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\NotesPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

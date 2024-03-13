@@ -24,6 +24,7 @@ using Windows.Storage.Streams;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Core;
+using System.Runtime.CompilerServices;
 
 namespace Task_List_App.Views;
 
@@ -156,11 +157,24 @@ public sealed partial class NotesPage : Page
     /// </summary>
     async void mdTextBlock_LinkClicked(object sender, CommunityToolkit.WinUI.UI.Controls.LinkClickedEventArgs e)
     {
-        var link = e.Link;
-        if (Uri.TryCreate(link, UriKind.Absolute, out Uri result))
+        try
         {
-            if (result != null)
-                await Launcher.LaunchUriAsync(result);
+            var link = e.Link;
+            if (Uri.TryCreate(link, UriKind.Absolute, out Uri result))
+            {
+                if (result != null)
+                    await Launcher.LaunchUriAsync(result);
+            }
+        }
+        catch (RuntimeWrappedException rwe) // catch any non-CLS exceptions
+        {
+            String? s = rwe.WrappedException as String;
+            if (s != null)
+                Debug.WriteLine($"[ERROR] LinkClicked: {s}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] LinkClicked: {ex.Message}");
         }
     }
 
@@ -182,11 +196,13 @@ public sealed partial class NotesPage : Page
     async void mdTextBlock_ImageResolving(object sender, CommunityToolkit.WinUI.UI.Controls.ImageResolvingEventArgs e)
     {
         bool notUNC = true;
-        var deferral = e.GetDeferral();
         BitmapImage? image = null;
 
+        // Inform that this event handler could run asynchronously.
+        var deferral = e.GetDeferral();
+
         // Check if we have a UNC asset first.
-        if (Uri.TryCreate(e.Url, UriKind.Relative, out Uri urlRel))
+        if (Uri.TryCreate(e.Url, UriKind.Relative, out Uri? urlRel))
         {
             if (urlRel != null && urlRel.OriginalString.StartsWith("\\"))
             {
@@ -206,7 +222,16 @@ public sealed partial class NotesPage : Page
                     {
                         image = new BitmapImage();
                         await image.SetSourceAsync(imgStream);
-                        Debug.WriteLine($"[SUCCESS] UNC image resolved => '{e.Url}'");
+                        Debug.WriteLine($"[INFO] UNC image resolved => '{e.Url}'");
+                    }
+                }
+                catch (RuntimeWrappedException rwe) // catch any non-CLS exceptions
+                {
+                    String? s = rwe.WrappedException as String;
+                    if (s != null)
+                    {
+                        Debug.WriteLine($"[WARNING] ImageResolving: {s}");
+                        App.DebugLog($"[WARNING] ImageResolving: {s}");
                     }
                 }
                 catch (Exception ex)
@@ -224,7 +249,7 @@ public sealed partial class NotesPage : Page
         if (notUNC)
         {
             // Determine if the link is not absolute, meaning it is relative.
-            if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri url))
+            if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri? url))
             {
                 try
                 {
@@ -281,7 +306,7 @@ public sealed partial class NotesPage : Page
                                 {
                                     image = new BitmapImage();
                                     await image.SetSourceAsync(imageStream);
-                                    Debug.WriteLine($"[SUCCESS] Image resolved => '{e.Url}'");
+                                    Debug.WriteLine($"[INFO] Image resolved => '{target}'");
                                 }
                                 #endregion
 
@@ -289,15 +314,49 @@ public sealed partial class NotesPage : Page
                                 //image = e.Url.GetImageFromAssets();
                                 #endregion
                             }
+                            catch (RuntimeWrappedException rwe) // catch any non-CLS exceptions
+                            {
+                                String? s = rwe.WrappedException as String;
+                                if (s != null)
+                                {
+                                    Debug.WriteLine($"[ERROR] GetLocalFileStreamAsync: {s}");
+                                    App.DebugLog($"[ERROR] GetLocalFileStreamAsync: {s}");
+                                }
+                            }
                             catch (Exception ex)
                             {
-                                Debug.WriteLine($"{ex.Message}");
+                                Debug.WriteLine($"[ERROR] GetLocalFileStreamAsync: {ex.Message}");
+                                try
+                                {
+                                    // Try current runtime folder.
+                                    string target = Path.Combine(Directory.GetCurrentDirectory(), e.Url.Replace("./", ""));
+                                    var imageStream = await GetLocalFileStreamAsync(target);
+                                    if (imageStream != null)
+                                    {
+                                        image = new BitmapImage();
+                                        await image.SetSourceAsync(imageStream);
+                                        Debug.WriteLine($"[INFO] LastChance image resolved => '{target}'");
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    Debug.WriteLine($"[ERROR] LastChance: {ex.Message}");
+                                }
                             }
+                        }
+                    }
+                    catch (RuntimeWrappedException rwe) // catch any non-CLS exceptions
+                    {
+                        String? s = rwe.WrappedException as String;
+                        if (s != null)
+                        {
+                            Debug.WriteLine($"[ERROR] StreamHelper: {s}");
+                            App.DebugLog($"[ERROR] StreamHelper: {s}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"[WARNING] StreamHelper: {ex.Message}");
+                        Debug.WriteLine($"ERROR] StreamHelper: {ex.Message}");
                     }
                 }
                 catch (Exception ex)
@@ -316,7 +375,7 @@ public sealed partial class NotesPage : Page
                     Debug.WriteLine($"{url.Scheme}: {ex.Message}");
                 }
             }
-            else
+            else if (url != null)
             {
                 try
                 {
@@ -326,6 +385,15 @@ public sealed partial class NotesPage : Page
                     {
                         image = new BitmapImage();
                         await image.SetSourceAsync(imageStream);
+                    }
+                }
+                catch (RuntimeWrappedException rwe) // catch any non-CLS exceptions
+                {
+                    String? s = rwe.WrappedException as String;
+                    if (s != null)
+                    {
+                        Debug.WriteLine($"[ERROR] GetImageStream: {s}");
+                        App.DebugLog($"[ERROR] GetImageStream: {s}");
                     }
                 }
                 catch (Exception ex)
@@ -342,6 +410,7 @@ public sealed partial class NotesPage : Page
             e.Handled = true;
         }
 
+        // Signal deferral is finished.
         deferral.Complete();
     }
     #endregion

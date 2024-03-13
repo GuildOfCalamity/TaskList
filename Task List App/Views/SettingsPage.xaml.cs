@@ -125,7 +125,7 @@ public sealed partial class SettingsPage : Page
                     {
                         image = new BitmapImage();
                         await image.SetSourceAsync(imgStream);
-                        Debug.WriteLine($"[SUCCESS] UNC image resolved => '{e.Url}'");
+                        Debug.WriteLine($"[OK] UNC image resolved => '{e.Url}'");
                     }
                 }
                 catch (Exception ex)
@@ -317,6 +317,63 @@ public sealed partial class SettingsPage : Page
         return workingFolder;
     }
     #endregion
+
+    /// <summary>
+    /// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.selectorbar.selectionchanged?view=windows-app-sdk-1.5
+    /// </summary>
+    async void sbTest_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        if (sender != null)
+        {
+            mdReadMe.Text = $"## SelectorBar selection: {sender.SelectedItem.Text}";
+            //await App.MainRoot?.MessageDialogAsync("Info", $"SelectorBar selection: {sender.SelectedItem.Text}");
+        }
+    }
+
+    /// <summary>
+    /// <see cref="Pivot"/> control event.
+    /// </summary>
+    void settingPivotOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        PivotItem? selectedPivot = settingPivot.SelectedItem as PivotItem;
+
+        // Make the active pivot image colored, and inactive items grayed.
+        // You could also do this with the VisualStateManager.
+        foreach (PivotItem item in settingPivot.Items)
+        {
+            if (item == selectedPivot)
+            {
+                var header = item.Header as Controls.TabHeader;
+                if (header != null)
+                    header.SetSelectedItem(true);
+            }
+            else
+            {
+                var header = item.Header as Controls.TabHeader;
+                if (header != null)
+                    header.SetSelectedItem(false);
+            }
+        }
+    }
+
+    async void AppBarButton_Click(object sender, RoutedEventArgs e)
+    {
+        var abb = sender as AppBarButton;
+        if (abb != null )
+        {
+            await App.MainRoot?.MessageDialogAsync("AppBarButton", $"{abb.Label} clicked");
+        }
+    }
+
+    public static string LocalMethodSample(int flag)
+    {
+        if (flag == 1)
+            return $"{App.DatabaseTasks}";
+        else if (flag == 2)
+            return $"{App.DatabaseNotes}";
+        else
+            return $"No logic match for '{flag}'";
+    }
 }
 
 /// <summary>

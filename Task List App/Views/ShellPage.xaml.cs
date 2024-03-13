@@ -41,6 +41,7 @@ public sealed partial class ShellPage : Page
         if (App.MainWindow != null )
         {
             var appSettings = App.GetService<SettingsViewModel>();
+
             #region [Window.SystemBackdrop was added starting with WinAppSDK 1.3.230502+]
             if (appSettings != null && appSettings.AcrylicBackdrop)
             {

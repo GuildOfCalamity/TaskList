@@ -8,6 +8,9 @@ using Task_List_App.ViewModels;
 
 namespace Task_List_App.Activation;
 
+/// <summary>
+/// https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/activation.md#activationhandlers
+/// </summary>
 public class AppNotificationActivationHandler : ActivationHandler<LaunchActivatedEventArgs>
 {
     private readonly INavigationService _navigationService;

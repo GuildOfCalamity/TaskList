@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using System.Reflection.Metadata;
 
 namespace Task_List_App.Contracts.Services;
 
@@ -23,6 +24,8 @@ public interface INavigationService
     }
 
     bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false);
+    
+    bool NavigateTo(Type pageType, object? parameter = null);
 
     bool GoBack();
 }

@@ -15,12 +15,14 @@ public class ThemeSelectorService : IThemeSelectorService
     private const string SettingsKeyOverdueSummary = "AppOverdueSummary";
     private const string SettingsKeyPersist = "AppPersistLogin";
     private const string SettingsKeyBackdrop = "AppAcrylicBackdrop";
+    private const string SettingsKeyLastPage = "AppLastPage";
 
     public ElementTheme Theme { get; set; } = ElementTheme.Dark;
 	public bool Notifications { get; set; } = true;
 	public bool OverdueSummary { get; set; } = true;
     public bool PersistLogin { get; set; } = true;
 	public bool AcrylicBackdrop { get; set; } = false;
+	public Type? LastPage { get; set; }
 
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -41,6 +43,7 @@ public class ThemeSelectorService : IThemeSelectorService
         OverdueSummary = await LoadOverdueSummaryFromSettingsAsync();
         PersistLogin = await LoadPersistLoginFromSettingsAsync();
         AcrylicBackdrop = await LoadAcrylicBackdropFromSettingsAsync();
+        LastPage = await LoadLastPageFromSettingsAsync();
 
         await Task.CompletedTask;
     }
@@ -90,6 +93,15 @@ public class ThemeSelectorService : IThemeSelectorService
     {
         AcrylicBackdrop = enabled;
         await SaveAcrylicBackdropInSettingsAsync(AcrylicBackdrop);
+    }
+
+    /// <summary>
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
+    public async Task SetLastPageAsync(Type? page)
+    {
+        LastPage = page;
+        await SaveLastPageInSettingsAsync(page);
     }
 
     #region [App theme settings]
@@ -144,6 +156,17 @@ public class ThemeSelectorService : IThemeSelectorService
     /// Saves overdue summary parameter
     /// </summary>
     async Task SaveOverdueSummaryInSettingsAsync(bool summary) => await _localSettingsService.SaveSettingAsync(SettingsKeyOverdueSummary, $"{summary}");
+    #endregion
+
+    #region [Last Page setting]
+    /// <summary>
+    /// Reads last page parameter
+    /// </summary>
+    async Task<Type?> LoadLastPageFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<Type?>(SettingsKeyLastPage);
+    /// <summary>
+    /// Saves last page parameter
+    /// </summary>
+    async Task SaveLastPageInSettingsAsync(Type? page) => await _localSettingsService.SaveSettingAsync(SettingsKeyLastPage, page);
     #endregion
 
     #region [Persist login setting]

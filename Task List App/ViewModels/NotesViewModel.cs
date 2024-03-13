@@ -170,7 +170,56 @@ namespace Task_List_App.ViewModels
             // Update the count on app startup.
             ShellModel = App.GetService<ShellViewModel>();
             UpdateNoteBadgeIcon(NoteItems.Count);
+
+            // Listen for app-wide keypress events.
+            ShellPage.ShellKeyboardEvent += ShellPage_ShellKeyboardEvent;
+            // Listen for app-wide window events.
+            ShellPage.MainWindowActivatedEvent += MainWindow_ActivatedEvent;
         }
+
+        #region [Shell Window Events]
+        /// <summary>
+        /// After adding the NotesPage, this event will be shared now, so we'll 
+        /// need to add an additional check to the CurrentRoute logic for avoiding 
+        /// uneccessary saving when on a non-focused page.
+        /// </summary>
+        async void ShellPage_ShellKeyboardEvent(object? sender, Windows.System.VirtualKey e)
+        {
+            // Don't trigger action shortcuts if we're at the login page.
+            if (!string.IsNullOrEmpty(NavService?.CurrentRoute) && 
+               (NavService.CurrentRoute.Contains(nameof(LoginViewModel)) || 
+                NavService.CurrentRoute.Contains(nameof(TasksViewModel))))
+                return;
+
+            if (e == Windows.System.VirtualKey.S)
+            {
+                Debug.WriteLine($"[INFO] Received Keyboard Save/Update Event ({NavService?.CurrentRoute})");
+                if (NoteItems.Count > 0)
+                    SaveNoteItemsJson();
+            }
+        }
+
+        /// <summary>
+        /// We'll save the user's data when the main window is deactivated.
+        /// </summary>
+        void MainWindow_ActivatedEvent(object? sender, WindowActivatedEventArgs e)
+        {
+            Debug.WriteLine($"[INFO] MainWindowActivatedEvent {e.WindowActivationState}");
+
+            if (e.WindowActivationState == WindowActivationState.Deactivated && _loaded && !App.IsClosing)
+            {
+                // Don't trigger actions if we're at the login page or not on the Notes page.
+                if (!string.IsNullOrEmpty(NavService?.CurrentRoute) &&
+                   (NavService.CurrentRoute.Contains(nameof(LoginViewModel)) ||
+                    NavService.CurrentRoute.Contains(nameof(TasksViewModel))))
+                    return;
+
+                Debug.WriteLine($"[INFO] Saving current notes.");
+                if (NoteItems.Count > 0)
+                    SaveNoteItemsJson();
+            }
+        }
+        #endregion
 
         #region [Bound Events]
         /// <summary>
