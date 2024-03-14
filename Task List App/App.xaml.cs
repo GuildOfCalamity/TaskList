@@ -62,6 +62,7 @@ public partial class App : Application
 	public static bool IsClosing { get; set; } = false;
     public static bool ToastLaunched { get; set; } = false;
     static ValueStopwatch stopWatch { get; set; } = ValueStopwatch.StartNew();
+    public static EventBus RootEventBus { get; set; } = new();
 
     // https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/#advantages-and-disadvantages-of-packaging-your-app
 #if IS_UNPACKAGED // We're using a custom PropertyGroup Condition we defined in the csproj to help us with the decision.
@@ -228,8 +229,29 @@ public partial class App : Application
 
         InitializeComponent();
 
-		// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.focusvisualkind?view=windows-app-sdk-1.3
-		this.FocusVisualKind = FocusVisualKind.Reveal;
+        if (!RootEventBus.IsSubscribed("EventBusMessage"))
+            RootEventBus.Subscribe("EventBusMessage", EventBusHandlerMethod);
+
+        // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.focusvisualkind?view=windows-app-sdk-1.3
+        this.FocusVisualKind = FocusVisualKind.Reveal;
+    }
+
+    /// <summary>
+    /// For <see cref="EventBus"/> model demonstration.
+    /// </summary>
+    async void EventBusHandlerMethod(object? sender, ObjectEventArgs e)
+    {
+        if (e.Payload == null)
+            Debug.WriteLine($"Received null object event!");
+        else if (e.Payload?.GetType() == typeof(System.String))
+        {
+            if (MainRoot != null)
+                await MainRoot?.MessageDialogAsync("EventBusMessage", $"{e.Payload}");
+            else
+                Debug.WriteLine($"Received EventBus Payload: {e.Payload}");
+        }
+        else
+            Debug.WriteLine($"Received EventBus Payload of type: {e.Payload?.GetType()}");
     }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)

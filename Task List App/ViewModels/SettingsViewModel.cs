@@ -28,69 +28,103 @@ public class SettingsViewModel : ObservableRecipient
     private bool _persistLogin;
     private Type? _lastPage;
     private bool _isBusy = false;
-    private SelectorBarItem _barItem;
+    private SelectorBarItem? _barItem;
     private Core.Contracts.Services.IFileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
+    public event EventHandler<string>? SettingChangedEvent;
+    public Action? ProgressButtonClickEvent { get; set; }
 
     public bool AcrylicBackdrop
     {
         get => _acrylicBackdrop;
-        set => SetProperty(ref _acrylicBackdrop, value);
+        set
+        {
+            SetProperty(ref _acrylicBackdrop, value);
+            SettingChangedEvent?.Invoke(this, nameof(AcrylicBackdrop) + " was changed");
+        }
     }
 
     public bool PersistLogin
     {
         get => _persistLogin;
-        set => SetProperty(ref _persistLogin, value);
+        set
+        {
+            SetProperty(ref _persistLogin, value);
+            SettingChangedEvent?.Invoke(this, nameof(PersistLogin) + " was changed");
+        }
     }
 
     public bool ShowNotifications
 	{
 		get => _showNotifications;
-		set => SetProperty(ref _showNotifications, value);
-	}
+        set
+        {
+            SetProperty(ref _showNotifications, value);
+            SettingChangedEvent?.Invoke(this, nameof(ShowNotifications) + " was changed");
+        }
+    }
 
     public bool ShowOverdueSummary
     {
         get => _showOverdueSummary;
-        set => SetProperty(ref _showOverdueSummary, value);
+        set
+        {
+            SetProperty(ref _showOverdueSummary, value);
+            SettingChangedEvent?.Invoke(this, nameof(ShowOverdueSummary) + " was changed");
+        }
     }
 
     public ElementTheme ElementTheme
 
     {
         get => _elementTheme;
-        set => SetProperty(ref _elementTheme, value);
+        set
+        {
+            SetProperty(ref _elementTheme, value);
+            SettingChangedEvent?.Invoke(this, nameof(ElementTheme) + " was changed");
+        }
     }
 
     public string VersionDescription
     {
         get => _versionDescription;
-        set => SetProperty(ref _versionDescription, value);
+        set
+        {
+            SetProperty(ref _versionDescription, value);
+            SettingChangedEvent?.Invoke(this, nameof(VersionDescription) + " was changed");
+        }
     }
 
     public bool IsBusy
     {
         get => _isBusy;
-        set => SetProperty(ref _isBusy, value);
+        set 
+        { 
+            SetProperty(ref _isBusy, value);
+            SettingChangedEvent?.Invoke(this, nameof(IsBusy) + " was changed");
+        }
     }
 
-    public SelectorBarItem BarItem
+    public SelectorBarItem? BarItem
     {
         get => _barItem;
-        set => SetProperty(ref _barItem, value);
+        set
+        {
+            SetProperty(ref _barItem, value);
+            SettingChangedEvent?.Invoke(this, nameof(BarItem) + " was changed");
+        }
     }
 
     public Type? LastPage
     {
         get => _lastPage;
         set
-        {
-            // There is no UI control for this parameter so
+        {   // There is no UI control for this parameter so
             // we'll save it when ever it's value is updated.
             _ = _themeSelectorService.SetLastPageAsync(value);
 
             SetProperty(ref _lastPage, value);
+            SettingChangedEvent?.Invoke(this, nameof(LastPage) + " was changed");
         }
     }
     #endregion
@@ -171,6 +205,14 @@ public class SettingsViewModel : ObservableRecipient
             });
         });
 
+        // Action example for our ProgressButton.
+        ProgressButtonClickEvent += async () => 
+        {
+            IsBusy = true;
+            await Task.Delay(3000);
+            IsBusy = false;
+        };
+
         try
         {
             fileService = App.GetService<Core.Contracts.Services.IFileService>();
@@ -193,6 +235,8 @@ public class SettingsViewModel : ObservableRecipient
         var baseFolder = "";
         
         IsBusy = true;
+
+        SettingChangedEvent?.Invoke(this, "Running restore database operation.");
 
         if (App.IsPackaged)
             baseFolder = ApplicationData.Current.LocalFolder.Path;

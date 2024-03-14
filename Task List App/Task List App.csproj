@@ -61,6 +61,7 @@
     <None Remove="Assets\ScreenShot5.png" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\EditBox.xaml" />
+    <None Remove="Controls\ProgressButton.xaml" />
     <None Remove="Controls\SampleControl.xaml" />
     <None Remove="Controls\SeparatorLine.xaml" />
     <None Remove="Controls\TabHeader.xaml" />
@@ -126,6 +127,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Controls\ProgressButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\EditBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

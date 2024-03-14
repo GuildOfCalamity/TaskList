@@ -8,7 +8,7 @@ namespace Task_List_App.Models;
 /// <summary>
 /// This is a replacement for the <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/> currently being used.
 /// </summary>
-public class TaskItem : INotifyPropertyChanged
+public class TaskItem : INotifyPropertyChanged, ICloneable
 {
 	string _title = "";
 	string _time = "";
@@ -110,7 +110,23 @@ public class TaskItem : INotifyPropertyChanged
             Debug.WriteLine($"[WARNING] OnPropertyChanged: {ex.Message}");
         }
 	}
-	#endregion
+
+    /// <summary>
+    /// Support for deep-copy routines.
+    /// </summary>
+    public object Clone()
+    {
+        return new TaskItem
+        {
+            Title = this.Title,
+            Status = this.Status,
+            Time = this.Time,
+            Created = this.Created,
+            Completed = this.Completed,
+            Completion = this.Completion
+        };
+    }
+    #endregion
 }
 
 /* [How to Use]

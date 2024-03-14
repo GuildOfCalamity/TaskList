@@ -1,3 +1,4 @@
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -130,6 +131,7 @@ public sealed partial class TabHeader : UserControl
     /// </summary>
     void TabHeaderOnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
+        this.ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
         if (!string.IsNullOrEmpty(HoverEffect) && HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             //stackPanel.BorderBrush = _hoverBrush;
@@ -143,6 +145,7 @@ public sealed partial class TabHeader : UserControl
     /// </summary>
     void TabHeaderOnPointerExited(object sender, PointerRoutedEventArgs e)
     {
+        this.ProtectedCursor = null;
         if (!string.IsNullOrEmpty(HoverEffect) && HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             //stackPanel.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);

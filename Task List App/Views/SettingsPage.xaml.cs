@@ -1,6 +1,8 @@
 ﻿using System.Text;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using Windows.Storage;
@@ -11,9 +13,6 @@ using CommunityToolkit.WinUI.Helpers;
 
 using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
-using System;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml;
 using Task_List_App.Models;
 
 namespace Task_List_App.Views;
@@ -30,12 +29,14 @@ public sealed partial class SettingsPage : Page
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
 
 		ViewModel = App.GetService<SettingsViewModel>();
+        ViewModel.SettingChangedEvent += (s, msg) => { ShowInfoBar(msg, InfoBarSeverity.Informational); };
 
         InitializeComponent();
 
         // Ensure that the Page is only created once, and cached during navigation.
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
         this.Loaded += SettingsPage_Loaded;
+        this.Unloaded += SettingsPage_Unloaded;
     }
 
     void SettingsPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -65,10 +66,30 @@ public sealed partial class SettingsPage : Page
                 if (sb.Length > 0)
                     mdReadMe.Text = sb.ToString();
                 else
-                    mdReadMe.Text = "## File could not be read";
+                    mdReadMe.Text = $"## File could not be read ({target})";
             }
         }
+
+        // https://learn.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.animatedicon?view=winui-2.8#add-an-animatedicon-to-a-button
+        abButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(AppBarButton_PointerPressed), true);
+        abButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(AppBarButton_PointerReleased), true);
+        abButton.AddHandler(UIElement.PointerEnteredEvent, new PointerEventHandler(AppBarButton_PointerEntered), true);
+        abButton.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(AppBarButton_PointerExited), true);
     }
+
+    void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        // https://learn.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.animatedicon?view=winui-2.8#add-an-animatedicon-to-a-button
+        abButton.RemoveHandler(UIElement.PointerPressedEvent, (PointerEventHandler)AppBarButton_PointerPressed);
+        abButton.RemoveHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)AppBarButton_PointerReleased);
+        abButton.RemoveHandler(UIElement.PointerEnteredEvent, (PointerEventHandler)AppBarButton_PointerEntered);
+        abButton.RemoveHandler(UIElement.PointerExitedEvent, (PointerEventHandler)AppBarButton_PointerExited);
+    }
+
+    void AppBarButton_PointerEntered(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "PointerOver");
+    void AppBarButton_PointerExited(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Normal");
+    void AppBarButton_PointerPressed(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Pressed");
+    void AppBarButton_PointerReleased(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Normal");
 
     #region [CommunityToolkit.WinUI.UI.Controls.Markdown Events]
     /// <summary>
@@ -260,11 +281,14 @@ public sealed partial class SettingsPage : Page
             e.Image = image;
             e.Handled = true;
         }
+        else
+        {
+            App.RootEventBus?.Publish("EventBusMessage", $"BitmapImage was null. Ensure that the resource path is accurate.");
+        }
 
         deferral.Complete();
     }
     #endregion
-
 
     #region [Customized from CommunityToolkit]
     /// <summary>
@@ -365,6 +389,16 @@ public sealed partial class SettingsPage : Page
         }
     }
 
+    public void ShowInfoBar(string message, InfoBarSeverity severity)
+    {
+        infoBar.DispatcherQueue?.TryEnqueue(() =>
+        {
+            infoBar.IsOpen = true;
+            infoBar.Severity = severity;
+            infoBar.Message = $"{message}";
+        });
+    }
+
     public static string LocalMethodSample(int flag)
     {
         if (flag == 1)
@@ -374,6 +408,116 @@ public sealed partial class SettingsPage : Page
         else
             return $"No logic match for '{flag}'";
     }
+
+    /// <summary>
+    /// Animation using the <see cref="Microsoft.UI.Composition.Compositor"/>.
+    /// </summary>
+    void Button_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        var btn = sender as Button;
+        if (btn != null)
+        {
+            ToColorStoryboard.Begin();
+            CreateOrUpdateSpringAnimation(_springMultiplier);
+            // We'll set the CenterPoint so the SpringAnimation does not start from offset 0,0.
+            (sender as UIElement).CenterPoint = new System.Numerics.Vector3((float)(btn.ActualWidth / 2.0), (float)(btn.ActualHeight / 2.0), 1f);
+            (sender as UIElement)?.StartAnimation(_springAnimation);
+            if (_addOpacityAnimation)
+            {
+                CreateOrUpdateScalarAnimation(true);
+                (sender as UIElement)?.StartAnimation(_scalarAnimation);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Animation using the <see cref="Microsoft.UI.Composition.Compositor"/>.
+    /// </summary>
+    void Button_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        var btn = sender as Button;
+        if (btn != null)
+        {
+            ToColorStoryboard.SkipToFill();
+            FromColorStoryboard.Begin();
+            CreateOrUpdateSpringAnimation(1.0f);
+            // We'll set the CenterPoint so the SpringAnimation does not start from offset 0,0.
+            (sender as UIElement).CenterPoint = new System.Numerics.Vector3((float)(btn.ActualWidth / 2.0), (float)(btn.ActualHeight / 2.0), 1f);
+            (sender as UIElement)?.StartAnimation(_springAnimation);
+
+            if (_addOpacityAnimation)
+            {
+                CreateOrUpdateScalarAnimation(false);
+                (sender as UIElement)?.StartAnimation(_scalarAnimation);
+            }
+        }
+    }
+
+    /// <summary>
+    /// If testing the opacity animation we'll need to trigger this on start so the initial state is correct.
+    /// </summary>
+    void Button_Loaded(object sender, RoutedEventArgs e)
+    {
+        var btn = sender as Button;
+        if (btn != null)
+        {
+            InitialColorStoryboard.Begin();
+            if (_addOpacityAnimation)
+            {
+                CreateOrUpdateScalarAnimation(false);
+                (sender as UIElement)?.StartAnimation(_scalarAnimation);
+            }
+        }
+    }
+
+    #region [Vector Animations]
+    bool _addOpacityAnimation = false;
+    float _springMultiplier = 1.125f;
+    Microsoft.UI.Composition.ScalarKeyFrameAnimation _scalarAnimation;
+    Microsoft.UI.Composition.Vector3KeyFrameAnimation _offsetAnimation;
+    Microsoft.UI.Composition.SpringVector3NaturalMotionAnimation? _springAnimation;
+    Microsoft.UI.Composition.Compositor _compositor = Microsoft.UI.Xaml.Media.CompositionTarget.GetCompositorForCurrentThread(); //App.CurrentWindow.Compositor;
+    void CreateOrUpdateSpringAnimation(float finalValue)
+    {
+        if (_springAnimation == null)
+        {
+            // When updating targets such as "Position" use a Vector3KeyFrameAnimation.
+            //var positionAnim = _compositor.CreateVector3KeyFrameAnimation();
+            // When updating targets such as "Opacity" use a ScalarKeyFrameAnimation.
+            //var sizeAnim = _compositor.CreateScalarKeyFrameAnimation();
+
+            _springAnimation = _compositor.CreateSpringVector3Animation();
+            _springAnimation.Target = "Scale";
+            _springAnimation.InitialVelocity = new System.Numerics.Vector3(_springMultiplier * 3);
+            _springAnimation.DampingRatio = 0.4f;
+            _springAnimation.Period = TimeSpan.FromMilliseconds(50);
+        }
+        _springAnimation.FinalValue = new System.Numerics.Vector3(finalValue);
+    }
+
+    void CreateOrUpdateScalarAnimation(bool fromZeroToOne)
+    {
+        if (_scalarAnimation == null)
+        {
+            _scalarAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            _scalarAnimation.Target = "Opacity";
+            _scalarAnimation.Direction = Microsoft.UI.Composition.AnimationDirection.Normal;
+            //_scalarAnimation.IterationBehavior = Microsoft.UI.Composition.AnimationIterationBehavior.Forever;
+            _scalarAnimation.Duration = TimeSpan.FromMilliseconds(1500);
+        }
+
+        if (fromZeroToOne)
+        {
+            _scalarAnimation.InsertKeyFrame(0f, 0.4f);
+            _scalarAnimation.InsertKeyFrame(1f, 1f);
+        }
+        else
+        {
+            _scalarAnimation.InsertKeyFrame(0f, 1f);
+            _scalarAnimation.InsertKeyFrame(1f, 0.4f);
+        }
+    }
+    #endregion
 }
 
 /// <summary>

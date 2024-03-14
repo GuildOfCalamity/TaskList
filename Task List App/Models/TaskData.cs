@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_Lisk_App.Models;
+namespace Task_List_App.Models;
 
 /// <summary>
 /// This was my first iteration that used <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>.

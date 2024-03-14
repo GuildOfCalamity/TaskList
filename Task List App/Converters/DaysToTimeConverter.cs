@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Data;
 
 namespace Task_List_App;
 
@@ -14,14 +13,24 @@ public class DaysToTimeConverter : IValueConverter
         string result = string.Empty;
 
         if (value.GetType() != typeof(int))
-        {
-            return $"wrong type";
-        }
+            return $"Wrong type, {nameof(System.Int32)} expected.";
 
         switch (value)
         {
-            case int d when d >= 2189:
-                result = "six years or more";
+            case int d when d >= 3640:
+                result = "ten years or more";
+                break;
+            case int d when d >= 3270:
+                result = "nine years";
+                break;
+            case int d when d >= 2910:
+                result = "eight years";
+                break;
+            case int d when d >= 2540:
+                result = "seven years";
+                break;
+            case int d when d >= 2180:
+                result = "six years";
                 break;
             case int d when d >= 2006:
                 result = "five and a half years";
@@ -56,7 +65,13 @@ public class DaysToTimeConverter : IValueConverter
             case int d when d >= 182:
                 result = "half a year";
                 break;
-            case int d when d >= 89:
+            case int d when d >= 145:
+                result = "five months";
+                break;
+            case int d when d >= 116:
+                result = "four months";
+                break;
+            case int d when d >= 88:
                 result = "three months";
                 break;
             case int d when d >= 59:
@@ -64,6 +79,12 @@ public class DaysToTimeConverter : IValueConverter
                 break;
             case int d when d >= 28:
                 result = "a month";
+                break;
+            case int d when d >= 13:
+                result = "two weeks";
+                break;
+            case int d when d >= 6:
+                result = "a week";
                 break;
             default:
                 result = $"{value} days";
@@ -74,7 +95,7 @@ public class DaysToTimeConverter : IValueConverter
     }
 
     /// <inheritdoc/>
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    public object? ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;
     }

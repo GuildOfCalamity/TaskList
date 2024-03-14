@@ -52,6 +52,7 @@
                                 === Brushes ===
                             -->
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
+                            <Brush x:Key="InfoBarBrush">#c01a1b2b</Brush>
                             <Brush x:Key="ShadowBrush">#101013</Brush>
                             <Brush x:Key="HeaderBrush">#A3A3B0</Brush>
                             <Brush x:Key="BorderBrush">#686874</Brush>
@@ -339,6 +340,7 @@
                             -->
                             <Brush x:Key="ShadowBrush">#a7a7aa</Brush>
                             <Brush x:Key="BackgroundBrush">WhiteSmoke</Brush>
+                            <Brush x:Key="InfoBarBrush">#c0f0f0f0</Brush>
                             <Brush x:Key="HeaderBrush">#535360</Brush>
                             <Brush x:Key="BorderBrush">#232330</Brush>
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>

@@ -19,7 +19,7 @@ public sealed partial class ShellPage : Page
     public static event EventHandler<Windows.System.VirtualKey>? ShellKeyboardEvent;
     public static event EventHandler<Microsoft.UI.Input.PointerDeviceType>? ShellPointerEvent;
     #endregion
-
+    
     public ShellViewModel ViewModel
     {
         get;
