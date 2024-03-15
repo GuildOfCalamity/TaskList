@@ -12,12 +12,18 @@
     xmlns:local="using:Task_List_App.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:Task_List_App.Models"
+    xmlns:sys="using:System"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:xaml="using:Microsoft.UI.Xaml"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Always"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <SolidColorBrush
+            x:Key="SampleBrush1"
+            Opacity="0.5"
+            Color="#5FB2F2" />
+
         <Style TargetType="extras:CursorGrid">
             <Setter Property="BorderBrush" Value="{ThemeResource SecondaryBrush}" />
             <Setter Property="CornerRadius" Value="5" />
@@ -26,11 +32,13 @@
             <Setter Property="RowSpacing" Value="30" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
+
         <Style BasedOn="{StaticResource DefaultToggleSwitchStyle}" TargetType="ToggleSwitch">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="OnContent" Value="Enabled" />
             <Setter Property="OffContent" Value="Disabled" />
         </Style>
+
         <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="ComboBox">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="SelectedIndex" Value="0" />
@@ -38,12 +46,53 @@
             <Setter Property="ItemsSource" Value="{x:Bind extras:CursorGrid.CursorOptions}" />
             -->
         </Style>
-        <SolidColorBrush
-            x:Key="SampleBrush1"
-            Opacity="0.5"
-            Color="#5FB2F2" />
+
+        <!--
+            NOTE: The GroupBox control will not render properly without a default styler.
+            Without a styler, the ChildPresenter will be seen, but the BorderPath and HeadingPresenter will not be visible.
+        -->
+        <Style TargetType="extras:GroupBox">
+            <Setter Property="BorderBrush" Value="{ThemeResource PrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="extras:GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!--  Border Line  -->
+                            <Path x:Name="PART_BorderPath" Stroke="{TemplateBinding BorderBrush}" />
+                            <!--  Heading Text  -->
+                            <ContentPresenter
+                                x:Name="PART_HeadingPresenter"
+                                Content="{TemplateBinding Heading}"
+                                ContentTemplate="{TemplateBinding HeadingTemplate}"
+                                ContentTemplateSelector="{TemplateBinding HeadingTemplateSelector}" />
+                            <!--  Control Content  -->
+                            <ContentPresenter
+                                x:Name="PART_ChildPresenter"
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Page.Resources>
 
+    <!--  [Root Grid]  -->
     <Grid>
         <ScrollViewer>
             <StackPanel x:Name="ContentArea">
@@ -52,7 +101,6 @@
                         <AddDeleteThemeTransition />
                     </TransitionCollection>
                 </StackPanel.ChildrenTransitions>
-
 
                 <!--
                     [Personalization]
@@ -195,7 +243,6 @@
                     </interact:Interaction.Behaviors>
                 </Button>
 
-
                 <!--
                     [About]
                 -->
@@ -220,7 +267,6 @@
                     <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
                 </StackPanel>
 
-
                 <!--
                     [Formatted Date]
                 -->
@@ -239,6 +285,7 @@
                     [Control Testing]
                 -->
                 <extras:CompositionShadow
+                    Margin="0,10,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     BlurRadius="6"
@@ -250,6 +297,7 @@
                 <Pivot
                     x:Name="settingPivot"
                     Margin="0,10"
+                    SelectedItem="{x:Bind ViewModel.PivotSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     SelectionChanged="settingPivotOnSelectionChanged">
                     <!--
                     <Pivot.Title>
@@ -338,7 +386,7 @@
 
 
                 <extras:CompositionShadow
-                    Margin="0,10,0,0"
+                    Margin="0,20,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     BlurRadius="6"
@@ -349,17 +397,27 @@
                 </extras:CompositionShadow>
                 <!--#region [SelectorBar with default styling]-->
                 <SelectorBar
-                    x:Name="sbTest"
                     Margin="2"
                     SelectedItem="{x:Bind ViewModel.BarItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    SelectionChanged="sbTest_SelectionChanged">
+                    SelectionChanged="SelectorBar_SelectionChanged">
                     <SelectorBar.ContextFlyout>
                         <CommandBarFlyout
+                            x:Name="cbfSelector"
                             AlwaysExpanded="True"
+                            AreOpenCloseAnimationsEnabled="True"
                             Placement="Right"
-                            ShowMode="Auto">
+                            ShowMode="Transient">
+                            <!--
+                                ShowMode="Standard"  : Focus will move to the menu.
+                                ShowMode="Transient" : Focus will not move to the menu.
+                            -->
+                            <CommandBarFlyout.SystemBackdrop>
+                                <MicaBackdrop Kind="Base" />
+                            </CommandBarFlyout.SystemBackdrop>
                             <AppBarButton
                                 Click="AppBarButton_Click"
+                                Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
                                 Icon="Copy"
                                 Label="Copy"
                                 LabelPosition="Default"
@@ -367,25 +425,52 @@
                                 ToolTipService.ToolTip="Copy" />
                             <AppBarButton
                                 Click="AppBarButton_Click"
+                                Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
                                 Icon="Save"
                                 Label="Save"
                                 LabelPosition="Default"
                                 Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
                                 ToolTipService.ToolTip="Save" />
                             <AppBarButton
-                                x:Name="Share"
                                 Click="AppBarButton_Click"
-                                Icon="Share"
-                                Label="Share"
-                                Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
-                                ToolTipService.ToolTip="Share" />
-                            <AppBarButton
-                                x:Name="Print"
-                                Click="AppBarButton_Click"
+                                Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
                                 Icon="Print"
                                 Label="Print"
                                 Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
                                 ToolTipService.ToolTip="Print" />
+                            <CommandBarFlyout.SecondaryCommands>
+                                <AppBarButton
+                                    Click="AppBarButton_Click"
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Label="Find dependencies"
+                                    Shadow="{ThemeResource CommandBarFlyoutOverflowShadow}"
+                                    ToolTipService.ToolTip="Share">
+                                    <AppBarButton.Icon>
+                                        <AnimatedIcon
+                                            Width="24"
+                                            Height="24"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw">
+                                            <animatedvisuals:AnimatedFindVisualSource />
+                                            <AnimatedIcon.FallbackIconSource>
+                                                <FontIconSource
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="8"
+                                                    Glyph="{StaticResource Search}"
+                                                    IsTextScaleFactorEnabled="False" />
+                                                <!--
+                                                    IsTextScaleFactorEnabled gets or sets whether automatic text
+                                                    enlargement to reflect the system text size setting is enabled.
+                                                -->
+                                            </AnimatedIcon.FallbackIconSource>
+                                        </AnimatedIcon>
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                            </CommandBarFlyout.SecondaryCommands>
                         </CommandBarFlyout>
                     </SelectorBar.ContextFlyout>
                     <SelectorBarItem Text="1">
@@ -652,7 +737,88 @@
                             </Setter>
                         </Style>
                     </StackPanel.Resources>
-                    <SelectorBar Background="Transparent" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    <SelectorBar
+                        Background="Transparent"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        SelectedItem="{x:Bind ViewModel.BarItemCustom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectionChanged="SelectorBar_SelectionChanged">
+                        <SelectorBar.ContextFlyout>
+                            <MenuFlyout
+                                AreOpenCloseAnimationsEnabled="True"
+                                Placement="Bottom"
+                                ShowMode="Transient">
+                                <!--
+                                    ShowMode="Standard"  : Focus will move to the menu.
+                                    ShowMode="Transient" : Focus will not move to the menu.
+                                -->
+                                <MenuFlyout.SystemBackdrop>
+                                    <MicaBackdrop Kind="Base" />
+                                </MenuFlyout.SystemBackdrop>
+                                <MenuFlyoutItem
+                                    Background="Transparent"
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Icon="Copy"
+                                    Text="Copy" />
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Icon="Save"
+                                    Text="Save" />
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Icon="Share"
+                                    Text="Share" />
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Icon="Print"
+                                    Text="Print" />
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Text="Travel">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{StaticResource Bus}" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Text="Config">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="ms-appx:///Assets/Gear_Icon.png" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SampleMenuCommand}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Mode=OneWay}"
+                                    Text="Find">
+                                    <MenuFlyoutItem.Icon>
+                                        <AnimatedIcon
+                                            Width="20"
+                                            Height="20"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw">
+                                            <animatedvisuals:AnimatedFindVisualSource />
+                                            <AnimatedIcon.FallbackIconSource>
+                                                <FontIconSource
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="12"
+                                                    Glyph="{StaticResource Search}"
+                                                    IsTextScaleFactorEnabled="False" />
+                                                <!--
+                                                    IsTextScaleFactorEnabled gets or sets whether automatic text
+                                                    enlargement to reflect the system text size setting is enabled.
+                                                -->
+                                            </AnimatedIcon.FallbackIconSource>
+                                        </AnimatedIcon>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </SelectorBar.ContextFlyout>
                         <SelectorBar.Style>
                             <Style TargetType="SelectorBar">
                                 <Setter Property="HorizontalAlignment" Value="Left" />
@@ -732,38 +898,105 @@
                 </StackPanel>
                 <!--#endregion-->
 
+                <extras:CompositionShadow
+                    Margin="0,25,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    BlurRadius="6"
+                    Brush="{ThemeResource SecondaryBrush}"
+                    OffsetX="3"
+                    OffsetY="2">
+                    <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Custom Controls" />
+                </extras:CompositionShadow>
+
                 <Grid
-                    Margin="0,24"
-                    ColumnDefinitions="Auto,Auto,Auto,Auto"
+                    Margin="0,20"
+                    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
                     ColumnSpacing="28">
+                    <Grid.Resources>
+                        <Style TargetType="extras:EditBox">
+                            <Setter Property="BorderBrush" Value="{ThemeResource SecondaryBorderBrush}" />
+                        </Style>
+                    </Grid.Resources>
                     <extras:EditBox
                         Title="Tasks Database"
                         Grid.Column="0"
-                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
-                        Data="{x:Bind local:SettingsPage.LocalMethodSample(1)}" />
+                        Data="{x:Bind local:SettingsPage.LocalMethodSample(1)}"
+                        DataChangedEvent="{x:Bind ViewModel.OnEditBoxDataChanged, Mode=OneWay}" />
                     <extras:EditBox
                         Title="Notes Database"
                         Grid.Column="1"
-                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
-                        Data="{x:Bind local:SettingsPage.LocalMethodSample(2)}" />
+                        Data="{x:Bind local:SettingsPage.LocalMethodSample(2)}"
+                        DataChangedEvent="{x:Bind ViewModel.OnEditBoxDataChanged, Mode=OneWay}" />
                     <extras:EditBox
                         Title="Last Page"
                         Grid.Column="2"
-                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
-                        Data="{x:Bind ViewModel.LastPage, Mode=OneWay}" />
+                        Data="{x:Bind ViewModel.LastPage, Mode=OneWay}"
+                        DataChangedEvent="{x:Bind ViewModel.OnEditBoxDataChanged, Mode=OneWay}" />
                     <extras:EditBox
                         Title="Current Theme"
                         Grid.Column="3"
-                        BorderBrush="{ThemeResource SecondaryBorderBrush}"
-                        Data="{x:Bind ViewModel.ElementTheme, Mode=OneWay}" />
+                        Data="{x:Bind ViewModel.ElementTheme, Mode=OneWay}"
+                        DataChangedEvent="{x:Bind ViewModel.OnEditBoxDataChanged, Mode=OneWay}" />
+                    <extras:EditBox
+                        Title="Format Time"
+                        Grid.Column="4"
+                        Data="{x:Bind Path=sys:String.Format('{0:dddd, MMMM d, yyyy}', sys:DateTime.Now)}"
+                        DataChangedEvent="{x:Bind ViewModel.OnEditBoxDataChanged, Mode=OneWay}" />
                 </Grid>
 
+                <extras:GroupBox
+                    HorizontalAlignment="Left"
+                    BorderBrush="{ThemeResource SecondaryBorderBrush}"
+                    FontSize="16"
+                    Heading="GroupBox">
+                    <extras:GroupBox.Transitions>
+                        <TransitionCollection>
+                            <EntranceThemeTransition FromHorizontalOffset="200" FromVerticalOffset="200" />
+                        </TransitionCollection>
+                    </extras:GroupBox.Transitions>
+                    <TextBlock Margin="10,5" Text="I do miss the GroupBox control that was available in WinForms and WPF." />
+                </extras:GroupBox>
 
                 <!--
                     [ProtectedCursor Test]
                 -->
                 <extras:CursorGrid EnableCursorOverride="{x:Bind GrandParentAreaToggleSwitch.IsOn, Mode=OneWay}" InputSystemCursorShape="{x:Bind (input:InputSystemCursorShape)GrandParentAreaComboBox.SelectedValue, Mode=OneWay}">
                     <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Flyout x:Key="colorPickerFlyout">
+                                <RelativePanel>
+                                    <ColorPicker
+                                        x:Name="colorPicker"
+                                        IsColorChannelTextInputVisible="False"
+                                        IsHexInputVisible="False" />
+                                    <Grid
+                                        Margin="0,10,0,0"
+                                        RelativePanel.AlignLeftWithPanel="True"
+                                        RelativePanel.AlignRightWithPanel="True"
+                                        RelativePanel.Below="colorPicker">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Grid.Column="0"
+                                            MinWidth="100"
+                                            HorizontalAlignment="Center"
+                                            Click="ColorFlyoutButtonClick"
+                                            Content="OK"
+                                            FontFamily="{StaticResource CustomFont}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            MinWidth="100"
+                                            HorizontalAlignment="Center"
+                                            Click="ColorFlyoutButtonClick"
+                                            Content="Cancel"
+                                            FontFamily="{StaticResource CustomFont}" />
+                                    </Grid>
+                                </RelativePanel>
+                            </Flyout>
+                        </StackPanel.Resources>
                         <ToggleSwitch x:Name="GrandParentAreaToggleSwitch" Header="Enable cursor override" />
                         <ComboBox
                             x:Name="GrandParentAreaComboBox"
@@ -781,8 +1014,10 @@
                             </Border.Background>
                         </Border>
                         <Button
+                            x:Name="springButton"
                             Margin="50,0,0,0"
                             Content="Spring Animation Button"
+                            Flyout="{StaticResource colorPickerFlyout}"
                             Loaded="Button_Loaded"
                             PointerEntered="Button_PointerEntered"
                             PointerExited="Button_PointerExited">
@@ -887,6 +1122,7 @@
                 <!--  separator line  -->
                 <extras:SeparatorLine />
 
+                <!--  [ReadMe Markdown]  -->
                 <Expander
                     Margin="0,12,30,8"
                     HorizontalAlignment="Stretch"

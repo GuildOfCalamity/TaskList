@@ -29,6 +29,8 @@ public class SettingsViewModel : ObservableRecipient
     private Type? _lastPage;
     private bool _isBusy = false;
     private SelectorBarItem? _barItem;
+    private SelectorBarItem? _barItemCustom;
+    PivotItem? _pivotItem;
     private Core.Contracts.Services.IFileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
     public event EventHandler<string>? SettingChangedEvent;
@@ -40,7 +42,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _acrylicBackdrop, value);
-            SettingChangedEvent?.Invoke(this, nameof(AcrylicBackdrop) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(AcrylicBackdrop) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -50,7 +52,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _persistLogin, value);
-            SettingChangedEvent?.Invoke(this, nameof(PersistLogin) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(PersistLogin) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -60,7 +62,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _showNotifications, value);
-            SettingChangedEvent?.Invoke(this, nameof(ShowNotifications) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(ShowNotifications) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -70,7 +72,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _showOverdueSummary, value);
-            SettingChangedEvent?.Invoke(this, nameof(ShowOverdueSummary) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(ShowOverdueSummary) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -81,7 +83,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _elementTheme, value);
-            SettingChangedEvent?.Invoke(this, nameof(ElementTheme) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(ElementTheme) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -91,7 +93,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _versionDescription, value);
-            SettingChangedEvent?.Invoke(this, nameof(VersionDescription) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(VersionDescription) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -101,7 +103,17 @@ public class SettingsViewModel : ObservableRecipient
         set 
         { 
             SetProperty(ref _isBusy, value);
-            SettingChangedEvent?.Invoke(this, nameof(IsBusy) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(IsBusy) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+        }
+    }
+
+    public PivotItem? PivotSelected
+    {
+        get => _pivotItem;
+        set
+        {
+            SetProperty(ref _pivotItem, value);
+            SettingChangedEvent?.Invoke(this, nameof(PivotSelected) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -111,7 +123,17 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _barItem, value);
-            SettingChangedEvent?.Invoke(this, nameof(BarItem) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(BarItem) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+        }
+    }
+
+    public SelectorBarItem? BarItemCustom
+    {
+        get => _barItemCustom;
+        set
+        {
+            SetProperty(ref _barItemCustom, value);
+            SettingChangedEvent?.Invoke(this, nameof(BarItemCustom) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -124,7 +146,7 @@ public class SettingsViewModel : ObservableRecipient
             _ = _themeSelectorService.SetLastPageAsync(value);
 
             SetProperty(ref _lastPage, value);
-            SettingChangedEvent?.Invoke(this, nameof(LastPage) + " was changed");
+            SettingChangedEvent?.Invoke(this, nameof(LastPage) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
     #endregion
@@ -136,6 +158,19 @@ public class SettingsViewModel : ObservableRecipient
     public ICommand PersistLoginCommand { get; }
     public ICommand AcrylicBackdropCommand { get; }
     public ICommand RestoreDataCommand { get; }
+    public ICommand SampleMenuCommand { get; }
+    #endregion
+
+    #region [Events]
+    /// <summary>
+    /// <see cref="Task_List_App.Controls.EditBox"/> data changed event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public void OnEditBoxDataChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        SettingChangedEvent?.Invoke(this, $"[DataChanged]   OldValue ⇨ {e.OldValue}   NewValue ⇨ {e.NewValue}");
+    }
     #endregion
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService)
@@ -203,6 +238,21 @@ public class SettingsViewModel : ObservableRecipient
             {
                 App.DebugLog($"User canceled restore process.");
             });
+        });
+
+        // Sample command for flyouts.
+        SampleMenuCommand = new RelayCommand<object>((obj) => 
+        {
+            if (obj is MenuFlyoutItem mfi)
+            {
+                if (mfi != null)
+                    SettingChangedEvent?.Invoke(this, $"Invoked MenuFlyoutItem \"{mfi.Text}\"");
+            }
+            else if (obj is AppBarButton abb)
+            {
+                if (abb != null)
+                    SettingChangedEvent?.Invoke(this, $"Invoked AppBarButton \"{abb.Label}\"");
+            }
         });
 
         // Action example for our ProgressButton.

@@ -191,7 +191,10 @@
             </i:Interaction.Behaviors>
             <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
                 <!--  Content Holder  -->
-                <Frame x:Name="NavigationFrame" Margin="{x:Bind MainFrameMargin(NavigationViewControl.DisplayMode), Mode=OneWay}">
+                <Frame
+                    x:Name="NavigationFrame"
+                    Margin="{x:Bind MainFrameMargin(NavigationViewControl.DisplayMode), Mode=OneWay}"
+                    CacheSize="{x:Bind NavigationViewControl.MenuItems.Count}">
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition>

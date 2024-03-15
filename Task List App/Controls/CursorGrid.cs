@@ -39,7 +39,6 @@ public class CursorGrid : Grid
         Background = new SolidColorBrush(Colors.Transparent);
     }
 
-
     public InputSystemCursorShape InputSystemCursorShape
     {
         get => (InputSystemCursorShape)GetValue(InputSystemCursorShapeProperty);

@@ -14,6 +14,7 @@ using CommunityToolkit.WinUI.Helpers;
 using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
 using Task_List_App.Models;
+using Microsoft.UI.Xaml.Media;
 
 namespace Task_List_App.Views;
 
@@ -345,7 +346,7 @@ public sealed partial class SettingsPage : Page
     /// <summary>
     /// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.selectorbar.selectionchanged?view=windows-app-sdk-1.5
     /// </summary>
-    async void sbTest_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    async void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
     {
         if (sender != null)
         {
@@ -380,14 +381,14 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    async void AppBarButton_Click(object sender, RoutedEventArgs e)
-    {
-        var abb = sender as AppBarButton;
-        if (abb != null )
-        {
-            await App.MainRoot?.MessageDialogAsync("AppBarButton", $"{abb.Label} clicked");
-        }
-    }
+    /// <summary>
+    /// The default behavior of the <see cref="CommandBarFlyout"/> is to remain open after a menu item 
+    /// is selected, we want the <see cref="CommandBarFlyout"/> to close after we've made a selection.
+    /// </summary>
+    /// <remarks>
+    /// Refer to the <see cref="RelayCommand"/> in the <see cref="SettingsViewModel"/>.
+    /// </remarks>
+    void AppBarButton_Click(object sender, RoutedEventArgs e) => cbfSelector.Hide();
 
     public void ShowInfoBar(string message, InfoBarSeverity severity)
     {
@@ -518,6 +519,23 @@ public sealed partial class SettingsPage : Page
         }
     }
     #endregion
+
+    void ColorFlyoutButtonClick(object sender, RoutedEventArgs e)
+    {
+        var btn = sender as Button;
+        if (btn != null)
+        {
+            if ($"{btn.Content}".ToLower().Contains("cancel"))
+            {
+                springButton.Flyout.Hide();
+            }
+            else
+            {
+                springButton.Foreground = new SolidColorBrush(colorPicker.Color);
+                springButton.Flyout.Hide();
+            }
+        }
+    }
 }
 
 /// <summary>

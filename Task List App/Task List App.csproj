@@ -51,6 +51,7 @@
     <None Remove="Assets\Check_Red.png" />
     <None Remove="Assets\Check_Yellow.png" />
     <None Remove="Assets\Fonts\Aptos.ttf" />
+    <None Remove="Assets\Gear_Icon.png" />
     <None Remove="Assets\ItemDisabled.png" />
     <None Remove="Assets\ItemEnabled.png" />
     <None Remove="Assets\README.md" />

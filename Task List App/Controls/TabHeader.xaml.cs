@@ -22,7 +22,7 @@ public sealed partial class TabHeader : UserControl
     bool _showOutline = false;
     SolidColorBrush _hoverBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 90));
 
-    #region [Properties]
+    #region [Dependency Properties]
     public static readonly DependencyProperty HoverEffectProperty = DependencyProperty.Register(
         nameof(HoverEffect),
         typeof(string),
@@ -122,7 +122,27 @@ public sealed partial class TabHeader : UserControl
     void TabHeaderOnLoaded(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"[INFO] Loaded {sender.GetType().Name} of base type {sender.GetType().BaseType?.Name}");
-        _hoverBrush = GeneralExtensions.GetResource<SolidColorBrush>("SecondaryBrush") ?? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30,30,90));
+        try
+        {
+            // Getting the brush from application single resource dictionary.
+            //var lb = (SolidColorBrush)App.Current.Resources["LocalBrush"];
+
+            // Getting the brush from the local page/control resources.
+            var lb = (SolidColorBrush)this.Resources["LocalBrush"];
+            if (lb != null)
+            {
+                _hoverBrush = lb;
+            }
+            else
+            {
+                // Getting the brush from application multiple resource dictionary via helper/extension method.
+                _hoverBrush = GeneralExtensions.GetResource<SolidColorBrush>("SecondaryBrush") ?? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 90));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[WARNING] OnLoaded: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -132,7 +152,8 @@ public sealed partial class TabHeader : UserControl
     void TabHeaderOnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         this.ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
-        if (!string.IsNullOrEmpty(HoverEffect) && HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(HoverEffect) && 
+            HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             //stackPanel.BorderBrush = _hoverBrush;
             stackPanel.BorderThickness = new Thickness(HoverStrength);
@@ -146,7 +167,8 @@ public sealed partial class TabHeader : UserControl
     void TabHeaderOnPointerExited(object sender, PointerRoutedEventArgs e)
     {
         this.ProtectedCursor = null;
-        if (!string.IsNullOrEmpty(HoverEffect) && HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(HoverEffect) && 
+            HoverEffect.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             //stackPanel.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
             stackPanel.BorderThickness = new Thickness(0);

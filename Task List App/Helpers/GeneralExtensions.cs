@@ -218,6 +218,21 @@ public static class GeneralExtensions
     }
 
     /// <summary>
+    /// Converts a unsigned integer into a <see cref="Windows.UI.Color"/>.
+    /// </summary>
+    /// <param name="rgb">Blue: 0x2563EB</param>
+    /// <returns><see cref="Windows.UI.Color"/></returns>
+    public static Windows.UI.Color ConvertToColor(this uint rgb)
+    {
+        Windows.UI.Color color = default;
+        color.A = 0xFF;
+        color.R = (byte)(rgb >> 16);
+        color.G = (byte)((rgb >> 8) & 0x000000FF);
+        color.B = (byte)(rgb & 0x000000FF);
+        return color;
+    }
+
+    /// <summary>
     /// Returns a <see cref="Windows.UI.Color"/> based on the window of time met from the initial task.
     /// </summary>
     public static InfoBarSeverity GetInfoBarSeverity(string value, TimeSpan? amount)

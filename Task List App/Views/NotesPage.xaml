@@ -272,7 +272,8 @@
                 Visibility="{x:Bind ViewModel.EditRequest, Mode=OneWay, Converter={StaticResource BooleanVisibilityInverse}}" />
         </Grid>
 
-        <!--#region [Testing FlipView]
+        <!--#region [Testing FlipView]-->
+        <!--
             https://learn.microsoft.com/en-us/windows/apps/design/controls/flipview#specify-the-look-of-the-items
         <FlipView
             x:Name="flipView"
@@ -329,7 +330,8 @@
                 </DataTemplate>
             </FlipView.ItemTemplate>
         </FlipView>
-        #endregion-->
+        -->
+        <!--#endregion-->
 
         <!--  Navigation Control  -->
         <Grid Grid.Row="2" ColumnDefinitions="1*,1*,9*">

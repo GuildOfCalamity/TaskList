@@ -114,6 +114,13 @@
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
 
+                            <LinearGradientBrush x:Key="GradientBrush1" StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0.0" Color="Yellow" />
+                                <GradientStop Offset="0.25" Color="Red" />
+                                <GradientStop Offset="0.75" Color="Blue" />
+                                <GradientStop Offset="1.0" Color="LimeGreen" />
+                            </LinearGradientBrush>
+
                             <!--
                                 === Theme Styles ===
                             -->
@@ -400,6 +407,13 @@
                                 TintColor="AntiqueWhite"
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
+
+                            <LinearGradientBrush x:Key="GradientBrush1" StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0.0" Color="Yellow" />
+                                <GradientStop Offset="0.25" Color="Red" />
+                                <GradientStop Offset="0.75" Color="Blue" />
+                                <GradientStop Offset="1.0" Color="LimeGreen" />
+                            </LinearGradientBrush>
 
                             <!--
                                 === Theme Styles ===
