@@ -207,7 +207,8 @@ public sealed partial class TasksPage : Page
             // Don't trigger actions if we're at the login page or not on the Tasks page.
             if (!string.IsNullOrEmpty(NavService?.CurrentRoute) &&
                (NavService.CurrentRoute.Contains(nameof(LoginViewModel)) || 
-                NavService.CurrentRoute.Contains(nameof(NotesViewModel))))
+                NavService.CurrentRoute.Contains(nameof(NotesViewModel)) ||
+                NavService.CurrentRoute.Contains(nameof(ControlsViewModel))))
                 return;
 
             // Add debounce in scenarios where this event could be hammered.

@@ -112,9 +112,7 @@ public class NavigationService : INavigationService
             {
                 _lastParameterUsed = parameter;
                 if (vmBeforeNavigation is INavigationAware navigationAware)
-                {
                     navigationAware.OnNavigatedFrom();
-                }
             }
 
             return navigated;
@@ -142,9 +140,7 @@ public class NavigationService : INavigationService
             if (navigated)
             {
                 if (vmBeforeNavigation is INavigationAware navigationAware)
-                {
                     navigationAware.OnNavigatedFrom();
-                }
             }
             return navigated;
         }
@@ -157,14 +153,10 @@ public class NavigationService : INavigationService
         {
             var clearNavigation = (bool)frame.Tag;
             if (clearNavigation)
-            {
                 frame.BackStack.Clear();
-            }
 
             if (frame.GetPageViewModel() is INavigationAware navigationAware)
-            {
                 navigationAware.OnNavigatedTo(e.Parameter);
-            }
 
             Navigated?.Invoke(sender, e);
         }

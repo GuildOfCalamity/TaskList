@@ -15,6 +15,11 @@ using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
 using Task_List_App.Models;
 using Microsoft.UI.Xaml.Media;
+using Task_List_App.Core.Services;
+using Microsoft.Extensions.Logging;
+using Task_List_App.Controls;
+using Microsoft.UI.Input;
+using System.Collections.Immutable;
 
 namespace Task_List_App.Views;
 
@@ -24,6 +29,7 @@ namespace Task_List_App.Views;
 public sealed partial class SettingsPage : Page
 {
     public SettingsViewModel ViewModel { get; private set; }
+    public Core.Contracts.Services.IMessageService MsgService { get; private set; }
 
     public SettingsPage()
     {
@@ -31,15 +37,21 @@ public sealed partial class SettingsPage : Page
 
 		ViewModel = App.GetService<SettingsViewModel>();
         ViewModel.SettingChangedEvent += (s, msg) => { ShowInfoBar(msg, InfoBarSeverity.Informational); };
+        MsgService = App.GetService<Core.Contracts.Services.IMessageService>();
 
         InitializeComponent();
 
         // Ensure that the Page is only created once, and cached during navigation.
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
+
         this.Loaded += SettingsPage_Loaded;
         this.Unloaded += SettingsPage_Unloaded;
     }
 
+    #region [Events]
+    /// <summary>
+    /// <see cref="Page"/> event.
+    /// </summary>
     void SettingsPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         string target = "";
@@ -71,26 +83,28 @@ public sealed partial class SettingsPage : Page
             }
         }
 
-        // https://learn.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.animatedicon?view=winui-2.8#add-an-animatedicon-to-a-button
-        abButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(AppBarButton_PointerPressed), true);
-        abButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(AppBarButton_PointerReleased), true);
-        abButton.AddHandler(UIElement.PointerEnteredEvent, new PointerEventHandler(AppBarButton_PointerEntered), true);
-        abButton.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(AppBarButton_PointerExited), true);
+        //MsgService.ShowMessageBox(App.WindowHandle, "Title", "Message Service Test", "OK", "Cancel", null, null);
+        //TestGenericDialog(sender, e);
     }
 
+    /// <summary>
+    /// <see cref="Page"/> event.
+    /// </summary>
     void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        // https://learn.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.animatedicon?view=winui-2.8#add-an-animatedicon-to-a-button
-        abButton.RemoveHandler(UIElement.PointerPressedEvent, (PointerEventHandler)AppBarButton_PointerPressed);
-        abButton.RemoveHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)AppBarButton_PointerReleased);
-        abButton.RemoveHandler(UIElement.PointerEnteredEvent, (PointerEventHandler)AppBarButton_PointerEntered);
-        abButton.RemoveHandler(UIElement.PointerExitedEvent, (PointerEventHandler)AppBarButton_PointerExited);
+        Debug.WriteLine($"[INFO] {System.Reflection.MethodBase.GetCurrentMethod()?.Name}");
     }
 
-    void AppBarButton_PointerEntered(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "PointerOver");
-    void AppBarButton_PointerExited(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Normal");
-    void AppBarButton_PointerPressed(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Pressed");
-    void AppBarButton_PointerReleased(object sender, PointerRoutedEventArgs e) => Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState((UIElement)sender, "Normal");
+    public void ShowInfoBar(string message, InfoBarSeverity severity)
+    {
+        infoBar.DispatcherQueue?.TryEnqueue(() =>
+        {
+            infoBar.IsOpen = true;
+            infoBar.Severity = severity;
+            infoBar.Message = $"{message}";
+        });
+    }
+    #endregion
 
     #region [CommunityToolkit.WinUI.UI.Controls.Markdown Events]
     /// <summary>
@@ -100,7 +114,7 @@ public sealed partial class SettingsPage : Page
     async void mdReadMe_LinkClicked(object sender, CommunityToolkit.WinUI.UI.Controls.LinkClickedEventArgs e)
     {
         var link = e.Link;
-        if (Uri.TryCreate(link, UriKind.Absolute, out Uri result))
+        if (Uri.TryCreate(link, UriKind.Absolute, out Uri? result))
         {
             if (result != null)
                 await Launcher.LaunchUriAsync(result);
@@ -127,7 +141,7 @@ public sealed partial class SettingsPage : Page
         BitmapImage? image = null;
 
         // Check if we have a UNC asset first.
-        if (Uri.TryCreate(e.Url, UriKind.Relative, out Uri urlRel))
+        if (Uri.TryCreate(e.Url, UriKind.Relative, out Uri? urlRel))
         {
             if (urlRel != null && urlRel.OriginalString.StartsWith("\\"))
             {
@@ -165,7 +179,7 @@ public sealed partial class SettingsPage : Page
         if (notUNC)
         {
             // Determine if the link is not absolute, meaning it is relative.
-            if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri url))
+            if (!Uri.TryCreate(e.Url, UriKind.Absolute, out Uri? url))
             {
                 try
                 {
@@ -203,8 +217,7 @@ public sealed partial class SettingsPage : Page
                                 /* 
                                  *  Unfortunately this throws an InvalidOperationException with no explanation.
                                  *  The problem is the method still assumes the app is packaged.
-                                 *  The documentation is sorely lacking...
-                                 *  https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.helpers.streamhelper.getlocalfilestreamasync?view=win-comm-toolkit-dotnet-7.0#communitytoolkit-winui-helpers-streamhelper-getlocalfilestreamasync(system-string-windows-storage-fileaccessmode)
+                                 *  The documentation is sorely lacking: https://learn.microsoft.com/en-us/dotnet/api/communitytoolkit.winui.helpers.streamhelper.getlocalfilestreamasync?view=win-comm-toolkit-dotnet-7.0#communitytoolkit-winui-helpers-streamhelper-getlocalfilestreamasync(system-string-windows-storage-fileaccessmode)
                                  */
                                 //string target = Path.Combine(AppContext.BaseDirectory, "Assets", e.Url.Replace("./", ""));
                                 //var imageStream = await StreamHelper.GetLocalFileStreamAsync(target);
@@ -259,19 +272,26 @@ public sealed partial class SettingsPage : Page
             }
             else
             {
-                try
+                if (url != null)
                 {
-                    // Cache a remote image from the internet.
-                    var imageStream = await url.GetImageStream();
-                    if (imageStream != null)
+                    try
                     {
-                        image = new BitmapImage();
-                        await image.SetSourceAsync(imageStream);
+                        // Cache a remote image from the internet.
+                        var imageStream = await url.GetImageStream();
+                        if (imageStream != null)
+                        {
+                            image = new BitmapImage();
+                            await image.SetSourceAsync(imageStream);
+                        }
+                        }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"GetImageStream: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Debug.WriteLine($"GetImageStream: {ex.Message}");
+                    Debug.WriteLine($"ImageResolving: {nameof(url)} was null.");
                 }
             }
         }
@@ -343,199 +363,106 @@ public sealed partial class SettingsPage : Page
     }
     #endregion
 
+    #region [ContentDialog Testing]
     /// <summary>
-    /// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.selectorbar.selectionchanged?view=windows-app-sdk-1.5
+    /// This could be tied to an event which offers <see cref="KeyRoutedEventArgs"/>.
     /// </summary>
-    async void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    async void TestNoticeDialog(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (sender != null)
+        // Setup the dialog.
+        var dialog = new SaveCloseDiscardDialog(
+         saveAndExitAction: async () =>
+         {
+             mdReadMe.Text = $"Save and exit action";
+             await Task.Delay(250);
+         },
+         discardAndExitAction: () =>
+         {
+             mdReadMe.Text = $"Discard and exit action";
+         },
+         cancelAction: () =>
+         {
+             mdReadMe.Text = $"Cancel action";
+             //e.Handled = true;
+         },
+         content: "Would you like to save your changes?");
+
+        // Show the dialog.
+        var result = await DialogManager.OpenDialogAsync(dialog, awaitPreviousDialog: false);
+
+        // Deal with the result.
+        if (result == null)
         {
-            mdReadMe.Text = $"## SelectorBar selection: {sender.SelectedItem.Text}";
-            //await App.MainRoot?.MessageDialogAsync("Info", $"SelectorBar selection: {sender.SelectedItem.Text}");
+            mdReadMe.Text = $"Result is null.";
+            //e.Handled = true;
         }
-    }
-
-    /// <summary>
-    /// <see cref="Pivot"/> control event.
-    /// </summary>
-    void settingPivotOnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        PivotItem? selectedPivot = settingPivot.SelectedItem as PivotItem;
-
-        // Make the active pivot image colored, and inactive items grayed.
-        // You could also do this with the VisualStateManager.
-        foreach (PivotItem item in settingPivot.Items)
+        else if (result == ContentDialogResult.Primary)
         {
-            if (item == selectedPivot)
-            {
-                var header = item.Header as Controls.TabHeader;
-                if (header != null)
-                    header.SetSelectedItem(true);
-            }
-            else
-            {
-                var header = item.Header as Controls.TabHeader;
-                if (header != null)
-                    header.SetSelectedItem(false);
-            }
+            mdReadMe.Text = $"You chose 'Save'";
         }
-    }
-
-    /// <summary>
-    /// The default behavior of the <see cref="CommandBarFlyout"/> is to remain open after a menu item 
-    /// is selected, we want the <see cref="CommandBarFlyout"/> to close after we've made a selection.
-    /// </summary>
-    /// <remarks>
-    /// Refer to the <see cref="RelayCommand"/> in the <see cref="SettingsViewModel"/>.
-    /// </remarks>
-    void AppBarButton_Click(object sender, RoutedEventArgs e) => cbfSelector.Hide();
-
-    public void ShowInfoBar(string message, InfoBarSeverity severity)
-    {
-        infoBar.DispatcherQueue?.TryEnqueue(() =>
+        else if (result == ContentDialogResult.Secondary)
         {
-            infoBar.IsOpen = true;
-            infoBar.Severity = severity;
-            infoBar.Message = $"{message}";
-        });
-    }
+            mdReadMe.Text = $"You chose 'Discard'";
+        }
+        else if (result == ContentDialogResult.None)
+        {
+            mdReadMe.Text = $"You chose 'Close'";
+        }
 
-    public static string LocalMethodSample(int flag)
-    {
-        if (flag == 1)
-            return $"{App.DatabaseTasks}";
-        else if (flag == 2)
-            return $"{App.DatabaseNotes}";
-        else
-            return $"No logic match for '{flag}'";
+        //if (e.Handled && !dialog.IsAborted) { SomeTextBox.Focus(FocusState.Programmatic); }
     }
 
     /// <summary>
-    /// Animation using the <see cref="Microsoft.UI.Composition.Compositor"/>.
+    /// This could be tied to an event which offers <see cref="KeyRoutedEventArgs"/>.
     /// </summary>
-    void Button_PointerEntered(object sender, PointerRoutedEventArgs e)
+    async void TestGenericDialog(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var btn = sender as Button;
-        if (btn != null)
+        string primaryText = "Yes";
+        string secondaryText = "No";
+        string cancelText = "Cancel";
+
+        // Setup the dialog.
+        var dialog = new GenericDialog(
+         primaryText, yesAction: () =>
+         {
+             mdReadMe.Text = $"Running '{primaryText}' action";
+         },
+         secondaryText, noAction: () =>
+         {
+             mdReadMe.Text = $"Running '{secondaryText}' action";
+         },
+         cancelText, cancelAction: () =>
+         {
+             mdReadMe.Text = $"Running '{cancelText}' action";
+             //e.Handled = true;
+         },
+         title: "Question", content: "Are you sure?");
+
+        // Show the dialog.
+        var result = await DialogManager.OpenDialogAsync(dialog, awaitPreviousDialog: false);
+
+        // Deal with the result.
+        if (result == null)
         {
-            ToColorStoryboard.Begin();
-            CreateOrUpdateSpringAnimation(_springMultiplier);
-            // We'll set the CenterPoint so the SpringAnimation does not start from offset 0,0.
-            (sender as UIElement).CenterPoint = new System.Numerics.Vector3((float)(btn.ActualWidth / 2.0), (float)(btn.ActualHeight / 2.0), 1f);
-            (sender as UIElement)?.StartAnimation(_springAnimation);
-            if (_addOpacityAnimation)
-            {
-                CreateOrUpdateScalarAnimation(true);
-                (sender as UIElement)?.StartAnimation(_scalarAnimation);
-            }
+            mdReadMe.Text = $"Result is null.";
+            //e.Handled = true;
         }
-    }
-
-    /// <summary>
-    /// Animation using the <see cref="Microsoft.UI.Composition.Compositor"/>.
-    /// </summary>
-    void Button_PointerExited(object sender, PointerRoutedEventArgs e)
-    {
-        var btn = sender as Button;
-        if (btn != null)
+        else if (result == ContentDialogResult.Primary)
         {
-            ToColorStoryboard.SkipToFill();
-            FromColorStoryboard.Begin();
-            CreateOrUpdateSpringAnimation(1.0f);
-            // We'll set the CenterPoint so the SpringAnimation does not start from offset 0,0.
-            (sender as UIElement).CenterPoint = new System.Numerics.Vector3((float)(btn.ActualWidth / 2.0), (float)(btn.ActualHeight / 2.0), 1f);
-            (sender as UIElement)?.StartAnimation(_springAnimation);
-
-            if (_addOpacityAnimation)
-            {
-                CreateOrUpdateScalarAnimation(false);
-                (sender as UIElement)?.StartAnimation(_scalarAnimation);
-            }
+            mdReadMe.Text = $"You chose '{primaryText}'";
         }
-    }
-
-    /// <summary>
-    /// If testing the opacity animation we'll need to trigger this on start so the initial state is correct.
-    /// </summary>
-    void Button_Loaded(object sender, RoutedEventArgs e)
-    {
-        var btn = sender as Button;
-        if (btn != null)
+        else if (result == ContentDialogResult.Secondary)
         {
-            InitialColorStoryboard.Begin();
-            if (_addOpacityAnimation)
-            {
-                CreateOrUpdateScalarAnimation(false);
-                (sender as UIElement)?.StartAnimation(_scalarAnimation);
-            }
+            mdReadMe.Text = $"You chose '{secondaryText}'";
         }
-    }
-
-    #region [Vector Animations]
-    bool _addOpacityAnimation = false;
-    float _springMultiplier = 1.125f;
-    Microsoft.UI.Composition.ScalarKeyFrameAnimation _scalarAnimation;
-    Microsoft.UI.Composition.Vector3KeyFrameAnimation _offsetAnimation;
-    Microsoft.UI.Composition.SpringVector3NaturalMotionAnimation? _springAnimation;
-    Microsoft.UI.Composition.Compositor _compositor = Microsoft.UI.Xaml.Media.CompositionTarget.GetCompositorForCurrentThread(); //App.CurrentWindow.Compositor;
-    void CreateOrUpdateSpringAnimation(float finalValue)
-    {
-        if (_springAnimation == null)
+        else if (result == ContentDialogResult.None)
         {
-            // When updating targets such as "Position" use a Vector3KeyFrameAnimation.
-            //var positionAnim = _compositor.CreateVector3KeyFrameAnimation();
-            // When updating targets such as "Opacity" use a ScalarKeyFrameAnimation.
-            //var sizeAnim = _compositor.CreateScalarKeyFrameAnimation();
-
-            _springAnimation = _compositor.CreateSpringVector3Animation();
-            _springAnimation.Target = "Scale";
-            _springAnimation.InitialVelocity = new System.Numerics.Vector3(_springMultiplier * 3);
-            _springAnimation.DampingRatio = 0.4f;
-            _springAnimation.Period = TimeSpan.FromMilliseconds(50);
-        }
-        _springAnimation.FinalValue = new System.Numerics.Vector3(finalValue);
-    }
-
-    void CreateOrUpdateScalarAnimation(bool fromZeroToOne)
-    {
-        if (_scalarAnimation == null)
-        {
-            _scalarAnimation = _compositor.CreateScalarKeyFrameAnimation();
-            _scalarAnimation.Target = "Opacity";
-            _scalarAnimation.Direction = Microsoft.UI.Composition.AnimationDirection.Normal;
-            //_scalarAnimation.IterationBehavior = Microsoft.UI.Composition.AnimationIterationBehavior.Forever;
-            _scalarAnimation.Duration = TimeSpan.FromMilliseconds(1500);
+            mdReadMe.Text = $"You chose '{cancelText}'";
         }
 
-        if (fromZeroToOne)
-        {
-            _scalarAnimation.InsertKeyFrame(0f, 0.4f);
-            _scalarAnimation.InsertKeyFrame(1f, 1f);
-        }
-        else
-        {
-            _scalarAnimation.InsertKeyFrame(0f, 1f);
-            _scalarAnimation.InsertKeyFrame(1f, 0.4f);
-        }
+        //if (e.Handled && !dialog.IsAborted) { SomeTextBox.Focus(FocusState.Programmatic); }
     }
     #endregion
-
-    void ColorFlyoutButtonClick(object sender, RoutedEventArgs e)
-    {
-        var btn = sender as Button;
-        if (btn != null)
-        {
-            if ($"{btn.Content}".ToLower().Contains("cancel"))
-            {
-                springButton.Flyout.Hide();
-            }
-            else
-            {
-                springButton.Foreground = new SolidColorBrush(colorPicker.Color);
-                springButton.Flyout.Hide();
-            }
-        }
-    }
 }
 
 /// <summary>

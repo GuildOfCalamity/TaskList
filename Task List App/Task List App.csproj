@@ -22,7 +22,7 @@
     -->
 	<LangVersion>latest</LangVersion>
     <EnableMsixTooling>true</EnableMsixTooling>
-	<Version>1.0.0.4</Version>
+	<Version>1.0.0.5</Version>
     <!-- 
       WindowsPackageType defines whether your app is packaged (MSIX) or unpackaged (None) 
     -->
@@ -51,6 +51,8 @@
     <None Remove="Assets\Check_Red.png" />
     <None Remove="Assets\Check_Yellow.png" />
     <None Remove="Assets\Fonts\Aptos.ttf" />
+    <None Remove="Assets\Fonts\StudlyfreeRegular.ttf" />
+    <None Remove="Assets\Fonts\TaurusMonoOutline.ttf" />
     <None Remove="Assets\Gear_Icon.png" />
     <None Remove="Assets\ItemDisabled.png" />
     <None Remove="Assets\ItemEnabled.png" />
@@ -61,13 +63,17 @@
     <None Remove="Assets\ScreenShot4.png" />
     <None Remove="Assets\ScreenShot5.png" />
     <None Remove="Controls\CardControl.xaml" />
+    <None Remove="Controls\ConfigFlyout.xaml" />
+    <None Remove="Controls\ConfigTip.xaml" />
     <None Remove="Controls\EditBox.xaml" />
     <None Remove="Controls\ProgressButton.xaml" />
     <None Remove="Controls\SampleControl.xaml" />
     <None Remove="Controls\SeparatorLine.xaml" />
     <None Remove="Controls\TabHeader.xaml" />
     <None Remove="Styles\Buttons.xaml" />
+    <None Remove="Styles\Controls.xaml" />
     <None Remove="Views\AlternatePage.xaml" />
+    <None Remove="Views\ControlsPage.xaml" />
     <None Remove="Views\CreateTaskDialog.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\NotesPage.xaml" />
@@ -128,6 +134,19 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Controls\ConfigTip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ConfigFlyout.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Styles\Controls.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\ControlsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\ProgressButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

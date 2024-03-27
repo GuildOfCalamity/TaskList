@@ -6,5 +6,55 @@
     xmlns:local="using:Task_List_App"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid />
+    <Grid>
+        <!--#region [Shutting Down Popup Dialog]-->
+        <Popup
+            x:Name="popup"
+            Margin="50"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top">
+            <Popup.ChildTransitions>
+                <TransitionCollection>
+                    <PopupThemeTransition />
+                </TransitionCollection>
+            </Popup.ChildTransitions>
+            <Grid>
+                <!--  Outer Border  -->
+                <Rectangle
+                    Width="460"
+                    Height="110"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Fill="#303030"
+                    RadiusX="8"
+                    RadiusY="8"
+                    Stroke="#9F9F9F"
+                    StrokeThickness="2" />
+                <!--  Inner Border  -->
+                <Rectangle
+                    Width="458"
+                    Height="108"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Fill="Transparent"
+                    RadiusX="8"
+                    RadiusY="8"
+                    Stroke="#717171"
+                    StrokeThickness="2" />
+                <StackPanel
+                    Width="450"
+                    Margin="10"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontFamily="{StaticResource BlockFont}"
+                        FontSize="{StaticResource HugeFontSize}"
+                        Foreground="{StaticResource PrimaryBrush}"
+                        Text="Shutting down..." />
+                </StackPanel>
+            </Grid>
+        </Popup>
+        <!--#endregion-->
+    </Grid>
 </Window>

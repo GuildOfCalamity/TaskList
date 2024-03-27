@@ -7,6 +7,8 @@
     <x:Double x:Key="TinyFontSize">9</x:Double>
 
     <FontFamily x:Key="CustomFont">ms-appx:///Assets/Fonts/Aptos.ttf#Aptos</FontFamily>
+    <FontFamily x:Key="BlockFont">ms-appx:///Assets/Fonts/StudlyfreeRegular.ttf#Studly Free</FontFamily>
+    <FontFamily x:Key="OutlineFont">ms-appx:///Assets/Fonts/TaurusMonoOutline.ttf#Taurus Mono Outline</FontFamily>
 
     <!--
         Map For Segoe Fluent Icons Only

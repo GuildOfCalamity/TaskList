@@ -218,4 +218,10 @@ If the title contains a URL then it will be opened in a browser when that task i
   <data name="Page_Notes.Content" xml:space="preserve">
     <value>Notes</value>
   </data>
+  <data name="Button_Spring.Content" xml:space="preserve">
+    <value>Spring Button Animation</value>
+  </data>
+  <data name="Page_Controls.Content" xml:space="preserve">
+    <value>Controls</value>
+  </data>
 </root>

@@ -24,6 +24,7 @@ public class PageService : IPageService
         Configure<LoginViewModel, LoginPage>();
         Configure<AlternateViewModel, AlternatePage>();
         Configure<NotesViewModel, NotesPage>();
+        Configure<ControlsViewModel, ControlsPage>();
     }
 
     public Type GetPageType(string key)

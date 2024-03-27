@@ -114,7 +114,7 @@ public sealed partial class ShellPage : Page
 		var resource = args.WindowActivationState == WindowActivationState.Deactivated ? "WindowCaptionForegroundDisabled" : "WindowCaptionForeground";
         AppTitleBarText.Foreground = (SolidColorBrush)App.Current.Resources[resource];
 
-        if (ViewModel.CollapseOnActivate)
+        if (ViewModel.CollapseOnActivate && args.WindowActivationState == WindowActivationState.CodeActivated)
             NavigationViewControl.IsPaneOpen = false;
     }
 

@@ -53,6 +53,7 @@ namespace Task_List_App;
 /// </summary>
 public partial class App : Application
 {
+    #region [Properties]
     public static UIElement? shell = null;
     public static string DatabaseTasks { get; private set; } = "TaskItems.json";
     public static string DatabaseNotes { get; private set; } = "NoteItems.json";
@@ -64,6 +65,15 @@ public partial class App : Application
     static ValueStopwatch stopWatch { get; set; } = ValueStopwatch.StartNew();
     public static EventBus RootEventBus { get; set; } = new();
 
+    /// <summary>
+    /// The .NET Microsoft.Extensions.Hosting.Host provides dependency injection, configuration, logging, and other services.
+    /// https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
+    /// https://docs.microsoft.com/dotnet/core/extensions/configuration
+    /// https://docs.microsoft.com/dotnet/core/extensions/generic-host
+    /// https://docs.microsoft.com/dotnet/core/extensions/logging
+    /// </summary>
+    public Microsoft.Extensions.Hosting.IHost Host { get; }
+
     // https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/#advantages-and-disadvantages-of-packaging-your-app
 #if IS_UNPACKAGED // We're using a custom PropertyGroup Condition we defined in the csproj to help us with the decision.
     public static bool IsPackaged { get => false; }
@@ -71,12 +81,7 @@ public partial class App : Application
     public static bool IsPackaged { get => true; }
 #endif
 
-    // The .NET Microsoft.Extensions.Hosting.Host provides dependency injection, configuration, logging, and other services.
-    // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-    // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-    // https://docs.microsoft.com/dotnet/core/extensions/configuration
-    // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public Microsoft.Extensions.Hosting.IHost Host { get; }
+    #endregion
 
     /// <summary>
     /// Uses the <see cref="Microsoft.Extensions.Hosting.IHost"/>
@@ -127,6 +132,7 @@ public partial class App : Application
         // Using Dependency Injection with IServiceProvider...
         ServiceCollection? services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
         services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IAppNotificationService, AppNotificationService>();
         services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
@@ -187,6 +193,7 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IFileService, FileService>(); // core project service
+            services.AddSingleton<IMessageService, MessageService>(); // core project service
             #endregion
 
             #region [Views and ViewModels]
@@ -211,6 +218,9 @@ public partial class App : Application
             services.AddSingleton<NotesViewModel>();
             services.AddSingleton<NotesPage>();
 
+            services.AddSingleton<ControlsViewModel>();
+            services.AddSingleton<ControlsPage>();
+
             // NOTE: Don't forget to visit the "Task_List_App.Services.PageService" ctor and add any new pages.
             #endregion
 
@@ -234,6 +244,11 @@ public partial class App : Application
 
         // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.focusvisualkind?view=windows-app-sdk-1.3
         this.FocusVisualKind = FocusVisualKind.Reveal;
+
+        if (Debugger.IsAttached) {
+            this.DebugSettings.BindingFailed += DebugOnBindingFailed;
+            this.DebugSettings.XamlResourceReferenceFailed += DebugOnXamlResourceReferenceFailed;
+        }
     }
 
     /// <summary>
@@ -317,6 +332,7 @@ public partial class App : Application
                 ServicesHost?.Add(new NotesViewModel());
                 ServicesHost?.Add(new LoginViewModel());
                 ServicesHost?.Add(new TasksViewModel());
+                ServicesHost?.Add(new ControlsViewModel());
             }
 
             // Try and locate the desired service. We're not using FirstOrDefault
@@ -343,8 +359,9 @@ public partial class App : Application
         // TODO: Log and handle exceptions as appropriate.
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
         Exception? ex = e.Exception;
-        Debug.WriteLine($"[UnhandledException]: {e.Message}");
-        Debug.WriteLine($"Unhandled exception of type {ex?.GetType()}: {ex}", $"{nameof(App)}");
+        Debug.WriteLine($"[UnhandledException]: {ex?.Message}");
+        Debug.WriteLine($"Unhandled exception of type {ex?.GetType()}: {ex}");
+        DebugLog($"{ex?.DumpFrames()}");
         e.Handled = true;
     }
 
@@ -367,25 +384,52 @@ public partial class App : Application
 
     void CurrentDomainFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
     {
-        Debug.WriteLine($"First chance exception: {e.Exception}", $"{nameof(App)}");
-        DebugLog($"First chance exception from {sender?.GetType()}: {e.Exception}");
+        Debug.WriteLine($"[ERROR] First chance exception from {sender?.GetType()}: {e.Exception.Message}");
+        DebugLog($"First chance exception from {sender?.GetType()}: {e.Exception.Message}");
+        if (e.Exception.InnerException != null)
+            DebugLog($"  => InnerException: {e.Exception.InnerException.Message}");
+        DebugLog($"{e.Exception.DumpFrames()}");
     }
 
     void CurrentDomainUnhandledException(object? sender, System.UnhandledExceptionEventArgs e)
     {
         Exception? ex = e.ExceptionObject as Exception;
-        Debug.WriteLine($"Thread exception of type {ex?.GetType()}: {ex}", $"{nameof(App)}");
+        Debug.WriteLine($"[ERROR] Thread exception of type {ex?.GetType()}: {ex}");
 		DebugLog($"Thread exception of type {ex?.GetType()}: {ex}");
-	}
+        DebugLog($"{ex?.DumpFrames()}");
+    }
 
-	void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        Debug.WriteLine($"Unobserved task exception: {e.Exception}", $"{nameof(App)}");
-		DebugLog($"Unobserved task exception: {e.Exception}");
+        if (e.Exception is AggregateException aex)
+        {
+            aex?.Flatten().Handle(ex =>
+            {
+                Debug.WriteLine($"[ERROR] Unobserved task exception: {ex?.Message}");
+                DebugLog($"Unobserved task exception: {ex?.Message}");
+                DebugLog($"{ex?.DumpFrames()}");
+                return true;
+            });
+        }
 		e.SetObserved(); // suppress and handle manually
     }
     #endregion
 
+    #region [Debugger Events]
+    void DebugOnXamlResourceReferenceFailed(DebugSettings sender, XamlResourceReferenceFailedEventArgs args)
+    {
+        Debug.WriteLine($"[WARNING] XamlResourceReferenceFailed: {args.Message}");
+        DebugLog($"OnXamlResourceReferenceFailed: {args.Message}");
+    }
+
+    void DebugOnBindingFailed(object sender, BindingFailedEventArgs args)
+    {
+        Debug.WriteLine($"[WARNING] BindingFailed: {args.Message}");
+        DebugLog($"OnBindingFailed: {args.Message}");
+    }
+    #endregion
+
+    #region [Public Static Helpers]
     public static TimeSpan GetStopWatch(bool reset = false)
     {
         var ts = stopWatch.GetElapsedTime();
@@ -436,6 +480,7 @@ public partial class App : Application
             Debug.WriteLine($"[{DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff tt")}] {message}");
         }
     }
+    #endregion
 
     #region [Dialog Helpers]
     /// <summary>

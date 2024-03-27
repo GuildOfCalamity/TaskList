@@ -13,9 +13,16 @@ namespace Task_List_App;
 
 public sealed partial class MainWindow : Window
 {
+    /// <summary>
+    /// Only used for the ColoredSpotLight control during production runtime.
+    /// </summary>
+    public static MainWindow? Instance { get; private set; }
+
     public MainWindow()
     {
         Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
+
+        Instance = this;
 
         InitializeComponent();
 
@@ -41,6 +48,12 @@ public sealed partial class MainWindow : Window
         #endregion
     }
 
+    #region [Shutdown Cycle]
+    /*
+        #1 MainWindow Deactivated
+        #2 Dispatcher ShutdownStarting
+        #3 Dispatcher FrameworkShutdownStarting
+     */
     void DispatcherQueue_ShutdownStarting(Microsoft.UI.Dispatching.DispatcherQueue sender, Microsoft.UI.Dispatching.DispatcherQueueShutdownStartingEventArgs args)
     {
         Debug.WriteLine($"[INFO] DispatcherQueue_ShutdownStarting at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
@@ -50,6 +63,7 @@ public sealed partial class MainWindow : Window
     {
         Debug.WriteLine($"[INFO] DispatcherQueue_FrameworkShutdownStarting at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
     }
+    #endregion
 
     #region [Superfluous testing]
     void TestMethod01(string logName = "Debug.log")

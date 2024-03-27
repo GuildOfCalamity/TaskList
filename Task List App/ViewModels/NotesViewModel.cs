@@ -433,6 +433,8 @@ namespace Task_List_App.ViewModels
 
                 if (File.Exists(Path.Combine(baseFolder, App.DatabaseNotes)))
                 {
+                    Debug.WriteLine($"[INFO] DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
+
                     // Use our FileService for reading/writing.
                     var jdata = fileService?.Read<List<NoteItem>>(baseFolder, App.DatabaseNotes);
                     if (jdata != null)

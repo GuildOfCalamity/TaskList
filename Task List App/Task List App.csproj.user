@@ -13,6 +13,18 @@
     <None Update="Controls\CompositionShadow.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Controls\ConfigTip.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\ConfigFlyout.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Controls.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\ControlsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Controls\ProgressButton.xaml">
       <SubType>Designer</SubType>
     </Page>

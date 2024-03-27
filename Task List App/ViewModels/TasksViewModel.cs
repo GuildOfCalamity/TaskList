@@ -508,8 +508,6 @@ public partial class TasksViewModel : ObservableRecipient
         if (App.IsClosing)
             return;
 
-        Debug.WriteLine($"[INFO] LoadTaskItemsJson");
-
         try
         {
             if (App.IsPackaged)
@@ -519,7 +517,7 @@ public partial class TasksViewModel : ObservableRecipient
 
             if (File.Exists(Path.Combine(baseFolder, App.DatabaseTasks)))
             {
-				Debug.WriteLine($"DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
+				Debug.WriteLine($"[INFO] DaysUntilBackupReplaced is currently set to {fileService?.DaysUntilBackupReplaced}");
 
                 // FileService testing.
                 var jdata = fileService?.Read<List<TaskItem>>(baseFolder, App.DatabaseTasks);
@@ -572,8 +570,6 @@ public partial class TasksViewModel : ObservableRecipient
 
         if (App.IsClosing)
             return;
-
-        Debug.WriteLine($"[INFO] SaveTaskItemsJson");
 
         try
         {

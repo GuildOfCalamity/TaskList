@@ -5,7 +5,209 @@
     xmlns:local="using:Task_List_App"
     xmlns:media="using:Microsoft.UI.Xaml.Media">
 
-    <!--  Grow-n-Shrink Button  -->
+    <!--#region [Linear Gradient Button]-->
+    <Style x:Name="GradientButton" TargetType="Button">
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="8,4,8,4" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="RootGrid" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="RootScale" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <Border BorderThickness="3" CornerRadius="5">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0.0" Color="{ThemeResource NormalColor1}" />
+                                    <GradientStop Offset="0.25" Color="{ThemeResource NormalColor3}" />
+                                    <GradientStop Offset="0.75" Color="{ThemeResource NormalColor2}" />
+                                    <GradientStop Offset="1.0" Color="{ThemeResource NormalColor4}" />
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Grid
+                                x:Name="ContentGrid"
+                                Margin="-1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                CornerRadius="5"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                        <GradientStop Offset="0.0" Color="{ThemeResource BackColor1}" />
+                                        <GradientStop Offset="0.25" Color="{ThemeResource BackColor2}" />
+                                        <GradientStop Offset="0.75" Color="{ThemeResource BackColor3}" />
+                                        <GradientStop Offset="1.0" Color="{ThemeResource BackColor4}" />
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <Grid.RenderTransform>
+                                    <ScaleTransform x:Name="ContentScale" ScaleX="1" ScaleY="1" />
+                                </Grid.RenderTransform>
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="0"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}" />
+                            </Grid>
+                        </Border>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualStateGroup.Transitions>
+                                    <!--#region [Visual Transitions]-->
+                                    <!--
+                                   <VisualTransition From="Pressed" To="Normal">
+                                       <Storyboard>
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.1" />
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.1" />
+                                       </Storyboard>
+                                   </VisualTransition>
+                                   <VisualTransition From="Pressed" To="PointerOver">
+                                       <Storyboard>
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleX" To="1.05" Duration="0:0:0.1" />
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleY" To="1.05" Duration="0:0:0.1" />
+                                       </Storyboard>
+                                   </VisualTransition>
+                                    <VisualTransition From="PointerOver" To="Normal">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction><ElasticEase Oscillations="2" Springiness="0.2" /></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction><ElasticEase Oscillations="2" Springiness="0.2" /></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                   <VisualTransition From="Normal" To="PointerOver">
+                                       <Storyboard>
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleX" To="1.05" Duration="0:0:0.1" />
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleY" To="1.05" Duration="0:0:0.1" />
+                                       </Storyboard>
+                                   </VisualTransition>
+                                   <VisualTransition To="Pressed">
+                                       <Storyboard>
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleX" To="0.95" Duration="0:0:0.1" />
+                                           <DoubleAnimation Storyboard.TargetName="RootScale" Storyboard.TargetProperty="ScaleY" To="0.95" Duration="0:0:0.1" />
+                                       </Storyboard>
+                                   </VisualTransition>
+                                    -->
+                                    <!--#endregion-->
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentGrid.Background">
+                                            <Setter.Value>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop Offset="0.0" Color="{ThemeResource NormalColor1}" />
+                                                    <GradientStop Offset="0.25" Color="{ThemeResource NormalColor2}" />
+                                                    <GradientStop Offset="0.75" Color="{ThemeResource NormalColor3}" />
+                                                    <GradientStop Offset="1.0" Color="{ThemeResource NormalColor4}" />
+                                                </LinearGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="RootScale"
+                                            Storyboard.TargetProperty="ScaleX"
+                                            To="1.06"
+                                            Duration="0:0:0.4">
+                                            <DoubleAnimation.EasingFunction>
+                                                <!--<BounceEase Bounces="1" Bounciness="0.25" />-->
+                                                <!--<BackEase Amplitude="0.75" />-->
+                                                <!--<SineEase EasingMode="EaseInOut"/>-->
+                                                <ElasticEase Oscillations="2" Springiness="0.2" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="RootScale"
+                                            Storyboard.TargetProperty="ScaleY"
+                                            To="1.05"
+                                            Duration="0:0:0.4">
+                                            <DoubleAnimation.EasingFunction>
+                                                <!--<BounceEase Bounces="1" Bounciness="0.25" />-->
+                                                <!--<BackEase Amplitude="0.75" />-->
+                                                <!--<SineEase EasingMode="EaseInOut"/>-->
+                                                <ElasticEase Oscillations="2" Springiness="0.2" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentGrid.Background">
+                                            <Setter.Value>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop Offset="0.0" Color="{ThemeResource PressedColor1}" />
+                                                    <GradientStop Offset="0.25" Color="{ThemeResource PressedColor2}" />
+                                                    <GradientStop Offset="0.75" Color="{ThemeResource PressedColor3}" />
+                                                    <GradientStop Offset="1.0" Color="{ThemeResource PressedColor4}" />
+                                                </LinearGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource PrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="RootScale"
+                                            Storyboard.TargetProperty="ScaleX"
+                                            To="0.97"
+                                            Duration="0:0:0.03" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="RootScale"
+                                            Storyboard.TargetProperty="ScaleY"
+                                            To="0.96"
+                                            Duration="0:0:0.03" />
+                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentGrid.Background">
+                                            <Setter.Value>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop Offset="0.0" Color="{ThemeResource PressedColor4}" />
+                                                    <GradientStop Offset="0.25" Color="{ThemeResource PressedColor3}" />
+                                                    <GradientStop Offset="0.75" Color="{ThemeResource PressedColor2}" />
+                                                    <GradientStop Offset="1.0" Color="{ThemeResource PressedColor1}" />
+                                                </LinearGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource PrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Opacity" Value="0.5" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource PressedColor2}" />
+                                        <!-- <Setter Target="ContentGrid.Background" Value="DimGray" /> -->
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region [Grow/Shrink Button]-->
     <Style x:Name="GrowButton" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
@@ -141,7 +343,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentPresenter.Opacity" Value="0.4" />
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.5" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -151,15 +353,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
-    <Style x:Key="ListViewItemStretch" TargetType="ListViewItem">
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Padding" Value="0" />
-    </Style>
+    <!--#endregion-->
 
 </ResourceDictionary>

@@ -37,23 +37,45 @@
             -->
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/Styles/Controls.xaml" />
                 <ResourceDictionary Source="/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Styles/FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
-
                         <!--
                             === [DARK THEME] ===
                         -->
                         <ResourceDictionary x:Key="Dark">
                             <!--
+                                === Colors ===
+                            -->
+                            <Color x:Key="NormalColor1">#606070</Color>
+                            <Color x:Key="NormalColor2">#474757</Color>
+                            <Color x:Key="NormalColor3">#373747</Color>
+                            <Color x:Key="NormalColor4">#303040</Color>
+                            <Color x:Key="BackColor1">#B0B0C0</Color>
+                            <Color x:Key="BackColor2">#A0A0B0</Color>
+                            <Color x:Key="BackColor3">#9090A0</Color>
+                            <Color x:Key="BackColor4">#808090</Color>
+                            <Color x:Key="PressedColor1">#C0C0D0</Color>
+                            <Color x:Key="PressedColor2">#A0A0B0</Color>
+                            <Color x:Key="PressedColor3">#9090A0</Color>
+                            <Color x:Key="PressedColor4">#606070</Color>
+                            <Color x:Key="SpringFrom">#23242F</Color>
+                            <Color x:Key="SpringTo">#6800FF</Color>
+                            <Color x:Key="LinearBorder1">#AF6800FF</Color>
+                            <Color x:Key="LinearBorder2">#AF370096</Color>
+                            <Color x:Key="LinearBorder3">#AF7770FF</Color>
+                            <Color x:Key="LinearBorder4">#AF464399</Color>
+                            <!--
                                 === Brushes ===
                             -->
+                            <Brush x:Key="ShadowBrush">#000005</Brush>
                             <Brush x:Key="BackgroundBrush">#1a1b2b</Brush>
-                            <Brush x:Key="InfoBarBrush">#c01a1b2b</Brush>
-                            <Brush x:Key="ShadowBrush">#101013</Brush>
+                            <Brush x:Key="SecondaryBackgroundBrush">#aa1a1b2b</Brush>
+                            <Brush x:Key="InfoBarBrush">#cc1a1b2b</Brush>
                             <Brush x:Key="HeaderBrush">#A3A3B0</Brush>
                             <Brush x:Key="BorderBrush">#686874</Brush>
                             <Brush x:Key="PrimaryBrush">#1f1f2f</Brush>
@@ -114,7 +136,14 @@
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
 
-                            <LinearGradientBrush x:Key="GradientBrush1" StartPoint="0,0" EndPoint="1,1">
+                            <LinearGradientBrush x:Key="GradientBrushDiag" StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0.0" Color="{StaticResource LinearBorder1}" />
+                                <GradientStop Offset="0.25" Color="{StaticResource LinearBorder2}" />
+                                <GradientStop Offset="0.75" Color="{StaticResource LinearBorder3}" />
+                                <GradientStop Offset="1.0" Color="{StaticResource LinearBorder4}" />
+                            </LinearGradientBrush>
+
+                            <LinearGradientBrush x:Key="GradientBrushVert" StartPoint="0.5,0" EndPoint="0.5,1">
                                 <GradientStop Offset="0.0" Color="Yellow" />
                                 <GradientStop Offset="0.25" Color="Red" />
                                 <GradientStop Offset="0.75" Color="Blue" />
@@ -343,11 +372,33 @@
                         -->
                         <ResourceDictionary x:Key="Light">
                             <!--
+                                === Colors ===
+                            -->
+                            <Color x:Key="NormalColor1">#F0F0FF</Color>
+                            <Color x:Key="NormalColor2">#D7D7E7</Color>
+                            <Color x:Key="NormalColor3">#B7B7C7</Color>
+                            <Color x:Key="NormalColor4">#9090A0</Color>
+                            <Color x:Key="BackColor1">#707080</Color>
+                            <Color x:Key="BackColor2">#606070</Color>
+                            <Color x:Key="BackColor3">#505060</Color>
+                            <Color x:Key="BackColor4">#404050</Color>
+                            <Color x:Key="PressedColor1">#808090</Color>
+                            <Color x:Key="PressedColor2">#606070</Color>
+                            <Color x:Key="PressedColor3">#404050</Color>
+                            <Color x:Key="PressedColor4">#202030</Color>
+                            <Color x:Key="SpringFrom">#F0F0FF</Color>
+                            <Color x:Key="SpringTo">#6800FF</Color>
+                            <Color x:Key="LinearBorder1">#AF6800FF</Color>
+                            <Color x:Key="LinearBorder2">#AF370096</Color>
+                            <Color x:Key="LinearBorder3">#AF7770FF</Color>
+                            <Color x:Key="LinearBorder4">#AF464399</Color>
+                            <!--
                                 === Brushes ===
                             -->
-                            <Brush x:Key="ShadowBrush">#a7a7aa</Brush>
+                            <Brush x:Key="ShadowBrush">#a7a7ac</Brush>
                             <Brush x:Key="BackgroundBrush">WhiteSmoke</Brush>
-                            <Brush x:Key="InfoBarBrush">#c0f0f0f0</Brush>
+                            <Brush x:Key="SecondaryBackgroundBrush">#aaf0f0f0</Brush>
+                            <Brush x:Key="InfoBarBrush">#ccf0f0f0</Brush>
                             <Brush x:Key="HeaderBrush">#535360</Brush>
                             <Brush x:Key="BorderBrush">#232330</Brush>
                             <Brush x:Key="PrimaryBrush">#eaeaea</Brush>
@@ -408,7 +459,14 @@
                                 TintLuminosityOpacity="0.1"
                                 TintOpacity="0.1" />
 
-                            <LinearGradientBrush x:Key="GradientBrush1" StartPoint="0,0" EndPoint="1,1">
+                            <LinearGradientBrush x:Key="GradientBrushDiag" StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0.0" Color="{StaticResource LinearBorder1}" />
+                                <GradientStop Offset="0.25" Color="{StaticResource LinearBorder2}" />
+                                <GradientStop Offset="0.75" Color="{StaticResource LinearBorder3}" />
+                                <GradientStop Offset="1.0" Color="{StaticResource LinearBorder4}" />
+                            </LinearGradientBrush>
+
+                            <LinearGradientBrush x:Key="GradientBrushVert" StartPoint="0.5,0" EndPoint="0.5,1">
                                 <GradientStop Offset="0.0" Color="Yellow" />
                                 <GradientStop Offset="0.25" Color="Red" />
                                 <GradientStop Offset="0.75" Color="Blue" />

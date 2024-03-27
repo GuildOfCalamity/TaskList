@@ -107,7 +107,7 @@ public class ShellViewModel : ObservableRecipient
         if (selectedItem != null)
         {
             // Save our last page for next login attempt.
-            if (e.SourcePageType != typeof(LoginPage))
+            if (e.SourcePageType != typeof(LoginPage) && e.SourcePageType != typeof(ControlsPage))
                 ApplicationSettings.LastPage = e.SourcePageType;
 
             Debug.WriteLine($"[INFO] {e.SourcePageType.FullName}");

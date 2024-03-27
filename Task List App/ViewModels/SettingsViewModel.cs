@@ -28,14 +28,9 @@ public class SettingsViewModel : ObservableRecipient
     private bool _persistLogin;
     private Type? _lastPage;
     private bool _isBusy = false;
-    private SelectorBarItem? _barItem;
-    private SelectorBarItem? _barItemCustom;
-    PivotItem? _pivotItem;
     private Core.Contracts.Services.IFileService? fileService { get; set; }
     private readonly IThemeSelectorService _themeSelectorService;
     public event EventHandler<string>? SettingChangedEvent;
-    public Action? ProgressButtonClickEvent { get; set; }
-
     public bool AcrylicBackdrop
     {
         get => _acrylicBackdrop;
@@ -104,36 +99,6 @@ public class SettingsViewModel : ObservableRecipient
         { 
             SetProperty(ref _isBusy, value);
             SettingChangedEvent?.Invoke(this, nameof(IsBusy) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        }
-    }
-
-    public PivotItem? PivotSelected
-    {
-        get => _pivotItem;
-        set
-        {
-            SetProperty(ref _pivotItem, value);
-            SettingChangedEvent?.Invoke(this, nameof(PivotSelected) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        }
-    }
-
-    public SelectorBarItem? BarItem
-    {
-        get => _barItem;
-        set
-        {
-            SetProperty(ref _barItem, value);
-            SettingChangedEvent?.Invoke(this, nameof(BarItem) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        }
-    }
-
-    public SelectorBarItem? BarItemCustom
-    {
-        get => _barItemCustom;
-        set
-        {
-            SetProperty(ref _barItemCustom, value);
-            SettingChangedEvent?.Invoke(this, nameof(BarItemCustom) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -253,15 +218,11 @@ public class SettingsViewModel : ObservableRecipient
                 if (abb != null)
                     SettingChangedEvent?.Invoke(this, $"Invoked AppBarButton \"{abb.Label}\"");
             }
+            else
+            {
+                Debug.WriteLine($"[WARNING] No action defined for type '{obj?.GetType()}'");
+            }
         });
-
-        // Action example for our ProgressButton.
-        ProgressButtonClickEvent += async () => 
-        {
-            IsBusy = true;
-            await Task.Delay(3000);
-            IsBusy = false;
-        };
 
         try
         {
