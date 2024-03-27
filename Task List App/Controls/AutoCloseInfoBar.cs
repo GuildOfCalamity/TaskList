@@ -77,7 +77,7 @@ public class AutoCloseInfoBar : InfoBar
         }
         else
         {
-            Debug.WriteLine($"'{obj.GetType()}' is not open, skipping timer reset.");
+            Debug.WriteLine($"[INFO] '{obj.GetType()}' is not open, skipping timer reset.");
         }
     }
 

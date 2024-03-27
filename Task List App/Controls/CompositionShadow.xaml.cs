@@ -272,7 +272,8 @@ public sealed partial class CompositionShadow : UserControl
 
     void OnBrushChanged(SolidColorBrush newValue)
     {
-        _dropShadow.Color = newValue.Color;
+        if (newValue is not null)
+            _dropShadow.Color = newValue.Color;
     }
 
     void OnOffsetXChanged(double newValue)
@@ -299,7 +300,7 @@ public sealed partial class CompositionShadow : UserControl
     {
         if (_castingElement != null)
         {
-            CompositionBrush mask = null;
+            CompositionBrush? mask = null;
             if (_castingElement is Image)
             {
                 mask = ((Image)_castingElement).GetAlphaMask();

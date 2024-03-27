@@ -8,8 +8,6 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 
-using Windows.ApplicationModel;
-
 using Task_List_App.Helpers;
 
 namespace Task_List_App.Controls;
@@ -22,11 +20,11 @@ namespace Task_List_App.Controls;
 /// </summary>
 public class SimpleGlowPanel : ContentControl
 {
-    private Compositor _Compositor;
-    private DropShadow _Shadow;
-    private SpriteVisual _ShadowVisual;
-    private Visual HostVisual;
-    private Rectangle ShadowHost;
+    private Compositor? _Compositor;
+    private DropShadow? _Shadow;
+    private SpriteVisual? _ShadowVisual;
+    private Visual? HostVisual;
+    private Rectangle? ShadowHost;
 
     #region [Non-Native Dependency Properties]
     public static readonly DependencyProperty BlurRadiusProperty = DependencyProperty.Register(
@@ -64,7 +62,7 @@ public class SimpleGlowPanel : ContentControl
     /// </summary>
     void SetupComposition()
     {
-        if (DesignMode.DesignModeEnabled)
+        if (Windows.ApplicationModel.DesignMode.DesignModeEnabled)
             return;
 
         if (ShadowHost is null)

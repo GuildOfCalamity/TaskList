@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -141,6 +142,14 @@ public static class GeneralExtensions
     }
     public const double Epsilon = 0.000000000001;
 
+    public static bool IsInvalid(this double value)
+    {
+        if (value == double.NaN || value == double.NegativeInfinity || value == double.PositiveInfinity)
+            return true;
+
+        return false;
+    }
+
     #region [Helper for CummunityToolkit]
     /// <summary>
     /// <para>
@@ -195,6 +204,160 @@ public static class GeneralExtensions
     #endregion
 
     /// <summary>
+    /// Returns the <see cref="Microsoft.UI.Xaml.PropertyPath"/> based on the provided <see cref="Microsoft.UI.Xaml.Data.Binding"/>.
+    /// </summary>
+    public static string? GetBindingPropertyName(this Microsoft.UI.Xaml.Data.Binding binding)
+    {
+        return binding?.Path?.Path?.Split('.')?.LastOrDefault();
+    }
+
+    public static Windows.Foundation.Size GetTextSize(FontFamily font, double fontSize, string text)
+    {
+        var tb = new TextBlock { Text = text, FontFamily = font, FontSize = fontSize };
+        tb.Measure(new Windows.Foundation.Size(Double.PositiveInfinity, Double.PositiveInfinity));
+        return tb.DesiredSize;
+    }
+
+    public static bool IsMonospacedFont(FontFamily font)
+    {
+        var tb1 = new TextBlock { Text = "(!aiZ%#BIm,. ~`", FontFamily = font };
+        tb1.Measure(new Windows.Foundation.Size(Double.PositiveInfinity, Double.PositiveInfinity));
+        var tb2 = new TextBlock { Text = "...............", FontFamily = font };
+        tb2.Measure(new Windows.Foundation.Size(Double.PositiveInfinity, Double.PositiveInfinity));
+        var off = Math.Abs(tb1.DesiredSize.Width - tb2.DesiredSize.Width);
+        return off < 0.01;
+    }
+
+    /// <summary>
+    /// Gets a list of the specified FrameworkElement's DependencyProperties. This method will return all
+    /// DependencyProperties of the element unless 'useBlockList' is true, in which case all bindings on elements
+    /// that are typically not used as input controls will be ignored.
+    /// </summary>
+    /// <param name="element">FrameworkElement of interest</param>
+    /// <param name="useBlockList">If true, ignores elements not typically used for input</param>
+    /// <returns>List of DependencyProperties</returns>
+    public static List<DependencyProperty> GetDependencyProperties(this FrameworkElement element, bool useBlockList)
+    {
+        List<DependencyProperty> dependencyProperties = new List<DependencyProperty>();
+
+        bool isBlocklisted = useBlockList &&
+            (element is Panel || element is Button || element is Image || element is ScrollViewer ||
+             element is TextBlock || element is Border || element is Microsoft.UI.Xaml.Shapes.Shape || element is ContentPresenter);
+
+        if (!isBlocklisted)
+        {
+            Type type = element.GetType();
+            FieldInfo[] fields = type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            foreach (FieldInfo field in fields)
+            {
+                if (field.FieldType == typeof(DependencyProperty))
+                {
+                    var dp = (DependencyProperty)field.GetValue(null);
+                    if (dp != null)
+                        dependencyProperties.Add(dp);
+                }
+            }
+        }
+
+        return dependencyProperties;
+    }
+
+    public static bool IsXamlRootAvailable(bool UWP = false)
+    {
+        if (UWP)
+            return Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Windows.UI.Xaml.UIElement", "XamlRoot");
+        else
+            return Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.UIElement", "XamlRoot");
+    }
+
+    /// <summary>
+    /// Helper function to calculate an element's rectangle in root-relative coordinates.
+    /// </summary>
+    public static Windows.Foundation.Rect GetElementRect(this Microsoft.UI.Xaml.FrameworkElement element)
+    {
+        try
+        {
+            Microsoft.UI.Xaml.Media.GeneralTransform transform = element.TransformToVisual(null);
+            Windows.Foundation.Point point = transform.TransformPoint(new Windows.Foundation.Point());
+            return new Windows.Foundation.Rect(point, new Windows.Foundation.Size(element.ActualWidth, element.ActualHeight));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] GetElementRect: {ex.Message}");
+            return new Windows.Foundation.Rect(0, 0, 0, 0);
+        }
+    }
+
+    public static IconElement? GetIcon(string imagePath, string imageExt = ".png")
+    {
+        IconElement? result = null;
+
+        try
+        {
+            result = imagePath.ToLowerInvariant().EndsWith(imageExt) ?
+                        (IconElement)new BitmapIcon() { UriSource = new Uri(imagePath, UriKind.RelativeOrAbsolute), ShowAsMonochrome = false } :
+                        (IconElement)new FontIcon() { Glyph = imagePath };
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] {MethodBase.GetCurrentMethod()?.Name}: {ex.Message}");
+        }
+
+        return result;
+    }
+
+    public static FontIcon GenerateFontIcon(Windows.UI.Color brush, string glyph = "\uF127", int width = 10, int height = 10)
+    {
+        return new FontIcon()
+        {
+            Glyph = glyph,
+            FontSize = 1.5,
+            Width = (double)width,
+            Height = (double)height,
+            Foreground = new SolidColorBrush(brush),
+        };
+    }
+
+    public static async Task<byte[]> AsPng(this UIElement control)
+    {
+        // Get XAML Visual in BGRA8 format
+        var rtb = new RenderTargetBitmap();
+        await rtb.RenderAsync(control, (int)control.ActualSize.X, (int)control.ActualSize.Y);
+
+        // Encode as PNG
+        var pixelBuffer = (await rtb.GetPixelsAsync()).ToArray();
+        IRandomAccessStream mraStream = new InMemoryRandomAccessStream();
+        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, mraStream);
+        encoder.SetPixelData(
+            BitmapPixelFormat.Bgra8,
+            BitmapAlphaMode.Premultiplied,
+            (uint)rtb.PixelWidth,
+            (uint)rtb.PixelHeight,
+            184,
+            184,
+            pixelBuffer);
+        await encoder.FlushAsync();
+
+        // Transform to byte array
+        var bytes = new byte[mraStream.Size];
+        await mraStream.ReadAsync(bytes.AsBuffer(), (uint)mraStream.Size, InputStreamOptions.None);
+
+        return bytes;
+    }
+
+    /// <summary>
+    /// This is a redundant call from App.xaml.cs, but is here if you need it.
+    /// </summary>
+    /// <param name="window"><see cref="Microsoft.UI.Xaml.Window"/></param>
+    /// <returns><see cref="Microsoft.UI.Windowing.AppWindow"/></returns>
+    public static Microsoft.UI.Windowing.AppWindow GetAppWindow(this Microsoft.UI.Xaml.Window window)
+    {
+        System.IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        Microsoft.UI.WindowId wndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+        return Microsoft.UI.Windowing.AppWindow.GetFromWindowId(wndId);
+    }
+
+    /// <summary>
     /// This assumes your images reside in an "Assets" folder.
     /// </summary>
     /// <param name="assetName"></param>
@@ -215,6 +378,434 @@ public static class GeneralExtensions
         }
 
         return img;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="LinearGradientBrush"/> from 3 input colors.
+    /// </summary>
+    /// <param name="c1">offset 0.0 color</param>
+    /// <param name="c2">offset 0.5 color</param>
+    /// <param name="c3">offset 1.0 color</param>
+    /// <returns><see cref="LinearGradientBrush"/></returns>
+    public static LinearGradientBrush CreateLinearGradientBrush(Windows.UI.Color c1, Windows.UI.Color c2, Windows.UI.Color c3)
+    {
+        var gs1 = new GradientStop(); gs1.Color = c1; gs1.Offset = 0.0;
+        var gs2 = new GradientStop(); gs2.Color = c2; gs2.Offset = 0.5;
+        var gs3 = new GradientStop(); gs3.Color = c3; gs3.Offset = 1.0;
+        var gsc = new GradientStopCollection();
+        gsc.Add(gs1); gsc.Add(gs2); gsc.Add(gs3);
+        var lgb = new LinearGradientBrush
+        {
+            StartPoint = new Windows.Foundation.Point(0, 0),
+            EndPoint = new Windows.Foundation.Point(0, 1),
+            GradientStops = gsc
+        };
+        return lgb;
+    }
+    /// <summary>
+    /// Creates a Color object from the hex color code and returns the result.
+    /// </summary>
+    /// <param name="hexColorCode">text representation of the color</param>
+    /// <returns><see cref="Windows.UI.Color"/></returns>
+    public static Windows.UI.Color? GetColorFromHexString(string hexColorCode)
+    {
+        if (string.IsNullOrEmpty(hexColorCode))
+            return null;
+
+        try
+        {
+            byte a = 255; byte r = 0; byte g = 0; byte b = 0;
+
+            if (hexColorCode.Length == 9)
+            {
+                hexColorCode = hexColorCode.Substring(1, 8);
+            }
+            if (hexColorCode.Length == 8)
+            {
+                a = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
+                hexColorCode = hexColorCode.Substring(2, 6);
+            }
+            if (hexColorCode.Length == 6)
+            {
+                r = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
+                g = Convert.ToByte(hexColorCode.Substring(2, 2), 16);
+                b = Convert.ToByte(hexColorCode.Substring(4, 2), 16);
+            }
+
+            return Windows.UI.Color.FromArgb(a, r, g, b);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Calculates the linear interpolated Color based on the given Color values.
+    /// </summary>
+    /// <param name="colorFrom">Source Color.</param>
+    /// <param name="colorTo">Target Color.</param>
+    /// <param name="amount">Weightage given to the target color.</param>
+    /// <returns>Linear Interpolated Color.</returns>
+    public static Windows.UI.Color Lerp(this Windows.UI.Color colorFrom, Windows.UI.Color colorTo, float amount)
+    {
+        // Convert colorFrom components to lerp-able floats
+        float sa = colorFrom.A,
+            sr = colorFrom.R,
+            sg = colorFrom.G,
+            sb = colorFrom.B;
+
+        // Convert colorTo components to lerp-able floats
+        float ea = colorTo.A,
+            er = colorTo.R,
+            eg = colorTo.G,
+            eb = colorTo.B;
+
+        // lerp the colors to get the difference
+        byte a = (byte)Math.Max(0, Math.Min(255, sa.Lerp(ea, amount))),
+            r = (byte)Math.Max(0, Math.Min(255, sr.Lerp(er, amount))),
+            g = (byte)Math.Max(0, Math.Min(255, sg.Lerp(eg, amount))),
+            b = (byte)Math.Max(0, Math.Min(255, sb.Lerp(eb, amount)));
+
+        // return the new color
+        return Windows.UI.Color.FromArgb(a, r, g, b);
+    }
+
+    /// <summary>
+    /// Darkens the color by the given percentage using lerp.
+    /// </summary>
+    /// <param name="color">Source color.</param>
+    /// <param name="amount">Percentage to darken. Value should be between 0 and 1.</param>
+    /// <returns>Color</returns>
+    public static Windows.UI.Color DarkerBy(this Windows.UI.Color color, float amount)
+    {
+        return color.Lerp(Colors.Black, amount);
+    }
+
+    /// <summary>
+    /// Lightens the color by the given percentage using lerp.
+    /// </summary>
+    /// <param name="color">Source color.</param>
+    /// <param name="amount">Percentage to lighten. Value should be between 0 and 1.</param>
+    /// <returns>Color</returns>
+    public static Windows.UI.Color LighterBy(this Windows.UI.Color color, float amount)
+    {
+        return color.Lerp(Colors.White, amount);
+    }
+
+    /// <summary>
+    /// Multiply color bytes by <paramref name="factor"/>, default value is 1.5
+    /// </summary>
+    public static Windows.UI.Color LightenColor(this Windows.UI.Color source, float factor = 1.5F)
+    {
+        var red = (int)((float)source.R * factor);
+        var green = (int)((float)source.G * factor);
+        var blue = (int)((float)source.B * factor);
+
+        if (red == 0) { red = 0x1F; }
+        else if (red > 255) { red = 0xFF; }
+        if (green == 0) { green = 0x1F; }
+        else if (green > 255) { green = 0xFF; }
+        if (blue == 0) { blue = 0x1F; }
+        else if (blue > 255) { blue = 0xFF; }
+
+        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
+    }
+
+    /// <summary>
+    /// Divide color bytes by <paramref name="factor"/>, default value is 1.5
+    /// </summary>
+    public static Windows.UI.Color DarkenColor(this Windows.UI.Color source, float factor = 1.5F)
+    {
+        if (source.R == 0) { source.R = 2; }
+        if (source.G == 0) { source.G = 2; }
+        if (source.B == 0) { source.B = 2; }
+
+        var red = (int)((float)source.R / factor);
+        var green = (int)((float)source.G / factor);
+        var blue = (int)((float)source.B / factor);
+
+        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
+    }
+
+    /// <summary>
+    /// Generates a completely random <see cref="Windows.UI.Color"/>.
+    /// </summary>
+    /// <returns><see cref="Windows.UI.Color"/></returns>
+    public static Windows.UI.Color GetRandomWinUIColor()
+    {
+        byte[] buffer = new byte[3];
+        Random.Shared.NextBytes(buffer);
+        return Windows.UI.Color.FromArgb(255, buffer[0], buffer[1], buffer[2]);
+    }
+
+    /// <summary>
+    /// Returns a random selection from <see cref="Microsoft.UI.Colors"/>.
+    /// </summary>
+    /// <returns><see cref="Windows.UI.Color"/></returns>
+	public static Windows.UI.Color GetRandomMicrosoftUIColor()
+    {
+        try
+        {
+            var colorType = typeof(Microsoft.UI.Colors);
+            var colors = colorType.GetProperties()
+                .Where(p => p.PropertyType == typeof(Windows.UI.Color) && p.GetMethod.IsStatic && p.GetMethod.IsPublic)
+                .Select(p => (Windows.UI.Color)p.GetValue(null))
+                .ToList();
+
+            if (colors.Count > 0)
+            {
+                var randomIndex = Random.Shared.Next(colors.Count);
+                var randomColor = colors[randomIndex];
+                return randomColor;
+            }
+            else
+            {
+                return Microsoft.UI.Colors.Gray;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] GetRandomColor: {ex.Message}");
+            return Microsoft.UI.Colors.Red;
+        }
+    }
+
+
+    /// <summary>
+    /// Creates a Color from the hex color code and returns the result 
+    /// as a <see cref="Microsoft.UI.Xaml.Media.SolidColorBrush"/>.
+    /// </summary>
+    /// <param name="hexColorCode">text representation of the color</param>
+    /// <returns><see cref="Microsoft.UI.Xaml.Media.SolidColorBrush"/></returns>
+    public static Microsoft.UI.Xaml.Media.SolidColorBrush? GetBrushFromHexString(string hexColorCode)
+    {
+        if (string.IsNullOrEmpty(hexColorCode))
+            return null;
+
+        try
+        {
+            byte a = 255; byte r = 0; byte g = 0; byte b = 0;
+
+            if (hexColorCode.Length == 9)
+                hexColorCode = hexColorCode.Substring(1, 8);
+
+            if (hexColorCode.Length == 8)
+            {
+                a = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
+                hexColorCode = hexColorCode.Substring(2, 6);
+            }
+
+            if (hexColorCode.Length == 6)
+            {
+                r = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
+                g = Convert.ToByte(hexColorCode.Substring(2, 2), 16);
+                b = Convert.ToByte(hexColorCode.Substring(4, 2), 16);
+            }
+
+            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(a, r, g, b));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] GetBrushFromHexString: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Verifies if the given brush is a SolidColorBrush and its color does not include transparency.
+    /// </summary>
+    /// <param name="brush">Brush</param>
+    /// <returns>true if yes, otherwise false</returns>
+    public static bool IsOpaqueSolidColorBrush(this Microsoft.UI.Xaml.Media.Brush brush)
+    {
+        return (brush as Microsoft.UI.Xaml.Media.SolidColorBrush)?.Color.A == 0xff;
+    }
+
+    /// <summary>
+    /// Finds the contrast ratio.
+    /// This is helpful for determining if one control's foreground and another control's background will be hard to distinguish.
+    /// https://www.w3.org/WAI/GL/wiki/Contrast_ratio
+    /// (L1 + 0.05) / (L2 + 0.05), where
+    /// L1 is the relative luminance of the lighter of the colors, and
+    /// L2 is the relative luminance of the darker of the colors.
+    /// </summary>
+    /// <param name="first"><see cref="Windows.UI.Color"/></param>
+    /// <param name="second"><see cref="Windows.UI.Color"/></param>
+    /// <returns>ratio between relative luminance</returns>
+    public static double CalculateContrastRatio(Windows.UI.Color first, Windows.UI.Color second)
+    {
+        double relLuminanceOne = GetRelativeLuminance(first);
+        double relLuminanceTwo = GetRelativeLuminance(second);
+        return (Math.Max(relLuminanceOne, relLuminanceTwo) + 0.05) / (Math.Min(relLuminanceOne, relLuminanceTwo) + 0.05);
+    }
+
+    /// <summary>
+    /// Gets the relative luminance.
+    /// https://www.w3.org/WAI/GL/wiki/Relative_luminance
+    /// For the sRGB colorspace, the relative luminance of a color is defined as L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+    /// </summary>
+    /// <param name="c"><see cref="Windows.UI.Color"/></param>
+    public static double GetRelativeLuminance(Windows.UI.Color c)
+    {
+        double rSRGB = c.R / 255.0;
+        double gSRGB = c.G / 255.0;
+        double bSRGB = c.B / 255.0;
+
+        // WebContentAccessibilityGuideline 2.x definition was 0.03928 (incorrect)
+        // WebContentAccessibilityGuideline 3.x definition is 0.04045 (correct)
+        double r = rSRGB <= 0.04045 ? rSRGB / 12.92 : Math.Pow(((rSRGB + 0.055) / 1.055), 2.4);
+        double g = gSRGB <= 0.04045 ? gSRGB / 12.92 : Math.Pow(((gSRGB + 0.055) / 1.055), 2.4);
+        double b = bSRGB <= 0.04045 ? bSRGB / 12.92 : Math.Pow(((bSRGB + 0.055) / 1.055), 2.4);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    /// <summary>
+    /// Returns a new <see cref="Windows.Foundation.Rect(double, double, double, double)"/> representing the size of the <see cref="Vector2"/>.
+    /// </summary>
+    /// <param name="vector"><see cref="System.Numerics.Vector2"/> vector representing object size for Rectangle.</param>
+    /// <returns><see cref="Windows.Foundation.Rect(double, double, double, double)"/> value.</returns>
+    public static Windows.Foundation.Rect ToRect(this System.Numerics.Vector2 vector)
+    {
+        return new Windows.Foundation.Rect(0, 0, vector.X, vector.Y);
+    }
+
+    /// <summary>
+    /// Returns a new <see cref="System.Numerics.Vector2"/> representing the <see cref="Windows.Foundation.Size(double, double)"/>.
+    /// </summary>
+    /// <param name="size"><see cref="Windows.Foundation.Size(double, double)"/> value.</param>
+    /// <returns><see cref="System.Numerics.Vector2"/> value.</returns>
+    public static System.Numerics.Vector2 ToVector2(this Windows.Foundation.Size size)
+    {
+        return new System.Numerics.Vector2((float)size.Width, (float)size.Height);
+    }
+
+    /// <summary>
+    /// Deflates rectangle by given thickness.
+    /// </summary>
+    /// <param name="rect">Rectangle</param>
+    /// <param name="thick">Thickness</param>
+    /// <returns>Deflated Rectangle</returns>
+    public static Windows.Foundation.Rect Deflate(this Windows.Foundation.Rect rect, Microsoft.UI.Xaml.Thickness thick)
+    {
+        return new Windows.Foundation.Rect(
+            rect.Left + thick.Left,
+            rect.Top + thick.Top,
+            Math.Max(0.0, rect.Width - thick.Left - thick.Right),
+            Math.Max(0.0, rect.Height - thick.Top - thick.Bottom));
+    }
+
+    /// <summary>
+    /// Inflates rectangle by given thickness.
+    /// </summary>
+    /// <param name="rect">Rectangle</param>
+    /// <param name="thick">Thickness</param>
+    /// <returns>Inflated Rectangle</returns>
+    public static Windows.Foundation.Rect Inflate(this Windows.Foundation.Rect rect, Microsoft.UI.Xaml.Thickness thick)
+    {
+        return new Windows.Foundation.Rect(
+            rect.Left - thick.Left,
+            rect.Top - thick.Top,
+            Math.Max(0.0, rect.Width + thick.Left + thick.Right),
+            Math.Max(0.0, rect.Height + thick.Top + thick.Bottom));
+    }
+
+    /// <summary>
+    /// Starts an <see cref="Microsoft.UI.Composition.ExpressionAnimation"/> to keep the size of the source <see cref="Microsoft.UI.Composition.CompositionObject"/> in sync with the target <see cref="UIElement"/>
+    /// </summary>
+    /// <param name="source">The <see cref="Microsoft.UI.Composition.CompositionObject"/> to start the animation on</param>
+    /// <param name="target">The target <see cref="UIElement"/> to read the size updates from</param>
+    public static void BindSize(this Microsoft.UI.Composition.CompositionObject source, UIElement target)
+    {
+        var visual = ElementCompositionPreview.GetElementVisual(target);
+        var bindSizeAnimation = source.Compositor.CreateExpressionAnimation($"{nameof(visual)}.Size");
+        bindSizeAnimation.SetReferenceParameter(nameof(visual), visual);
+        // Start the animation
+        source.StartAnimation("Size", bindSizeAnimation);
+    }
+
+    /// <summary>
+    /// Starts an animation on the given property of a <see cref="Microsoft.UI.Composition.CompositionObject"/>
+    /// </summary>
+    /// <typeparam name="T">The type of the property to animate</typeparam>
+    /// <param name="target">The target <see cref="Microsoft.UI.Composition.CompositionObject"/></param>
+    /// <param name="property">The name of the property to animate</param>
+    /// <param name="value">The final value of the property</param>
+    /// <param name="duration">The animation duration</param>
+    /// <returns>A <see cref="Task"/> that completes when the created animation completes</returns>
+    public static Task StartAnimationAsync<T>(this Microsoft.UI.Composition.CompositionObject target, string property, T value, TimeSpan duration) where T : unmanaged
+    {
+        // Stop previous animations
+        target.StopAnimation(property);
+
+        // Setup the animation to run
+        Microsoft.UI.Composition.KeyFrameAnimation animation;
+
+        // Switch on the value to determine the necessary KeyFrameAnimation type
+        switch (value)
+        {
+            case float f:
+                var scalarAnimation = target.Compositor.CreateScalarKeyFrameAnimation();
+                scalarAnimation.InsertKeyFrame(1f, f);
+                animation = scalarAnimation;
+                break;
+            case Windows.UI.Color c:
+                var colorAnimation = target.Compositor.CreateColorKeyFrameAnimation();
+                colorAnimation.InsertKeyFrame(1f, c);
+                animation = colorAnimation;
+                break;
+            case System.Numerics.Vector4 v4:
+                var vector4Animation = target.Compositor.CreateVector4KeyFrameAnimation();
+                vector4Animation.InsertKeyFrame(1f, v4);
+                animation = vector4Animation;
+                break;
+            default: throw new ArgumentException($"Invalid animation type: {typeof(T)}", nameof(value));
+        }
+
+        animation.Duration = duration;
+
+        // Get the batch and start the animations
+        var batch = target.Compositor.CreateScopedBatch(Microsoft.UI.Composition.CompositionBatchTypes.Animation);
+
+        // Create a TCS for the result
+        var tcs = new TaskCompletionSource<object>();
+
+        batch.Completed += (s, e) => tcs.SetResult(null);
+
+        target.StartAnimation(property, animation);
+
+        batch.End();
+
+        return tcs.Task;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Microsoft.UI.Composition.CompositionGeometricClip"/> from the specified <see cref="Windows.Graphics.IGeometrySource2D"/>.
+    /// </summary>
+    /// <param name="compositor"><see cref="Microsoft.UI.Composition.Compositor"/></param>
+    /// <param name="geometry"><see cref="Windows.Graphics.IGeometrySource2D"/></param>
+    /// <returns>CompositionGeometricClip</returns>
+    public static Microsoft.UI.Composition.CompositionGeometricClip CreateGeometricClip(this Microsoft.UI.Composition.Compositor compositor, Windows.Graphics.IGeometrySource2D geometry)
+    {
+        // Create the CompositionPath
+        var path = new Microsoft.UI.Composition.CompositionPath(geometry);
+        // Create the CompositionPathGeometry
+        var pathGeometry = compositor.CreatePathGeometry(path);
+        // Create the CompositionGeometricClip
+        return compositor.CreateGeometricClip(pathGeometry);
+    }
+
+    /// <summary>
+    /// Returns whether the bit at the specified position is set.
+    /// </summary>
+    /// <typeparam name="T">Any integer type.</typeparam>
+    /// <param name="t">The value to check.</param>
+    /// <param name="pos">The position of the bit to check, 0 refers to the least significant bit.</param>
+    /// <returns>true if the specified bit is on, otherwise false.</returns>
+    public static bool IsBitSet<T>(this T t, int pos) where T : struct, IConvertible
+    {
+        var value = t.ToInt64(CultureInfo.CurrentCulture);
+        return (value & (1 << pos)) != 0;
     }
 
     /// <summary>
@@ -508,10 +1099,43 @@ public static class GeneralExtensions
         string result = string.Empty;
         for (int i = 0; i < st.FrameCount; i++)
         {
-            StackFrame sf = st.GetFrame(i);
-            result += sf.GetMethod() + " <== ";
+            StackFrame? sf = st.GetFrame(i);
+            result += sf?.GetMethod() + " <== ";
         }
         return result;
+    }
+
+    public static string Flatten(this Exception? exception)
+    {
+        var sb = new StringBuilder();
+        while (exception != null)
+        {
+            sb.AppendLine(exception.Message);
+            sb.AppendLine(exception.StackTrace);
+            exception = exception.InnerException;
+        }
+        return sb.ToString();
+    }
+
+    public static string DumpFrames(this Exception exception)
+    {
+        var sb = new StringBuilder();
+        var st = new StackTrace(exception, true);
+        var frames = st.GetFrames();
+        foreach (var frame in frames)
+        {
+            if (frame != null)
+            {
+                if (frame.GetFileLineNumber() < 1)
+                    continue;
+
+                sb.Append($"File: {frame.GetFileName()}")
+                  .Append($", Method: {frame.GetMethod()?.Name}")
+                  .Append($", LineNumber: {frame.GetFileLineNumber()}")
+                  .Append($"{Environment.NewLine}");
+            }
+        }
+        return sb.ToString();
     }
 
     /// <summary>
@@ -1364,78 +1988,6 @@ public static class GeneralExtensions
     }
 
     /// <summary>
-    /// Returns a random selection from <see cref="Microsoft.UI.Colors"/>.
-    /// </summary>
-    /// <returns><see cref="Windows.UI.Color"/></returns>
-    public static Windows.UI.Color GetRandomMicrosoftUIColor()
-    {
-        try
-        {
-            var colorType = typeof(Microsoft.UI.Colors);
-            var colors = colorType.GetProperties()
-                .Where(p => p.PropertyType == typeof(Windows.UI.Color) && p.GetMethod != null && p.GetMethod.IsStatic && p.GetMethod.IsPublic)
-                .Select(p => (Windows.UI.Color?)p.GetValue(null) ?? Windows.UI.Color.FromArgb(255, 255, 0, 0))
-                .ToList();
-
-            if (colors.Count > 0)
-            {
-                var randomIndex = Random.Shared.Next(colors.Count);
-                var randomColor = colors[randomIndex];
-                return randomColor;
-            }
-            else
-            {
-                return Microsoft.UI.Colors.Gray;
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"GetRandomColor: {ex.Message}", $"{nameof(GeneralExtensions)}");
-            return Microsoft.UI.Colors.Red;
-        }
-    }
-
-    /// <summary>
-    /// Creates a Color object from the hex color code and returns the result.
-    /// </summary>
-    /// <param name="hexColorCode"></param>
-    /// <returns></returns>
-    public static Windows.UI.Color? GetColorFromHexString(string hexColorCode)
-    {
-        if (string.IsNullOrEmpty(hexColorCode)) { return null; }
-
-        try
-        {
-            byte a = 255; byte r = 0; byte g = 0; byte b = 0;
-
-            if (hexColorCode.Length == 9)
-            {
-                hexColorCode = hexColorCode.Substring(1, 8);
-            }
-
-            if (hexColorCode.Length == 8)
-            {
-                a = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
-                hexColorCode = hexColorCode.Substring(2, 6);
-            }
-
-            if (hexColorCode.Length == 6)
-            {
-                r = Convert.ToByte(hexColorCode.Substring(0, 2), 16);
-                g = Convert.ToByte(hexColorCode.Substring(2, 2), 16);
-                b = Convert.ToByte(hexColorCode.Substring(4, 2), 16);
-            }
-
-            return Windows.UI.Color.FromArgb(a, r, g, b);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"{MethodBase.GetCurrentMethod()?.Name}: {ex.Message}", $"{nameof(GeneralExtensions)}");
-            return null;
-        }
-    }
-
-    /// <summary>
     /// Generates a 7 digit color string including the # sign.
     /// If the <see cref="ElementTheme"/> is dark then 0, 1 & 2 options are 
     /// removed so dark colors such as 000000/111111/222222 are not possible.
@@ -1459,94 +2011,6 @@ public static class GeneralExtensions
             sb.Append(pwChars[Random.Shared.Next() % pwChars.Length]);
 
         return $"#{sb}";
-    }
-
-    /// <summary>
-    /// Calculates the linear interpolated Color based on the given Color values.
-    /// </summary>
-    /// <param name="colorFrom">Source Color.</param>
-    /// <param name="colorTo">Target Color.</param>
-    /// <param name="amount">Weightage given to the target color.</param>
-    /// <returns>Linear Interpolated Color.</returns>
-    public static Windows.UI.Color Lerp(this Windows.UI.Color colorFrom, Windows.UI.Color colorTo, float amount)
-    {
-        // Convert colorFrom components to lerp-able floats
-        float sa = colorFrom.A,
-            sr = colorFrom.R,
-            sg = colorFrom.G,
-            sb = colorFrom.B;
-
-        // Convert colorTo components to lerp-able floats
-        float ea = colorTo.A,
-            er = colorTo.R,
-            eg = colorTo.G,
-            eb = colorTo.B;
-
-        // lerp the colors to get the difference
-        byte a = (byte)Math.Max(0, Math.Min(255, sa.Lerp(ea, amount))),
-            r = (byte)Math.Max(0, Math.Min(255, sr.Lerp(er, amount))),
-            g = (byte)Math.Max(0, Math.Min(255, sg.Lerp(eg, amount))),
-            b = (byte)Math.Max(0, Math.Min(255, sb.Lerp(eb, amount)));
-
-        // return the new color
-        return Windows.UI.Color.FromArgb(a, r, g, b);
-    }
-
-    /// <summary>
-    /// Darkens the color by the given percentage using lerp.
-    /// </summary>
-    /// <param name="color">Source color.</param>
-    /// <param name="amount">Percentage to darken. Value should be between 0 and 1.</param>
-    /// <returns>Color</returns>
-    public static Windows.UI.Color DarkerBy(this Windows.UI.Color color, float amount)
-    {
-        return color.Lerp(Microsoft.UI.Colors.Black, amount);
-    }
-
-    /// <summary>
-    /// Lightens the color by the given percentage using lerp.
-    /// </summary>
-    /// <param name="color">Source color.</param>
-    /// <param name="amount">Percentage to lighten. Value should be between 0 and 1.</param>
-    /// <returns>Color</returns>
-    public static Windows.UI.Color LighterBy(this Windows.UI.Color color, float amount)
-    {
-        return color.Lerp(Microsoft.UI.Colors.White, amount);
-    }
-
-    /// <summary>
-    /// Multiply color bytes by <paramref name="factor"/>, default value is 1.5
-    /// </summary>
-    public static Windows.UI.Color LightenColor(this Windows.UI.Color source, float factor = 1.5F)
-    {
-        var red = (int)((float)source.R * factor);
-        var green = (int)((float)source.G * factor);
-        var blue = (int)((float)source.B * factor);
-
-        if (red == 0) { red = 0x1F; }
-        else if (red > 255) { red = 0xFF; }
-        if (green == 0) { green = 0x1F; }
-        else if (green > 255) { green = 0xFF; }
-        if (blue == 0) { blue = 0x1F; }
-        else if (blue > 255) { blue = 0xFF; }
-
-        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
-    }
-
-    /// <summary>
-    /// Divide color bytes by <paramref name="factor"/>, default value is 1.5
-    /// </summary>
-    public static Windows.UI.Color DarkenColor(this Windows.UI.Color source, float factor = 1.5F)
-    {
-        if (source.R == 0) { source.R = 2; }
-        if (source.G == 0) { source.G = 2; }
-        if (source.B == 0) { source.B = 2; }
-
-        var red = (int)((float)source.R / factor);
-        var green = (int)((float)source.G / factor);
-        var blue = (int)((float)source.B / factor);
-
-        return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
     }
 
     /// <summary>
@@ -1676,7 +2140,7 @@ public static class GeneralExtensions
     /// <param name="obj">The input <see cref="object"/> instance to check.</param>
     /// <param name="value">The resulting <typeparamref name="T"/> value, if <paramref name="obj"/> was in fact a boxed <typeparamref name="T"/> value.</param>
     /// <returns><see langword="true"/> if a <typeparamref name="T"/> value was retrieved correctly, <see langword="false"/> otherwise.</returns>
-    public static bool TryUnbox<T>(object obj, out T value)
+    public static bool TryUnbox<T>(object obj, out T? value)
     {
         if (obj is T)
         {
@@ -1896,33 +2360,6 @@ public static class GeneralExtensions
         }
     }
 
-    public static async Task<byte[]> AsPng(this UIElement control)
-    {
-        // Get XAML Visual in BGRA8 format
-        var rtb = new RenderTargetBitmap();
-        await rtb.RenderAsync(control, (int)control.ActualSize.X, (int)control.ActualSize.Y);
-
-        // Encode as PNG
-        var pixelBuffer = (await rtb.GetPixelsAsync()).ToArray();
-        IRandomAccessStream mraStream = new InMemoryRandomAccessStream();
-        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, mraStream);
-        encoder.SetPixelData(
-            BitmapPixelFormat.Bgra8,
-            BitmapAlphaMode.Premultiplied,
-            (uint)rtb.PixelWidth,
-            (uint)rtb.PixelHeight,
-            184,
-            184,
-            pixelBuffer);
-        await encoder.FlushAsync();
-
-        // Transform to byte array
-        var bytes = new byte[mraStream.Size];
-        await mraStream.ReadAsync(bytes.AsBuffer(), (uint)mraStream.Size, InputStreamOptions.None);
-
-        return bytes;
-    }
-
     public static string RemoveExtraSpaces(this string strText)
     {
         if (!string.IsNullOrEmpty(strText))
@@ -2079,6 +2516,71 @@ public static class GeneralExtensions
             result[x] = pwChars[rng.Next() % pwChars.Length];
 
         return (new string(result));
+    }
+
+    /// <summary>
+    /// 64-bit hashing method.
+    /// Modulus and shift each byte across the string length.
+    /// </summary>
+    /// <param name="input">string to hash</param>
+    public static ulong BasicHash(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return 0;
+
+        byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(input);
+        ulong value = (ulong)utf8.Length;
+        for (int n = 0; n < utf8.Length; n++)
+        {
+            value += (ulong)utf8[n] << ((n * 5) % 56);
+        }
+        return value;
+    }
+
+    public static string NumberToWord(int number)
+    {
+        if (number == 0) { return "zero"; }
+        if (number < 0) { return "minus " + NumberToWord(Math.Abs(number)); }
+
+        string words = "";
+
+        if ((number / 1000000) > 0)
+        {
+            words += NumberToWord(number / 1000000) + " million ";
+            number %= 1000000;
+        }
+
+        if ((number / 1000) > 0)
+        {
+            words += NumberToWord(number / 1000) + " thousand ";
+            number %= 1000;
+        }
+
+        if ((number / 100) > 0)
+        {
+            words += NumberToWord(number / 100) + " hundred ";
+            number %= 100;
+        }
+
+        if (number > 0)
+        {
+            if (words != "")
+                words += "and ";
+
+            var unitsMap = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen" };
+            var tensMap = new[] { "zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety" };
+
+            if (number < 20)
+                words += unitsMap[number];
+            else
+            {
+                words += tensMap[number / 10];
+                if ((number % 10) > 0)
+                    words += "-" + unitsMap[number % 10];
+            }
+        }
+
+        return words;
     }
 
     /// <summary>

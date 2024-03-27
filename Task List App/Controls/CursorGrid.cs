@@ -31,7 +31,7 @@ public class CursorGrid : Grid
 
     static CursorGrid()
     {
-        CursorOptions = ImmutableArray.Create(Enum.GetValues<InputSystemCursorShape>());
+        CursorOptions = ImmutableArray.Create<InputSystemCursorShape>(Enum.GetValues<InputSystemCursorShape>());
     }
 
     public CursorGrid()

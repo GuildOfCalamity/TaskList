@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TeachingTip
+    x:Class="Task_List_App.Controls.ConfigTip"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Task_List_App.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="self"
+    MinWidth="400"
+    MinHeight="600"
+    Padding="0"
+    IsLightDismissEnabled="True"
+    ShouldConstrainToRootBounds="True"
+    mc:Ignorable="d">
+    <!--
+    <TeachingTip.Resources>
+        <Style TargetType="TeachingTip">
+            <Setter Target="ContentRootGrid" Property="Background" Value="Blue" />
+            <Setter Target="MainContentPresenter" Property="Background" Value="Blue" />
+            <Setter Target="NonHeroContentRootGrid" Property="Background" Value="Blue" />
+            <Setter Property="Background" Value="Blue" />
+            <Setter Property="MinWidth" Value="400" />
+            <Setter Property="MinHeight" Value="500" />
+            <Setter Property="CloseButtonContent" Value="&#xE711;" />
+        </Style>
+    </TeachingTip.Resources>
+    -->
+    <!--
+    <TeachingTip.IconSource>
+        <SymbolIconSource Symbol="Edit" />
+    </TeachingTip.IconSource>
+    -->
+    <TeachingTip.Background>
+        <AcrylicBrush
+            FallbackColor="#714aff"
+            Opacity="0.7"
+            TintColor="#202030"
+            TintLuminosityOpacity="0.1"
+            TintOpacity="0.7" />
+    </TeachingTip.Background>
+    <TeachingTip.Content>
+        <Border
+            Margin="-12"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="3"
+            CornerRadius="8">
+            <StackPanel
+                Margin="14"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                CornerRadius="5"
+                Orientation="Vertical"
+                Spacing="15">
+                <StackPanel.Transitions>
+                    <TransitionCollection>
+                        <EntranceThemeTransition FromHorizontalOffset="300" FromVerticalOffset="0" />
+                    </TransitionCollection>
+                </StackPanel.Transitions>
+                <StackPanel.Resources>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Orientation" Value="Horizontal" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style TargetType="ToggleSwitch">
+                        <Setter Property="OffContent" Value="IsBusy Flag Off" />
+                        <Setter Property="OnContent" Value="IsBusy Flag On" />
+                        <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Margin" Value="10,0,0,0" />
+                    </Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="10,0,0,0" />
+                        <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
+                        <Setter Property="FontSize" Value="16" />
+                    </Style>
+                    <Style TargetType="SymbolIcon">
+                        <Setter Property="Foreground" Value="{ThemeResource SecondaryBrush}" />
+                    </Style>
+                </StackPanel.Resources>
+                <StackPanel>
+                    <SymbolIcon Symbol="World" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="WebCam" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="VideoChat" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Memo" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="SyncFolder" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="SlideShow" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="SetTile" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Shuffle" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Save" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Preview" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Shop" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Permissions" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Remote" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Priority" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="Print" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel>
+                    <SymbolIcon Symbol="PhoneBook" />
+                    <ToggleSwitch IsOn="{Binding ElementName=self, Path=ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </TeachingTip.Content>
+    <TeachingTip.CloseButtonStyle>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+    </TeachingTip.CloseButtonStyle>
+    <TeachingTip.CloseButtonContent>
+        <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Stretch" Text="Close" />
+        </StackPanel>
+    </TeachingTip.CloseButtonContent>
+</TeachingTip>

@@ -9,6 +9,8 @@ namespace Task_List_App.Controls;
 
 /// <summary>
 /// Portions of this code from AssyntSoftware.
+/// https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh465374(v=win.10)#specifying-the-visual-structure-of-a-control
+/// https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh465381(v=win.10)#style-basics
 /// </summary>
 [TemplatePart(Name = "PART_BorderPath", Type = typeof(Microsoft.UI.Xaml.Shapes.Path))]
 [TemplatePart(Name = "PART_HeadingPresenter", Type = typeof(ContentPresenter))]

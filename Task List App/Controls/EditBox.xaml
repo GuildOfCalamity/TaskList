@@ -27,6 +27,7 @@
 
         <Grid
             MinWidth="200"
+            local:ColoredSpotLight.IsTarget="True"
             BorderBrush="{Binding ElementName='self', Path='BorderBrush', Mode=OneWay}"
             BorderThickness="2"
             CornerRadius="4"
@@ -37,6 +38,7 @@
             <TextBlock
                 Grid.Row="0"
                 Padding="10,3"
+                local:ColoredSpotLight.IsTarget="False"
                 Foreground="{Binding ElementName='self', Path='IsReadOnly', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource IsReadOnlyToBrush}}"
                 Text="{Binding ElementName='self', Path='Title', Mode=TwoWay}" />
             <!--
@@ -46,6 +48,7 @@
                 x:Name="tbData"
                 Grid.Row="1"
                 Padding="10,4,10,2"
+                local:ColoredSpotLight.IsTarget="False"
                 ui:UIElementExtensions.ClipToBounds="True"
                 BorderThickness="0"
                 IsEnabled="{Binding ElementName='self', Path='IsReadOnly', Mode=TwoWay, Converter={StaticResource BooleanInverter}}"

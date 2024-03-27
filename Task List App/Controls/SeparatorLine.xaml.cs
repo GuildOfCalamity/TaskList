@@ -18,8 +18,8 @@ namespace Task_List_App.Controls;
 
 public sealed partial class SeparatorLine : UserControl
 {
-    static Windows.UI.Color _color1 = Windows.UI.Color.FromArgb(150, 80, 80, 90);
-    static Windows.UI.Color _color2 = Windows.UI.Color.FromArgb(150, 10, 10, 20);
+    static Windows.UI.Color _color1 = Windows.UI.Color.FromArgb(200, 80, 80, 90);
+    static Windows.UI.Color _color2 = Windows.UI.Color.FromArgb(200, 10, 10, 20);
 
     #region [Properties]
     public static readonly DependencyProperty Line1BrushProperty = DependencyProperty.Register(

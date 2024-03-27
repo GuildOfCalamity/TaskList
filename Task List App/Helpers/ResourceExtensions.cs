@@ -1,4 +1,5 @@
-﻿using Microsoft.Windows.ApplicationModel.Resources;
+﻿using Microsoft.UI.Xaml.Markup;
+using Windows.ApplicationModel.Resources;
 
 namespace Task_List_App.Helpers;
 
@@ -11,6 +12,5 @@ namespace Task_List_App.Helpers;
 public static class ResourceExtensions
 {
     private static readonly ResourceLoader _resourceLoader = new();
-
     public static string GetLocalized(this string resourceKey) => _resourceLoader.GetString(resourceKey);
 }

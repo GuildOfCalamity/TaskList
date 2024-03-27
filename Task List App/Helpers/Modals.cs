@@ -238,8 +238,14 @@ public static class DialogManager
 {
     static TaskCompletionSource<bool> _dialogAwaiter = new TaskCompletionSource<bool>();
 
-    public static NoticeDialog ActiveDialog;
+    public static NoticeDialog? ActiveDialog;
 
+    /// <summary>
+    /// Test driver method for showing a custom <see cref="ContentControl"/>
+    /// </summary>
+    /// <param name="dialog"><see cref="NoticeDialog"/></param>
+    /// <param name="awaitPreviousDialog">force-hide any previously open ContentDialog</param>
+    /// <returns></returns>
     public static async Task<ContentDialogResult?> OpenDialogAsync(NoticeDialog dialog, bool awaitPreviousDialog)
     {
         try
