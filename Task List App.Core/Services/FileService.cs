@@ -13,7 +13,7 @@ public class FileService : IFileService
 
     public FileService() { }
 
-    public T Read<T>(string folderPath, string fileName)
+    public T? Read<T>(string folderPath, string fileName)
     {
         try
         {
@@ -30,6 +30,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"[ERROR] Read: {ex.Message}");
             throw new Exception(ex.Message, ex);
         }
 
@@ -71,7 +72,7 @@ public class FileService : IFileService
             {
                 var backDate = DateTime.Now.AddDays(DaysUntilBackupReplaced);
                 var fi = new FileInfo(Path.Combine(folderPath, $"{fileName}.bak")).LastWriteTime;
-                if (fi <=  backDate)
+                if (fi <= backDate)
                 {
                     File.Delete(Path.Combine(folderPath, $"{fileName}.bak"));
                     File.WriteAllText(Path.Combine(folderPath, $"{fileName}.bak"), fileContent, Encoding.UTF8);
@@ -81,6 +82,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"[ERROR] Save: {ex.Message}");
             throw new Exception(ex.Message, ex);
         }
     }
@@ -101,7 +103,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Restore: {ex.Message}");
+            Debug.WriteLine($"[ERROR] Restore: {ex.Message}");
             return false;
         }
     }
@@ -126,6 +128,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"[ERROR] Delete: {ex.Message}");
             throw new Exception(ex.Message, ex);
         }
     }

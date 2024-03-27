@@ -44,7 +44,7 @@ public class MessageService : IMessageService
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"{nameof(okAction)}: {ex.Message}");
+                    Debug.WriteLine($"[ERROR] {nameof(okAction)}: {ex.Message}");
                 }
             }
         }));
@@ -58,7 +58,7 @@ public class MessageService : IMessageService
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"{nameof(cancelAction)}: {ex.Message}");
+                    Debug.WriteLine($"[ERROR] {nameof(cancelAction)}: {ex.Message}");
                 }
             }
         }));
@@ -81,36 +81,42 @@ public class MessageService : IMessageService
 
         // Create the dialog.
         var messageDialog = new MessageDialog($"{message}");
-        messageDialog.Title = title;
+        messageDialog.Title = !string.IsNullOrEmpty(title) ? title : "Application";
         //messageDialog.Commands.Add(new UICommand($"{okText}", new UICommandInvokedHandler(DialogCommandHandler)));
-        messageDialog.Commands.Add(new UICommand($"{okText}", (c) =>
+        if (!string.IsNullOrEmpty(okText))
         {
-            if (okAction != null)
+            messageDialog.Commands.Add(new UICommand($"{okText}", (c) =>
             {
-                try
+                if (okAction != null)
                 {
-                    okAction?.Invoke();
+                    try
+                    {
+                        okAction?.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[ERROR] {nameof(okAction)}: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"{nameof(okAction)}: {ex.Message}");
-                }
-            }
-        }));
-        messageDialog.Commands.Add(new UICommand($"{cancelText}", (c) =>
+            }));
+        }
+        if (!string.IsNullOrEmpty(cancelText))
         {
-            if (cancelAction != null)
+            messageDialog.Commands.Add(new UICommand($"{cancelText}", (c) =>
             {
-                try
+                if (cancelAction != null)
                 {
-                    cancelAction?.Invoke();
+                    try
+                    {
+                        cancelAction?.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[ERROR] {nameof(cancelAction)}: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"{nameof(cancelAction)}: {ex.Message}");
-                }
-            }
-        }));
+            }));
+        }
         messageDialog.DefaultCommandIndex = 1;
 
         // We must initialize the dialog with an owner.
@@ -127,5 +133,55 @@ public class MessageService : IMessageService
     {
         Debug.WriteLine($"User selected '{command.Label}'");
     }
+
+    #region [Specific to Microsoft.WindowsAppSDK]
+    /// <summary>
+    /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> looks much better than the
+    /// <see cref="Windows.UI.Popups.MessageDialog"/> and is part of the native Microsoft.UI.Xaml.Controls.
+    /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> does not offer a <see cref="Windows.UI.Popups.UICommandInvokedHandler"/>
+    /// callback, but in this example was replaced with actions. Both can be shown asynchronously.
+    /// </summary>
+    /// <remarks>
+    /// There is no need to call <see cref="WinRT.Interop.InitializeWithWindow.Initialize"/> when using the <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/>,
+    /// but a <see cref="Microsoft.UI.Xaml.XamlRoot"/> must be defined since it inherits from <see cref="Microsoft.UI.Xaml.Controls.Control"/>.
+    /// </remarks>
+    //public static async Task ShowDialogBox(Microsoft.UI.Xaml.XamlRoot xamlRoot, (Microsoft.UI.Xaml.ElementTheme theme, string title, string message, string primaryText, string cancelText, Action? onPrimary, Action? onCancel)
+    //{
+    //    // NOTE: Content dialogs will automatically darken the background.
+    //    Microsoft.UI.Xaml.Controls.ContentDialog contentDialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+    //    {
+    //        Title = title,
+    //        PrimaryButtonText = primaryText,
+    //        CloseButtonText = cancelText,
+    //        Content = new TextBlock()
+    //        {
+    //            Text = message,
+    //            FontSize = (double)App.Current.Resources["MediumFontSize"],
+    //            FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],
+    //            TextWrapping = TextWrapping.Wrap
+    //        },
+    //        XamlRoot = xamlRoot,
+    //        RequestedTheme = theme
+    //    };
+    //
+    //    Microsoft.UI.Xaml.Controls.ContentDialogResult result = await contentDialog.ShowAsync();
+    //
+    //    switch (result)
+    //    {
+    //        case Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary:
+    //            onPrimary?.Invoke();
+    //            break;
+    //        //case ContentDialogResult.Secondary:
+    //        //    onSecondary?.Invoke();
+    //        //    break;
+    //        case Microsoft.UI.Xaml.Controls.ContentDialogResult.None: // Cancel
+    //            onCancel?.Invoke();
+    //            break;
+    //        default:
+    //            Debug.WriteLine($"Dialog result not defined.");
+    //            break;
+    //    }
+    //}
+    #endregion
 }
 
