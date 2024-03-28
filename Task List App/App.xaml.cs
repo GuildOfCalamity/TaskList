@@ -361,6 +361,7 @@ public partial class App : Application
         Exception? ex = e.Exception;
         Debug.WriteLine($"[UnhandledException]: {ex?.Message}");
         Debug.WriteLine($"Unhandled exception of type {ex?.GetType()}: {ex}");
+        DebugLog($"Unhandled Exception StackTrace: {Environment.StackTrace}");
         DebugLog($"{ex?.DumpFrames()}");
         e.Handled = true;
     }
@@ -388,6 +389,7 @@ public partial class App : Application
         DebugLog($"First chance exception from {sender?.GetType()}: {e.Exception.Message}");
         if (e.Exception.InnerException != null)
             DebugLog($"  => InnerException: {e.Exception.InnerException.Message}");
+        DebugLog($"First Chance Exception StackTrace: {Environment.StackTrace}");
         DebugLog($"{e.Exception.DumpFrames()}");
     }
 

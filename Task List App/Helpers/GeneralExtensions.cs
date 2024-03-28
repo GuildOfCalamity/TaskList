@@ -82,6 +82,160 @@ public static class GeneralExtensions
         return urls;
     }
 
+    #region [Duplicate Helpers]
+    /// <summary>
+    /// Returns a <see cref="Tuple{T1, T2}"/> representing the <paramref name="list"/>
+    /// where <b>Item1</b> is the clean set and <b>Item2</b> is the duplicate set.
+    /// </summary>
+    public static (List<T>, List<T>) RemoveDuplicates<T>(this List<T> list)
+    {
+        HashSet<T> seen = new HashSet<T>();
+        List<T> dupes = new List<T>();
+        List<T> clean = new List<T>();
+        foreach (T item in list)
+        {
+            if (seen.Contains(item))
+            {
+                dupes.Add(item);
+            }
+            else
+            {
+                seen.Add(item);
+                clean.Add(item);
+            }
+        }
+        return (clean, dupes);
+    }
+
+    /// <summary>
+    /// Returns a <see cref="Tuple{T1, T2}"/> representing the <paramref name="enumerable"/>
+    /// where <b>Item1</b> is the clean set and <b>Item2</b> is the duplicate set.
+    /// </summary>
+    public static (List<T>, List<T>) RemoveDuplicates<T>(this IEnumerable<T> enumerable)
+    {
+        HashSet<T> seen = new HashSet<T>();
+        List<T> dupes = new List<T>();
+        List<T> clean = new List<T>();
+        foreach (T item in enumerable)
+        {
+            if (seen.Contains(item))
+            {
+                dupes.Add(item);
+            }
+            else
+            {
+                seen.Add(item);
+                clean.Add(item);
+            }
+        }
+        return (clean, dupes);
+    }
+
+    /// <summary>
+    /// Returns a <see cref="Tuple{T1, T2}"/> representing the <paramref name="array"/>
+    /// where <b>Item1</b> is the clean set and <b>Item2</b> is the duplicate set.
+    /// </summary>
+    public static (T[], T[]) RemoveDuplicates<T>(this T[] array)
+    {
+        HashSet<T> seen = new HashSet<T>();
+        List<T> dupes = new List<T>();
+        List<T> clean = new List<T>();
+        foreach (T item in array)
+        {
+            if (seen.Contains(item))
+            {
+                dupes.Add(item);
+            }
+            else
+            {
+                seen.Add(item);
+                clean.Add(item);
+            }
+        }
+        return (clean.ToArray(), dupes.ToArray());
+    }
+
+    /// <summary>
+    /// Returns a <see cref="IEnumerable{T}"/> representing the <paramref name="input"/> with duplicates removed.
+    /// </summary>
+    public static IEnumerable<T> DedupeUsingHashSet<T>(this IEnumerable<T> input)
+    {
+        if (input == null)
+            yield return (T)Enumerable.Empty<T>();
+
+        var values = new HashSet<T>();
+        foreach (T item in input)
+        {
+            // The add function returns false if the item already exists.
+            if (values.Add(item))
+                yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Returns a <see cref="List{T}"/> representing the <paramref name="input"/> with duplicates removed.
+    /// </summary>
+    public static List<T> DedupeUsingLINQ<T>(this List<T> input)
+    {
+        if (input == null)
+            return new List<T>();
+
+        return input.Distinct().ToList();
+    }
+
+    /// <summary>
+    /// Returns a <see cref="List{T}"/> representing the <paramref name="input"/> with duplicates removed.
+    /// </summary>
+    public static List<T> DedupeUsingHashSet<T>(this List<T> input)
+    {
+        if (input == null)
+            return new List<T>();
+
+        return (new HashSet<T>(input)).ToList();
+    }
+
+    /// <summary>
+    /// Returns a <see cref="List{T}"/> representing the <paramref name="input"/> with duplicates removed.
+    /// </summary>
+    public static List<T> DedupeUsingDictionary<T>(this List<T> input)
+    {
+        if (input == null)
+            return new List<T>();
+
+        Dictionary<T, bool> seen = new Dictionary<T, bool>();
+        List<T> result = new List<T>();
+
+        foreach (T item in input)
+        {
+            if (!seen.ContainsKey(item))
+            {
+                seen[item] = true;
+                result.Add(item);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Returns true if the <paramref name="input"/> contains duplicates, false otherwise.
+    /// </summary>
+    public static bool HasDuplicates<T>(this IEnumerable<T> input)
+    {
+        var knownKeys = new HashSet<T>();
+        return input.Any(item => !knownKeys.Add(item));
+    }
+
+    /// <summary>
+    /// Returns true if the <paramref name="input"/> contains duplicates, false otherwise.
+    /// </summary>
+    public static bool HasDuplicates<T>(this List<T> input)
+    {
+        var knownKeys = new HashSet<T>();
+        return input.Any(item => !knownKeys.Add(item));
+    }
+    #endregion
+
     /// <summary>
     /// Determine if one number is greater than another.
     /// </summary>
