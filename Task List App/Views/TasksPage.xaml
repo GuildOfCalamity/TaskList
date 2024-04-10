@@ -146,7 +146,18 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="model:TaskItem">
                     <StackPanel Margin="0,2" Opacity="{x:Bind Completed, Converter={StaticResource BooleanOpacityInverse}}">
-                        <Grid ColumnDefinitions="1*,9*,2*,3*,1*,1*">
+                        <Grid ColumnDefinitions="1*,12*,2*,2*,1*,1*">
+                            <!--
+                                [This can have adverse effects on the built-in styling of certain controls]
+                            -->
+                            <!--
+                            <Grid.Resources>
+                                <Style TargetType="TextBox" />
+                                    <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
+                                    <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
+                                </Style>
+                            </Grid.Resources>
+                            -->
                             <!--
                                 [Shadow effect for the time-color rectangle below, you could also use my CompositionShadow control]
                             -->
@@ -214,7 +225,25 @@
                                 CommandParameter="{Binding}"
                                 Content="Remove"
                                 FontFamily="{StaticResource CustomFont}"
+                                Foreground="{Binding DataContext, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TimeToBrush}}"
                                 IsEnabled="{Binding ElementName=ThisPage, Path=ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}" />
+                            <!--
+                             [To pass the control to the converter]
+                                Foreground="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource TimeToBrush}}"
+                             [To pass the object to the converter]
+                                Foreground="{Binding DataContext, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TimeToBrush}}"
+                             NOTE: The DataContext for the control may or may not need to be set:
+                                DataContext="{Binding}"
+                             [MultiBinding could be an option once it's available for WinUI3]
+                                https://github.com/microsoft/microsoft-ui-xaml/issues/8334
+                                https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/data-binding/multibinding?view=net-maui-8.0
+                             <Button.Content>
+                                 <MultiBinding Converter="{StaticResource TimeToBrush}">
+                                     <Binding Path="TaskItem.Created" />
+                                     <Binding Path="TaskItem.Time" />
+                                 </MultiBinding>
+                             </Button.Content>
+                            -->
 
                             <CheckBox
                                 Grid.Column="5"
@@ -230,18 +259,6 @@
                                 FontFamily="{StaticResource CustomFont}"
                                 IsChecked="{x:Bind Completed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 IsEnabled="{Binding ElementName=ThisPage, Path=ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}" />
-
-                            <!--
-                                [This can have adverse effects on the built-in styling of certain controls]
-                            -->
-                            <!--
-                            <Grid.Resources>
-                                <Style TargetType="TextBox" />
-                                    <Setter Property="FontFamily" Value="{StaticResource CustomFont}" />
-                                    <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
-                                </Style>
-                            </Grid.Resources>
-                            -->
 
                             <!--
                                 [If you want to use the images I created instead of the custom rectangle colors]

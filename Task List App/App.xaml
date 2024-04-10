@@ -27,6 +27,7 @@
             <local:StringFormatConverter x:Key="StringToFormat" />
             <local:DaysToTimeConverter x:Key="DaysToTime" />
             <local:LevelToBrushConverter x:Key="LevelToBrush" />
+            <local:TimeToBrushConverter x:Key="TimeToBrush" />
             <local:EnumToBooleanConverter x:Key="EnumToBoolean" />
             <local:LevelToBrushBorderConverter x:Key="LevelToBrushBorder" />
             <local:PreambleConverter x:Key="Preamble" />

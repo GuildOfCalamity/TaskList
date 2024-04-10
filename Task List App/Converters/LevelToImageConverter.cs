@@ -30,13 +30,16 @@ public class LevelToImageConverter : IValueConverter
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Purple.png", UriKind.Absolute));
                 break;
+            case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
+                result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Blue.png", UriKind.Absolute));
+                break;
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Blue.png", UriKind.Absolute));
                 break;
-            case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
+            case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Green.png", UriKind.Absolute));
                 break;
-            case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
+            case string time when time.Contains("a week", StringComparison.OrdinalIgnoreCase):
                 result = new BitmapImage(new Uri("ms-appx:///Assets/Check_Green.png", UriKind.Absolute));
                 break;
             case string time when time.Contains("few days", StringComparison.OrdinalIgnoreCase):

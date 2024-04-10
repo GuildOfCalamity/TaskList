@@ -1055,9 +1055,7 @@ public sealed partial class TasksPage : Page
                     #region [Check messaging and update statistics]
                     _timerPoll.Stop();
                     cycleCount = 1800; // after initial notification, slow down the occurrence
-
                     CalculateAverageTimeStatistic();
-
                     var tsk = ViewModel.GetPendingTaskItems();
                     if (tsk.Count > 0 && ApplicationSettings.ShowNotifications && LoginModel.IsLoggedIn)
                     {

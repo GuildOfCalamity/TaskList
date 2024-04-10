@@ -1,4 +1,12 @@
-using CommunityToolkit.WinUI.Helpers;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -7,16 +15,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Task_List_App.Contracts.Services;
-using Task_List_App.Helpers;
-using Task_List_App.ViewModels;
+
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Services.Maps;
@@ -24,7 +23,13 @@ using Windows.Storage.Streams;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Core;
-using System.Runtime.CompilerServices;
+
+using Task_List_App.Contracts.Services;
+using Task_List_App.Helpers;
+using Task_List_App.ViewModels;
+
+using CommunityToolkit.WinUI.Helpers;
+using CommunityToolkit.WinUI.UI.Controls;
 
 namespace Task_List_App.Views;
 
@@ -55,9 +60,32 @@ public sealed partial class NotesPage : Page
         ViewModel = App.GetService<NotesViewModel>();
         this.Loaded += NotesPage_Loaded;
         tbTitle.GotFocus += tbTitle_GotFocus;
+        mdTextBlock.RightTapped += MarkDown_RightTapped;
     }
 
     #region [Native Events]
+    /// <summary>
+    /// For testing only.
+    /// </summary>
+    void MarkDown_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        Debug.WriteLine($"[INFO] MarkDown_RightTapped");
+        var mdtb = sender as MarkdownTextBlock;
+        if (e.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
+        {
+            if (mdtb != null)
+            {
+                EditRequestEvent?.Invoke(this, true);
+                var point = e.GetPosition((UIElement)sender).ToVector2();
+                var rect = mdtb.GetBoundingRect((FrameworkElement)sender);
+                if ((point.X > rect.Left && point.X < rect.Width) && (point.Y > rect.Top && point.Y < rect.Height))
+                {
+                    Debug.WriteLine($"[INFO] Right-click detected at {point}");
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Verify we're allowed to be here.
     /// </summary>

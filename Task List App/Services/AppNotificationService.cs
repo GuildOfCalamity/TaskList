@@ -26,7 +26,7 @@ public class AppNotificationService : IAppNotificationService
 
     public void Initialize()
     {
-        // Gets call when app is launched through a Toast Notification.
+        // Gets called when app is launched through a Toast Notification.
         AppNotificationManager.Default.NotificationInvoked += OnNotificationInvoked;
         AppNotificationManager.Default.Register();
     }

@@ -22,7 +22,11 @@
     -->
 	<LangVersion>latest</LangVersion>
     <EnableMsixTooling>true</EnableMsixTooling>
+	<AssemblyVersion>1.0.0.5</AssemblyVersion>
+	<FileVersion>1.0.0.5</FileVersion>
 	<Version>1.0.0.5</Version>
+	<PackageId>TaskListApp2024</PackageId>
+	<Authors>The Guild</Authors>
     <!-- 
       WindowsPackageType defines whether your app is packaged (MSIX) or unpackaged (None) 
     -->
@@ -34,6 +38,19 @@
     -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- 
+         https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#generatedocumentationfile
+     -->
+    <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
+    <!-- 
+         https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#optimizeimplicitlytriggeredbuild 
+    -->
+    <OptimizeImplicitlyTriggeredBuild>true</OptimizeImplicitlyTriggeredBuild>
+    <!-- 
+         If true, this will create a subfolder named "refs" which contains all of the possible framework dependencies. The default value is false.
+         https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#preservecompilationcontext
+    -->
+    <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
 
    <!-- 
@@ -97,7 +114,7 @@
     <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />

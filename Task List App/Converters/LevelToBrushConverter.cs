@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using Task_List_App.Helpers;
+using Task_List_App.Models;
 
 namespace Task_List_App;
 
@@ -33,7 +37,7 @@ public class LevelToBrushConverter : IValueConverter
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 0, 255, 180));
                 break;
             case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
-                scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 87, 119, 198));
+                scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 0, 200, 165));
                 break;
             case string time when time.Contains("two weeks", StringComparison.OrdinalIgnoreCase):
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 87, 198, 103));
@@ -59,7 +63,7 @@ public class LevelToBrushConverter : IValueConverter
         return scb;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    public object? ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;
     }
@@ -90,6 +94,9 @@ public class LevelToBrushBorderConverter : IValueConverter
             case string time when time.Contains("six months", StringComparison.OrdinalIgnoreCase):
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 43, 69, 99));
                 break;
+            case string time when time.Contains("two months", StringComparison.OrdinalIgnoreCase):
+                scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 0, 128, 145));
+                break;
             case string time when time.Contains("a month", StringComparison.OrdinalIgnoreCase):
                 scb = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)alpha, 0, 128, 90));
                 break;
@@ -117,7 +124,7 @@ public class LevelToBrushBorderConverter : IValueConverter
         return scb;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    public object? ConvertBack(object value, Type targetType, object parameter, string language)
     {
         return null;
     }

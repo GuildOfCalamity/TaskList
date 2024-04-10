@@ -991,7 +991,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_YEAR_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.ONE_YEAR_MED)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.ONE_YEAR_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1002,7 +1002,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.SIX_MONTH_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.SIX_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.SIX_MONTH_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1013,7 +1013,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_MONTH_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.ONE_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.ONE_MONTH_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1024,7 +1024,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TWO_MONTH_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.TWO_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.TWO_MONTH_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1035,7 +1035,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TWO_WEEK_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.TWO_WEEK_MED)
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.TWO_WEEK_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1046,7 +1046,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_WEEK_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.ONE_WEEK_MED)
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.ONE_WEEK_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1057,7 +1057,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.FEW_DAYS_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.FEW_DAYS_MED)
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.FEW_DAYS_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1068,7 +1068,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TOMORROW_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.TOMORROW_MED)
+                    else if (amount?.TotalDays < Constants.TOMORROW_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.TOMORROW_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1079,7 +1079,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.SOON_MIN)
                         return InfoBarSeverity.Success;       // green
-                    else if (amount?.TotalDays < Constants.SOON_MED)
+                    else if (amount?.TotalDays < Constants.SOON_MID)
                         return InfoBarSeverity.Informational; // yellow
                     else if (amount?.TotalDays < Constants.SOON_MAX)
                         return InfoBarSeverity.Warning;       // orange
@@ -1105,7 +1105,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_YEAR_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.ONE_YEAR_MED)
+                    else if (amount?.TotalDays < Constants.ONE_YEAR_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.ONE_YEAR_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1116,7 +1116,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.SIX_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.SIX_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.SIX_MONTH_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.SIX_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1127,7 +1127,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.ONE_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.ONE_MONTH_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.ONE_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1138,7 +1138,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TWO_MONTH_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.TWO_MONTH_MED)
+                    else if (amount?.TotalDays < Constants.TWO_MONTH_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.TWO_MONTH_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1149,7 +1149,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TWO_WEEK_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.TWO_WEEK_MED)
+                    else if (amount?.TotalDays < Constants.TWO_WEEK_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.TWO_WEEK_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1160,7 +1160,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.ONE_WEEK_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.ONE_WEEK_MED)
+                    else if (amount?.TotalDays < Constants.ONE_WEEK_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.ONE_WEEK_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1171,7 +1171,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.FEW_DAYS_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.FEW_DAYS_MED)
+                    else if (amount?.TotalDays < Constants.FEW_DAYS_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.FEW_DAYS_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1182,7 +1182,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.TOMORROW_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.TOMORROW_MED)
+                    else if (amount?.TotalDays < Constants.TOMORROW_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.TOMORROW_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
@@ -1193,7 +1193,7 @@ public static class GeneralExtensions
                 {
                     if (amount?.TotalDays < Constants.SOON_MIN)
                         return Windows.UI.Color.FromArgb(255, 76, 255, 10);  // green
-                    else if (amount?.TotalDays < Constants.SOON_MED)
+                    else if (amount?.TotalDays < Constants.SOON_MID)
                         return Windows.UI.Color.FromArgb(255, 255, 216, 10); // yellow
                     else if (amount?.TotalDays < Constants.SOON_MAX)
                         return Windows.UI.Color.FromArgb(255, 255, 106, 10); // orange
