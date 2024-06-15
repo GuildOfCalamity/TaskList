@@ -49,6 +49,7 @@ public partial class TasksViewModel : ObservableRecipient
         "A week from now",
         "Two weeks from now",
         "A month from now",
+        "Two months from now",
         "Six months from now",
         "A year from now"
     };
@@ -64,7 +65,8 @@ public partial class TasksViewModel : ObservableRecipient
 		"A few days", 
 		"A week from now", 
 		"Two weeks from now", 
-		"A month from now", 
+		"A month from now",
+		"Two months from now", 
         "Six months from now", 
 		"A year from now" 
 	};
@@ -81,8 +83,9 @@ public partial class TasksViewModel : ObservableRecipient
 		{ 3, "a week from now" },
 		{ 4, "two weeks from now" },
         { 5, "a month from now" },
-        { 6, "six months from now" },
-		{ 7, "a year from now" },
+        { 6, "two months from now" },
+        { 7, "six months from now" },
+		{ 8, "a year from now" },
     };
 
     [ObservableProperty]
@@ -209,12 +212,12 @@ public partial class TasksViewModel : ObservableRecipient
 		// the checkbox and will already be updated once we get here.
 		if (item.Completed) 
 		{ 
-			item.Status = status[0];
+			item.Status = Status[0];
 			item.Completion = DateTime.Now;
 		}
         else 
 		{ 
-			item.Status = status[1];
+			item.Status = Status[1];
             item.Completion = null;
         }
 
@@ -248,7 +251,7 @@ public partial class TasksViewModel : ObservableRecipient
                 Title = TaskItems[idx].Title + $" (copy of {idx})",
                 Time = TaskItems[idx].Time,
                 Created = TaskItems[idx].Created,
-                Status = TaskItems[idx].Status != status[0] ? TaskItems[idx].Status : status[1],
+                Status = TaskItems[idx].Status != Status[0] ? TaskItems[idx].Status : Status[1],
                 // Reset completion status
                 Completed = false,
                 Completion = null,
@@ -279,8 +282,8 @@ public partial class TasksViewModel : ObservableRecipient
 		{
 			if (task.Completed)
 			{
-				Debug.WriteLine($"> Marking task '{task.Title}' as '{status[0]}'.");
-				task.Status = status[0];
+				Debug.WriteLine($"> Marking task '{task.Title}' as '{Status[0]}'.");
+				task.Status = Status[0];
 			}
 		}
 		SaveTaskItemsJson();
@@ -361,41 +364,46 @@ public partial class TasksViewModel : ObservableRecipient
 			var dt = DateTime.Now - item.Created;
 			switch (item.Time) 
 			{
-                case string str when str.Contains(times[0]): // "soon"
+                case string str when str.Contains(Times[0]): // "soon"
                     if (dt.TotalDays >= 1)
 						results.Add(item);
 					break;
-                case string str when str.Contains(times[1]): // "tomorrow"
+                case string str when str.Contains(Times[1]): // "tomorrow"
                     if (dt.TotalDays >= 2)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[2]): // "a few days"
+                case string str when str.Contains(Times[2]): // "a few days"
                     if (dt.TotalDays >= 4)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[3]): // "a week from now"
+                case string str when str.Contains(Times[3]): // "a week from now"
                     if (dt.TotalDays >= 8)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[4]): // "two weeks from now"
+                case string str when str.Contains(Times[4]): // "two weeks from now"
                     if (dt.TotalDays >= 14)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[5]): // "a month from now"
+                case string str when str.Contains(Times[5]): // "a month from now"
                     if (dt.TotalDays >= 29)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[6]): // "six months from now"
+                case string str when str.Contains(Times[6]): // "two months from now"
+                    if (dt.TotalDays >= 59)
+                        results.Add(item);
+                    break;
+                case string str when str.Contains(Times[7]): // "six months from now"
                     if (dt.TotalDays >= 171)
                         results.Add(item);
                     break;
-                case string str when str.Contains(times[7]): // "a year from now"
+                case string str when str.Contains(Times[8]): // "a year from now"
                     if (dt.TotalDays >= 353)
                         results.Add(item);
                     break;
                 default:
 					Debug.WriteLine($"WARNING: Item's time '{item.Time}' is not defined.");
-					break;
+                    App.DebugLog($"GetPendingTaskItems: Item's time '{item.Time}' is not defined.");
+                    break;
             }
 		}
 
@@ -431,12 +439,12 @@ public partial class TasksViewModel : ObservableRecipient
 		{
             if (completed) // mark as complete
             {
-                item.Status = status[0];
+                item.Status = Status[0];
                 item.Completion = DateTime.Now;
             }
             else // mark as not started
             {
-                item.Status = status[1];
+                item.Status = Status[1];
                 item.Completion = null;
             }
 
@@ -485,14 +493,14 @@ public partial class TasksViewModel : ObservableRecipient
     {
         return new List<TaskItem>
         {
-            new TaskItem { Title = "Task #1", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-1), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #2", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-4), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #3", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-8), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #4", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-12), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #5", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-16), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #6", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-30), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #7", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-90), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
-            new TaskItem { Title = "Task #8", Time = $"{times[Random.Shared.Next(0, times.Count)]}", Created = DateTime.Now.AddDays(-180), Status = $"{status[Random.Shared.Next(0, status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #1", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-1), Status =  $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #2", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-4), Status =  $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #3", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-8), Status =  $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #4", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-12), Status = $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #5", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-16), Status = $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #6", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-30), Status = $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #7", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-90), Status = $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
+            new TaskItem { Title = "Task #8", Time = $"{Times[Random.Shared.Next(0, Times.Count)]}", Created = DateTime.Now.AddDays(-180), Status= $"{Status[Random.Shared.Next(0, Status.Count)]}", Completed = GeneralExtensions.RandomBoolean() },
         };
     }
 
@@ -531,9 +539,9 @@ public partial class TasksViewModel : ObservableRecipient
                     foreach (var item in sorted)
                     {
                         // During load check for mis-matched status vs completed.
-                        if (item.Completed && item.Status != status[0])
-                            item.Status = status[0];
-                        else if (item.Status == status[0] && !item.Completed)
+                        if (item.Completed && item.Status != Status[0])
+                            item.Status = Status[0];
+                        else if (item.Status == Status[0] && !item.Completed)
                             item.Completed = true;
 
                         TaskItems.Add(item);
@@ -635,9 +643,9 @@ public partial class TasksViewModel : ObservableRecipient
 					foreach (var item in sorted) 
 					{ 
 						// During load check for mis-matched status vs completed.
-						if (item.Completed && item.Status != status[0])
-							item.Status = status[0];
-                        else if (item.Status == status[0] && !item.Completed)
+						if (item.Completed && item.Status != Status[0])
+							item.Status = Status[0];
+                        else if (item.Status == Status[0] && !item.Completed)
                             item.Completed = true;
 
                         TaskItems.Add(item); 
@@ -744,7 +752,7 @@ public partial class TasksViewModel : ObservableRecipient
         }
         else
         {
-			TaskItems.Add(new TaskItem { Title = newTitle, Time = times[1], Created = DateTime.Now, Status = status[1] });
+			TaskItems.Add(new TaskItem { Title = newTitle, Time = Times[1], Created = DateTime.Now, Status = Status[1] });
         }
 		SaveTaskItemsXml();
 		LoadTaskItemsXml();

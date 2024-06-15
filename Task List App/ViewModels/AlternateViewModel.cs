@@ -48,8 +48,9 @@ namespace Task_List_App.ViewModels
                 new TaskItem { Title = "Task #4", Time = $"A week from now", Created = DateTime.Now.AddDays(-12), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
                 new TaskItem { Title = "Task #5", Time = $"Two weeks from now", Created = DateTime.Now.AddDays(-16), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
                 new TaskItem { Title = "Task #6", Time = $"A month from now", Created = DateTime.Now.AddDays(-30), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
-                new TaskItem { Title = "Task #7", Time = $"Six months from now", Created = DateTime.Now.AddDays(-90), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
-                new TaskItem { Title = "Task #8", Time = $"A year from now", Created = DateTime.Now.AddDays(-180), Status = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
+                new TaskItem { Title = "Task #7", Time = $"Two months from now", Created = DateTime.Now.AddDays(-60), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
+                new TaskItem { Title = "Task #8", Time = $"Six months from now", Created = DateTime.Now.AddDays(-90), Status  = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
+                new TaskItem { Title = "Task #9", Time = $"A year from now", Created = DateTime.Now.AddDays(-180), Status = $"Waiting", Completed = GeneralExtensions.RandomBoolean() },
             };
         }
         #endregion

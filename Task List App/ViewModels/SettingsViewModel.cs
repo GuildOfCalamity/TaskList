@@ -24,6 +24,7 @@ public class SettingsViewModel : ObservableRecipient
     private string _versionDescription;
     private bool _showNotifications;
     private bool _showOverdueSummary;
+    private bool _openUrl;
     private bool _acrylicBackdrop;
     private bool _persistLogin;
     private Type? _lastPage;
@@ -37,7 +38,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _acrylicBackdrop, value);
-            SettingChangedEvent?.Invoke(this, nameof(AcrylicBackdrop) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+            SettingChangedEvent?.Invoke(this, $"{nameof(AcrylicBackdrop)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -47,7 +48,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _persistLogin, value);
-            SettingChangedEvent?.Invoke(this, nameof(PersistLogin) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+            SettingChangedEvent?.Invoke(this, $"{nameof(PersistLogin)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -57,7 +58,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _showNotifications, value);
-            SettingChangedEvent?.Invoke(this, nameof(ShowNotifications) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+            SettingChangedEvent?.Invoke(this, $"{nameof(ShowNotifications)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -67,7 +68,17 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _showOverdueSummary, value);
-            SettingChangedEvent?.Invoke(this, nameof(ShowOverdueSummary) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+            SettingChangedEvent?.Invoke(this, $"{nameof(ShowOverdueSummary)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+        }
+    }
+
+    public bool OpenUrl
+    {
+        get => _openUrl;
+        set
+        {
+            SetProperty(ref _openUrl, value);
+            SettingChangedEvent?.Invoke(this, $"{nameof(OpenUrl)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -78,7 +89,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _elementTheme, value);
-            SettingChangedEvent?.Invoke(this, nameof(ElementTheme) + $" changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+            SettingChangedEvent?.Invoke(this, $"{nameof(ElementTheme)} changed at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
         }
     }
 
@@ -120,6 +131,7 @@ public class SettingsViewModel : ObservableRecipient
     public ICommand SwitchThemeCommand { get; }
     public ICommand ToggleNotificationsCommand { get; }
     public ICommand ToggleOverdueSummaryCommand { get; }
+    public ICommand ToggleOpenUrlCommand { get; }
     public ICommand PersistLoginCommand { get; }
     public ICommand AcrylicBackdropCommand { get; }
     public ICommand RestoreDataCommand { get; }
@@ -148,6 +160,7 @@ public class SettingsViewModel : ObservableRecipient
         _elementTheme = _themeSelectorService.Theme;
         _showNotifications = _themeSelectorService.Notifications;
         _showOverdueSummary = _themeSelectorService.OverdueSummary;
+        _openUrl = _themeSelectorService.OpenUrl;
         _persistLogin = _themeSelectorService.PersistLogin;
         _lastPage = _themeSelectorService.LastPage;
         _acrylicBackdrop = _themeSelectorService.AcrylicBackdrop;
@@ -176,6 +189,13 @@ public class SettingsViewModel : ObservableRecipient
         {
             ShowOverdueSummary = param;
             await _themeSelectorService.SetOverdueSummaryAsync(param);
+        });
+
+        // Configure auto-open url command.
+        ToggleOpenUrlCommand = new RelayCommand<bool>(async (param) =>
+        {
+            OpenUrl = param;
+            await _themeSelectorService.SetOpenUrlAsync(param);
         });
 
         // Configure stay logged in command.

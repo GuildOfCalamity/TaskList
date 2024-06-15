@@ -22,9 +22,9 @@ public class CloseFlyoutOnEnterBehavior : DependencyObject, IBehavior
         <Button.Flyout>
             <Flyout Placement="Bottom">
                 <TextBox Width="200" Header="Name" PlaceholderText="Some Name">
-                    <Interactivity:Interaction.Behaviors>
-                        <local:CloseFlyoutOnEnterBehavior />
-                    </Interactivity:Interaction.Behaviors>
+                    <interact:Interaction.Behaviors>
+                        <extras:CloseFlyoutOnEnterBehavior />
+                    </interact:Interaction.Behaviors>
                 </TextBox>
             </Flyout>
         </Button.Flyout>
@@ -44,6 +44,7 @@ public class CloseFlyoutOnEnterBehavior : DependencyObject, IBehavior
 
     void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
     {
+        // Only perform when [Enter] key is pressed.
         if (!e.Key.Equals(Windows.System.VirtualKey.Enter))
             return;
 

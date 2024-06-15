@@ -25,6 +25,7 @@ namespace Task_List_App.ViewModels
     public partial class NotesViewModel : ObservableRecipient
     {
         #region [Properties]
+        static SemaphoreSlim semaSlim = new SemaphoreSlim(1, 1);
         static bool _copying = false;
         static bool _loaded = false;
 
@@ -71,6 +72,7 @@ namespace Task_List_App.ViewModels
         public ShellViewModel ShellModel { get; private set; }
         public ICommand? TestCommand1 { get; }
         public ICommand? TestCommand2 { get; }
+        public ICommand? EditRequestCommand { get; }
         public RelayCommand? ThrowExCommand { get; }
         #endregion
 
@@ -88,6 +90,7 @@ namespace Task_List_App.ViewModels
                 // For testing home-brew relay commands
                 TestCommand1 = new RelayCommand<NoteItem>(async (item) => await UpdateNote(item));
                 TestCommand2 = new RelayCommand(async () => await UpdateNote(null));
+                EditRequestCommand = new RelayCommand(() => { EditRequest = true; }, () => !EditRequest);
                 ThrowExCommand = new RelayCommand(async () => await ThrowError(), () => CanThrowError);
 
                 // IoC method...
@@ -246,6 +249,10 @@ namespace Task_List_App.ViewModels
                     var selection = e.AddedItems[0] as string;
                     if (!string.IsNullOrEmpty(selection))
                     {
+                        // Since there may be unsaved changes, we'll want to save before reload.
+                        if (NoteItems.Count > 0)
+                            SaveNoteItemsJson();
+
                         LoadNoteItemsJson(selection);
                         if (NoteItems.Count > 0)
                         {
@@ -382,6 +389,8 @@ namespace Task_List_App.ViewModels
         [RelayCommand]
         async Task<bool> UpdateNote(NoteItem? item)
         {
+            semaSlim.Wait();
+
             TaskCompletionSource<bool> tcs = new();
 
             if (NoteItems.Count > 0 && item == null)
@@ -406,13 +415,15 @@ namespace Task_List_App.ViewModels
                 }
             }
 
+            semaSlim.Release();
+
             return await tcs.Task;
         }
         #endregion
 
         #region [JSON Serializer Routines]
         /// <summary>
-        /// Loads the <see cref="TaskItem"/> collection.
+        /// Loads the <see cref="NoteItem"/> collection.
         /// Requires <see cref="Core.Services.FileService"/>.
         /// </summary>
         public void LoadNoteItemsJson(string sortBy = "updated")
@@ -499,7 +510,7 @@ namespace Task_List_App.ViewModels
         }
 
         /// <summary>
-        /// Saves the <see cref="TaskItem"/> collection.
+        /// Saves the <see cref="NoteItem"/> collection.
         /// Requires <see cref="Core.Services.FileService"/>.
         /// </summary>
         public void SaveNoteItemsJson()
