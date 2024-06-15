@@ -7,6 +7,7 @@ using Task_List_App.Helpers;
 using Task_List_App.ViewModels;
 using Task_List_App.Contracts.Services;
 using Task_List_App.Controls;
+using CommunityToolkit.WinUI;
 
 namespace Task_List_App.Views;
 
@@ -28,6 +29,11 @@ public sealed partial class ControlsPage : Page
 
         // Ensure that the Page is only created once, and cached during navigation.
         this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
+
+        this.ControlsNavigationView.SelectedItem = this.ControlsNavigationView.MenuItems
+            .FirstOrDefault(o => o is NavigationViewItem { Content: "Tab1" });
+        
+        //var t = ContentFrame.ContentTransitions.FirstOrDefault(o => o is Microsoft.UI.Xaml.Media.Animation.Transition);
 
         NavService = App.GetService<INavigationService>();
         LoginModel = App.GetService<LoginViewModel>();
@@ -307,5 +313,111 @@ public sealed partial class ControlsPage : Page
             return $"{App.DatabaseNotes}";
         else
             return $"No logic match for '{flag}'";
+    }
+
+    /// <summary>
+    /// Used to create a tab-style interface.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="args"></param>
+    void ControlsNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        var current = App.GetCurrentNamespace();
+
+        // https://learn.microsoft.com/en-us/windows/apps/design/controls/navigationview#pane-backgrounds
+
+        // Top display mode
+        //sender.Resources["NavigationViewTopPaneBackground"] = new SolidColorBrush(Windows.UI.Color.FromArgb(255,0,50,0));
+        // Left display mode
+        //sender.Resources["NavigationViewExpandedPaneBackground"] = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 50, 0));
+        // LeftCompact/LeftMinimal
+        //sender.Resources["NavigationViewDefaultPaneBackground"] = new SolidColorBrush(Windows.UI.Color.FromArgb(255,0,50,0));
+
+        /* [Other NavigationView Resource Keys]
+           x:Key="NavigationViewBackButtonBackground"                 
+           x:Key="NavigationViewButtonBackgroundDisabled"             
+           x:Key="NavigationViewButtonBackgroundPointerOver"          
+           x:Key="NavigationViewButtonBackgroundPressed"              
+           x:Key="NavigationViewButtonForegroundDisabled"             
+           x:Key="NavigationViewButtonForegroundPointerOver"          
+           x:Key="NavigationViewButtonForegroundPressed"              
+           x:Key="NavigationViewContentBackground"                    
+           x:Key="NavigationViewContentGridBorderBrush"               
+           x:Key="NavigationViewDefaultPaneBackground"                
+           x:Key="NavigationViewExpandedPaneBackground"               
+           x:Key="NavigationViewItemBackground"                       
+           x:Key="NavigationViewItemBackgroundChecked"                
+           x:Key="NavigationViewItemBackgroundCheckedDisabled"        
+           x:Key="NavigationViewItemBackgroundCheckedPointerOver"     
+           x:Key="NavigationViewItemBackgroundCheckedPressed"         
+           x:Key="NavigationViewItemBackgroundDisabled"               
+           x:Key="NavigationViewItemBackgroundPointerOver"            
+           x:Key="NavigationViewItemBackgroundPressed"                
+           x:Key="NavigationViewItemBackgroundSelected"               
+           x:Key="NavigationViewItemBackgroundSelectedDisabled"       
+           x:Key="NavigationViewItemBackgroundSelectedPointerOver"    
+           x:Key="NavigationViewItemBackgroundSelectedPressed"        
+           x:Key="NavigationViewItemBorderBrush"                      
+           x:Key="NavigationViewItemBorderBrushChecked"               
+           x:Key="NavigationViewItemBorderBrushCheckedDisabled"       
+           x:Key="NavigationViewItemBorderBrushCheckedPointerOver"    
+           x:Key="NavigationViewItemBorderBrushCheckedPressed"        
+           x:Key="NavigationViewItemBorderBrushDisabled"              
+           x:Key="NavigationViewItemBorderBrushPointerOver"           
+           x:Key="NavigationViewItemBorderBrushPressed"               
+           x:Key="NavigationViewItemBorderBrushSelected"              
+           x:Key="NavigationViewItemBorderBrushSelectedDisabled"      
+           x:Key="NavigationViewItemBorderBrushSelectedPointerOver"   
+           x:Key="NavigationViewItemBorderBrushSelectedPressed"       
+           x:Key="NavigationViewItemForeground"                       
+           x:Key="NavigationViewItemForegroundChecked"                
+           x:Key="NavigationViewItemForegroundCheckedDisabled"        
+           x:Key="NavigationViewItemForegroundCheckedPointerOver"     
+           x:Key="NavigationViewItemForegroundCheckedPressed"         
+           x:Key="NavigationViewItemForegroundDisabled"               
+           x:Key="NavigationViewItemForegroundPointerOver"            
+           x:Key="NavigationViewItemForegroundPressed"                
+           x:Key="NavigationViewItemForegroundSelected"               
+           x:Key="NavigationViewItemForegroundSelectedDisabled"       
+           x:Key="NavigationViewItemForegroundSelectedPointerOver"    
+           x:Key="NavigationViewItemForegroundSelectedPressed"        
+           x:Key="NavigationViewItemHeaderForeground"                 
+           x:Key="NavigationViewItemSeparatorForeground"              
+           x:Key="NavigationViewSelectionIndicatorForeground"         
+           x:Key="NavigationViewTopPaneBackground"                    
+           x:Key="TopNavigationViewItemBackgroundPointerOver"         
+           x:Key="TopNavigationViewItemBackgroundPressed"             
+           x:Key="TopNavigationViewItemBackgroundSelected"            
+           x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" 
+           x:Key="TopNavigationViewItemBackgroundSelectedPressed"     
+           x:Key="TopNavigationViewItemForeground"                    
+           x:Key="TopNavigationViewItemForegroundDisabled"            
+           x:Key="TopNavigationViewItemForegroundPointerOver"         
+           x:Key="TopNavigationViewItemForegroundPressed"             
+           x:Key="TopNavigationViewItemForegroundSelected"            
+           x:Key="TopNavigationViewItemForegroundSelectedPointerOver" 
+           x:Key="TopNavigationViewItemForegroundSelectedPressed"     
+           x:Key="TopNavigationViewItemRevealBackgroundFocused"       
+           x:Key="TopNavigationViewItemRevealContentForegroundFocused"
+           x:Key="TopNavigationViewItemRevealIconForegroundFocused"   
+           x:Key="TopNavigationViewItemSeparatorForeground" 
+           <x:Double x:Key="PaneToggleButtonSize">40</x:Double>
+           <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
+           <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
+           <x:Double x:Key="NavigationViewCompactPaneLength">48</x:Double>
+           <x:Double x:Key="NavigationViewTopPaneHeight">48</x:Double>
+           <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
+           <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">16,0</Thickness>
+           <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
+           <Setter Target="PaneToggleButtonGrid">
+        */
+        if (args.IsSettingsSelected is true)
+        {
+            // Do nothing
+        }
+        else if (args.SelectedItem is NavigationViewItem item && item.Content is string content && Type.GetType($"{current}.Views.{content}Page") is Type pageType)
+        {
+            _ = this.ContentFrame.Navigate(pageType);
+        }
     }
 }

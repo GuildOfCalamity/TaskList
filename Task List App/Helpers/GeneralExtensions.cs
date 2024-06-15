@@ -2,9 +2,11 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.SqlTypes;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -56,8 +58,20 @@ public static class GeneralExtensions
     }
 
     /// <summary>
-    /// BinaryFormatting is obsolete and should not be used.
+    /// The BinaryFormatter type is dangerous and is not recommended 
+    /// for data processing. Applications should stop using BinaryFormatter 
+    /// as soon as possible, even if they believe the data they're processing 
+    /// to be trustworthy. BinaryFormatter is insecure and can't be made secure.
+    /// The following serializers all perform unrestricted polymorphic deserialization and are dangerous:
+    ///  - SoapFormatter
+    ///  - LosFormatter
+    ///  - NetDataContractSerializer
+    ///  - ObjectStateFormatter
+    ///  - BinaryFormatter
     /// </summary>
+    /// <remarks>
+    /// https://learn.microsoft.com/en-us/dotnet/standard/serialization/binaryformatter-security-guide
+    /// </remarks>
     public static List<T> DeepCopyWithoutICloneable<T>(this List<T> source)
     {
         if (source == null)
@@ -72,7 +86,6 @@ public static class GeneralExtensions
         }
     }
 
-
     public static List<string> ExtractUrls(this string text)
     {
         List<string> urls = new List<string>();
@@ -80,6 +93,44 @@ public static class GeneralExtensions
         MatchCollection matches = urlRx.Matches(text);
         foreach (Match match in matches) { urls.Add(match.Value); }
         return urls;
+    }
+
+    public static async Task LaunchUrlFromTextBox(Microsoft.UI.Xaml.Controls.TextBox textBox)
+    {
+        string text = "";
+        textBox.DispatcherQueue.TryEnqueue(() => { text = textBox.Text; });
+        Uri? uriResult;
+        bool isValidUrl = Uri.TryCreate(text, UriKind.Absolute, out uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        if (isValidUrl)
+            await Windows.System.Launcher.LaunchUriAsync(uriResult);
+        else
+            await Task.CompletedTask;
+    }
+
+    public static async Task LocateAndLaunchUrlFromTextBox(Microsoft.UI.Xaml.Controls.TextBox textBox)
+    {
+        string text = "";
+        textBox.DispatcherQueue.TryEnqueue(() => { text = textBox.Text; });
+        List<string> urls = text.ExtractUrls();
+        if (urls.Count > 0)
+        {
+            Uri uriResult = new Uri(urls[0]);
+            await Windows.System.Launcher.LaunchUriAsync(uriResult);
+        }
+        else
+            await Task.CompletedTask;
+    }
+
+    public static async Task LocateAndLaunchUrlFromString(string text)
+    {
+        List<string> urls = text.ExtractUrls();
+        if (urls.Count > 0)
+        {
+            Uri uriResult = new Uri(urls[0]);
+            await Windows.System.Launcher.LaunchUriAsync(uriResult);
+        }
+        else
+            await Task.CompletedTask;
     }
 
     #region [Duplicate Helpers]
@@ -304,7 +355,7 @@ public static class GeneralExtensions
         return false;
     }
 
-    #region [Helper for CummunityToolkit]
+    #region [Helper for CommunityToolkit]
     /// <summary>
     /// <para>
     /// Gets the image data from a Uri.
@@ -556,6 +607,7 @@ public static class GeneralExtensions
         };
         return lgb;
     }
+
     /// <summary>
     /// Creates a Color object from the hex color code and returns the result.
     /// </summary>
@@ -595,6 +647,51 @@ public static class GeneralExtensions
     }
 
     /// <summary>
+    /// Uses the <see cref="System.Reflection.PropertyInfo"/> of the 
+    /// <see cref="Microsoft.UI.Colors"/> class to return the matching 
+    /// <see cref="Windows.UI.Color"/> object.
+    /// </summary>
+    /// <param name="colorName">name of color, e.g. "Aquamarine"</param>
+    /// <returns><see cref="Windows.UI.Color"/></returns>
+    public static Windows.UI.Color? GetColorFromNameString(string colorName)
+    {
+        if (string.IsNullOrEmpty(colorName))
+            return Windows.UI.Color.FromArgb(255, 128, 128, 128);
+
+        try
+        {
+            var prop = typeof(Microsoft.UI.Colors).GetTypeInfo().GetDeclaredProperty(colorName);
+            if (prop != null)
+            {
+                var tmp = prop.GetValue(null);
+                if (tmp != null)
+                    return (Windows.UI.Color)tmp;
+            }
+            else
+            {
+                Debug.WriteLine($"[WARNING] \"{colorName}\" could not be resolved as a {nameof(Windows.UI.Color)}.");
+            }
+
+            return Windows.UI.Color.FromArgb(255, 128, 128, 128);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] GetColorFromNameString: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Returns the given <see cref="Windows.UI.Color"/> as a hex string.
+    /// </summary>
+    /// <param name="color">color to convert</param>
+    /// <returns>hex string (including pound sign)</returns>
+    public static string ToHexString(this Windows.UI.Color color)
+    {
+        return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
+    }
+
+    /// <summary>
     /// Calculates the linear interpolated Color based on the given Color values.
     /// </summary>
     /// <param name="colorFrom">Source Color.</param>
@@ -604,22 +701,16 @@ public static class GeneralExtensions
     public static Windows.UI.Color Lerp(this Windows.UI.Color colorFrom, Windows.UI.Color colorTo, float amount)
     {
         // Convert colorFrom components to lerp-able floats
-        float sa = colorFrom.A,
-            sr = colorFrom.R,
-            sg = colorFrom.G,
-            sb = colorFrom.B;
+        float sa = colorFrom.A, sr = colorFrom.R, sg = colorFrom.G, sb = colorFrom.B;
 
         // Convert colorTo components to lerp-able floats
-        float ea = colorTo.A,
-            er = colorTo.R,
-            eg = colorTo.G,
-            eb = colorTo.B;
+        float ea = colorTo.A, er = colorTo.R, eg = colorTo.G, eb = colorTo.B;
 
         // lerp the colors to get the difference
         byte a = (byte)Math.Max(0, Math.Min(255, sa.Lerp(ea, amount))),
-            r = (byte)Math.Max(0, Math.Min(255, sr.Lerp(er, amount))),
-            g = (byte)Math.Max(0, Math.Min(255, sg.Lerp(eg, amount))),
-            b = (byte)Math.Max(0, Math.Min(255, sb.Lerp(eb, amount)));
+             r = (byte)Math.Max(0, Math.Min(255, sr.Lerp(er, amount))),
+             g = (byte)Math.Max(0, Math.Min(255, sg.Lerp(eg, amount))),
+             b = (byte)Math.Max(0, Math.Min(255, sb.Lerp(eb, amount)));
 
         // return the new color
         return Windows.UI.Color.FromArgb(a, r, g, b);
@@ -656,12 +747,9 @@ public static class GeneralExtensions
         var green = (int)((float)source.G * factor);
         var blue = (int)((float)source.B * factor);
 
-        if (red == 0) { red = 0x1F; }
-        else if (red > 255) { red = 0xFF; }
-        if (green == 0) { green = 0x1F; }
-        else if (green > 255) { green = 0xFF; }
-        if (blue == 0) { blue = 0x1F; }
-        else if (blue > 255) { blue = 0xFF; }
+        if (red == 0)   { red = 0x0F;   } else if (red > 255)   { red = 0xFF;   }
+        if (green == 0) { green = 0x0F; } else if (green > 255) { green = 0xFF; }
+        if (blue == 0)  { blue = 0x0F;  } else if (blue > 255)  { blue = 0xFF;  }
 
         return Windows.UI.Color.FromArgb((byte)255, (byte)red, (byte)green, (byte)blue);
     }
@@ -1537,6 +1625,33 @@ public static class GeneralExtensions
     /// </summary>
     public static float Lerp(this float start, float end, float amount = 0.5F) => start + (end - start) * amount;
 
+    /// <summary>
+    /// Vector2 LERP function.
+    /// </summary>
+    /// <param name="start"><see cref="Vector2"/></param>
+    /// <param name="end"><see cref="Vector2"/></param>
+    /// <param name="time">0.0 to 1.0</param>
+    /// <returns><see cref="Vector2"/></returns>
+    public static Vector2 LinearInterpolation(Vector2 start, Vector2 end, float time)
+    {
+        return start + (end - start) * time;
+    }
+
+    /// <summary>
+    /// Vector2 Bezier function.
+    /// </summary>
+    /// <param name="point0"><see cref="Vector2"/></param>
+    /// <param name="point1"><see cref="Vector2"/></param>
+    /// <param name="point2"><see cref="Vector2"/></param>
+    /// <param name="time">0.0 to 1.0</param>
+    /// <returns></returns>
+    public static Vector2 BezierInterpolation(Vector2 point0, Vector2 point1, Vector2 point2, float time)
+    {
+        Vector2 intermediateA = LinearInterpolation(point0, point1, time);
+        Vector2 intermediateB = LinearInterpolation(point1, point2, time);
+        return LinearInterpolation(intermediateA, intermediateB, time);
+    }
+
     public static bool RandomBoolean()
     {
         if (Random.Shared.Next(100) > 49) 
@@ -2398,6 +2513,26 @@ public static class GeneralExtensions
             {
                 Debug.WriteLine($"{MethodBase.GetCurrentMethod()?.Name}: {ex.Message}", $"{nameof(GeneralExtensions)}");
                 Thread.Sleep(2000);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Will retry each operation with a 2 second delay between attempts.
+    /// </summary>
+    public async static Task<T> RetryAsync<T>(this Func<T> operation, int attempts)
+    {
+        while (true)
+        {
+            try
+            {
+                attempts--;
+                return operation();
+            }
+            catch (Exception ex) when (attempts > 0)
+            {
+                Debug.WriteLine($"{MethodBase.GetCurrentMethod()?.Name}: {ex.Message}");
+                await Task.Delay(2000);
             }
         }
     }

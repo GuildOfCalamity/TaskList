@@ -217,6 +217,19 @@
                             </CheckBox.CommandParameter>
                             -->
                         </CheckBox>
+                        <CheckBox
+                            Command="{x:Bind ViewModel.ToggleOpenUrlCommand}"
+                            CommandParameter="{x:Bind ViewModel.OpenUrl, Mode=TwoWay}"
+                            Content="Automatically Open URLs"
+                            FontSize="14"
+                            IsChecked="{x:Bind ViewModel.OpenUrl, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Opens URL using default browser">
+                            <!--
+                            <CheckBox.CommandParameter>
+                                <x:Boolean>False</x:Boolean>
+                            </CheckBox.CommandParameter>
+                            -->
+                        </CheckBox>
                     </StackPanel>
                 </StackPanel>
 

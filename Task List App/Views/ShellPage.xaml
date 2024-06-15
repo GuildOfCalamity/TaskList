@@ -11,6 +11,11 @@
     x:Name="ThisPage"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     Loaded="OnLoaded">
+    <Page.Resources>
+        <!--
+        <Brush x:Key="NavigationViewSelectionIndicatorForeground">#8F1FDF</Brush>
+        -->
+    </Page.Resources>
     <!--
         This page serves as the navigation menu for the application.
     -->
@@ -37,6 +42,7 @@
             NOTE: Keeping PaneDisplayMode="Auto" ensures that the navbar
             will take the appropriate action when the window is resized.
             I am keeping the OpenPaneLength small to maximize GUI real estate.
+            https://learn.microsoft.com/en-us/windows/apps/design/controls/navigationview
         -->
         <NavigationView
             x:Name="NavigationViewControl"
@@ -49,6 +55,7 @@
             IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
             IsPaneToggleButtonVisible="{x:Bind IsPaneToggleButtonVisible(NavigationViewControl.DisplayMode), Mode=OneWay}"
             IsSettingsVisible="True"
+            IsTitleBarAutoPaddingEnabled="False"
             OpenPaneLength="150"
             PaneDisplayMode="Auto"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">

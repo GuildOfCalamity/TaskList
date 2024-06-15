@@ -21,11 +21,6 @@ public static class DispatcherQueueTimerExtensions
     /// Use this method to control the timer instead of calling Start/Interval/Stop manually.
     /// A scheduled debounce can still be stopped by calling the stop method on the timer instance.
     /// Each timer can only have one debounced function limited at a time.
-    /// </summary>
-    /// <param name="timer">Timer instance, only one debounced function can be used per timer.</param>
-    /// <param name="action">Action to execute at the end of the interval.</param>
-    /// <param name="interval">Interval to wait before executing the action.</param>
-    /// <param name="immediate">Determines if the action execute on the leading edge instead of trailing edge.</param>
     /// <example>
     /// <code>
     /// private DispatcherQueueTimer _timer = DispatcherQueue.CreateTimer();
@@ -34,6 +29,11 @@ public static class DispatcherQueueTimerExtensions
     /// }, TimeSpan.FromSeconds(0.5));
     /// </code>
     /// </example>
+    /// </summary>
+    /// <param name="timer">Timer instance, only one debounced function can be used per timer.</param>
+    /// <param name="action">Action to execute at the end of the interval.</param>
+    /// <param name="interval">Interval to wait before executing the action.</param>
+    /// <param name="immediate">Determines if the action execute on the leading edge instead of trailing edge.</param>
     public static void Debounce(this Microsoft.UI.Dispatching.DispatcherQueueTimer timer, Action action, TimeSpan interval, bool immediate = false)
     {
         // Check and stop any existing timer

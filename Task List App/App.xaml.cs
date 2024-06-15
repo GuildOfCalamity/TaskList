@@ -221,6 +221,8 @@ public partial class App : Application
             services.AddSingleton<ControlsViewModel>();
             services.AddSingleton<ControlsPage>();
 
+            services.AddSingleton<TabViewModel>();
+
             // NOTE: Don't forget to visit the "Task_List_App.Services.PageService" ctor and add any new pages.
             #endregion
 
@@ -580,10 +582,18 @@ public partial class App : Application
     /// </remarks>
     public static async Task ShowDialogBox(string title, string message, string primaryText, string cancelText, Action? onPrimary, Action? onCancel)
 	{
-		//Windows.UI.Popups.IUICommand defaultCommand = new Windows.UI.Popups.UICommand("OK");
+        double fontSize = 16;
+        Microsoft.UI.Xaml.Media.FontFamily fontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas");
 
-		// NOTE: Content dialogs will automatically darken the background.
-		ContentDialog contentDialog = new ContentDialog()
+        if (App.Current.Resources["MediumFontSize"] is not null)
+            fontSize = (double)App.Current.Resources["MediumFontSize"];
+
+        if (App.Current.Resources["CustomFont"] is not null)
+            fontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"];
+
+
+        // NOTE: Content dialogs will automatically darken the background.
+        ContentDialog contentDialog = new ContentDialog()
 		{
 			Title = title,
 			PrimaryButtonText = primaryText,
@@ -591,8 +601,8 @@ public partial class App : Application
 			Content = new TextBlock()
 			{
 				Text = message,
-				FontSize = (double)App.Current.Resources["MediumFontSize"],
-				FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)App.Current.Resources["CustomFont"],
+				FontSize = fontSize,
+				FontFamily = fontFamily,
 				TextWrapping = TextWrapping.Wrap
 			},
 			XamlRoot = App.MainRoot?.XamlRoot,

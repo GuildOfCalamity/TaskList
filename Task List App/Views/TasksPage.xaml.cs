@@ -507,9 +507,17 @@ public sealed partial class TasksPage : Page
                         {
                             var severity = GeneralExtensions.GetInfoBarSeverity(tsk.Time, diff.Value);
                             if (severity == InfoBarSeverity.Error && ApplicationSettings.ShowOverdueSummary)
-                                _ = App.ShowMessageBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
-
-                            //noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", severity } });
+                            {
+                                #region [ContentDialog]
+                                _ = App.ShowDialogBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
+                                #endregion
+                                #region [MessageDialog]
+                                //_ = App.ShowMessageBox($"Task overdue based on estimate: {diff.Value.TotalDays:N1} days", $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", "OK", "", null, null);
+                                #endregion
+                                #region [Win32 MessageBox]
+                                //MessageBox.ShowUTF(App.WindowHandle, $"{tsk.Title}{Environment.NewLine}Created: {tsk.Created}{Environment.NewLine}Completed: {tsk.Completion}{Environment.NewLine}Estimate: {tsk.Time}", $"Overdue based on estimate: {diff.Value.TotalDays:N1} days", MessageBox.MB_OK | MessageBox.MB_ICONQUESTION | MessageBox.MB_SYSTEMMODAL);
+                                #endregion
+                            }
                             noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task took {diff.Value.TotalDays:N1} days to complete.", InfoBarSeverity.Informational } });
                         }
                         else
@@ -518,10 +526,10 @@ public sealed partial class TasksPage : Page
                     else
                     {
                         noticeQueue.Enqueue(new Dictionary<string, InfoBarSeverity> { { $"Task created on {tsk.Created.ToLongDateString()}", InfoBarSeverity.Informational } });
-                        // Open link in browser if task contains a URL
-                        Task.Run(async () => { await LocateAndLaunchUrlFromString(tsk.Title); });
+                        
+                        if (ApplicationSettings.OpenUrl)
+                            Task.Run(async () => { await GeneralExtensions.LocateAndLaunchUrlFromString(tsk.Title); });
                     }
-
                 }
             }
 		}
@@ -1222,44 +1230,6 @@ public sealed partial class TasksPage : Page
                     ShellModel.Average = text;
             }
         }
-    }
-
-    async Task LaunchUrlFromTextBox(TextBox textBox)
-    {
-        string text = "";
-        textBox.DispatcherQueue.TryEnqueue(() => { text = textBox.Text; });
-        Uri? uriResult;
-        bool isValidUrl = Uri.TryCreate(text, UriKind.Absolute, out uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-        if (isValidUrl)
-            await Windows.System.Launcher.LaunchUriAsync(uriResult);
-        else
-            await Task.CompletedTask;
-    }
-
-    async Task LocateAndLaunchUrlFromTextBox(TextBox textBox)
-    {
-        string text = "";
-        textBox.DispatcherQueue.TryEnqueue(() => { text = textBox.Text; });
-        List<string> urls = text.ExtractUrls();
-        if (urls.Count > 0)
-        {
-            Uri uriResult = new Uri(urls[0]);
-            await Windows.System.Launcher.LaunchUriAsync(uriResult);
-        }
-        else
-            await Task.CompletedTask;
-    }
-
-    async Task LocateAndLaunchUrlFromString(string text)
-    {
-        List<string> urls = text.ExtractUrls();
-        if (urls.Count > 0)
-        {
-            Uri uriResult = new Uri(urls[0]);
-            await Windows.System.Launcher.LaunchUriAsync(uriResult);
-        }
-        else
-            await Task.CompletedTask;
     }
     #endregion
 }

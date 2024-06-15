@@ -17,6 +17,11 @@ internal class TitleBarHelper
     private const int WAACTIVE = 0x01;
     private const int WMACTIVATE = 0x0006;
 
+    [DllImport("user32.dll", CharSet =CharSet.Unicode)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+    // MessageBox(new IntPtr(0), "Hello", "Dialog", 0);
+
+
     [DllImport("user32.dll")]
     private static extern IntPtr GetActiveWindow();
 

@@ -164,9 +164,8 @@
                             <!--
                             <Rectangle Width="20" Height="20" Margin="0,3,7,0" Fill="Black" RadiusX="10" RadiusY="10" Stroke="Transparent" StrokeThickness="0" />
                             -->
+                            <!--#region [Color based on due time]-->
                             <!--
-                                [We could also use an Ellipse, but I like the flexibility of the Rectangle]
-                            -->
                             <Rectangle
                                 Width="20"
                                 Height="20"
@@ -176,6 +175,20 @@
                                 RadiusY="5"
                                 Stroke="{x:Bind Time, Converter={StaticResource LevelToBrushBorder}, Mode=OneWay}"
                                 StrokeThickness="3" />
+                            -->
+                            <!--#endregion-->
+                            <!--#region [Color based on elapsed time]-->
+                            <Rectangle
+                                Width="30"
+                                Height="20"
+                                Margin="0,0,9,0"
+                                HorizontalAlignment="Left"
+                                Fill="{Binding DataContext, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TimeToBrush}}"
+                                RadiusX="5"
+                                RadiusY="5"
+                                Stroke="{Binding DataContext, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TimeToBrush}, ConverterParameter=Border}"
+                                StrokeThickness="3" />
+                            <!--#endregion-->
 
                             <TextBox
                                 Grid.Column="1"
@@ -225,7 +238,6 @@
                                 CommandParameter="{Binding}"
                                 Content="Remove"
                                 FontFamily="{StaticResource CustomFont}"
-                                Foreground="{Binding DataContext, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TimeToBrush}}"
                                 IsEnabled="{Binding ElementName=ThisPage, Path=ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BooleanInverter}}" />
                             <!--
                              [To pass the control to the converter]
@@ -237,6 +249,8 @@
                              [MultiBinding could be an option once it's available for WinUI3]
                                 https://github.com/microsoft/microsoft-ui-xaml/issues/8334
                                 https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/data-binding/multibinding?view=net-maui-8.0
+                             [Fix for MultiBinding Support]
+                                https://github.com/peter0302/WinUI.Redemption/
                              <Button.Content>
                                  <MultiBinding Converter="{StaticResource TimeToBrush}">
                                      <Binding Path="TaskItem.Created" />

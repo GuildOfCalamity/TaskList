@@ -15,7 +15,7 @@ public class TimeToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        SolidColorBrush scb = new SolidColorBrush(Colors.WhiteSmoke);
+        SolidColorBrush scb = new SolidColorBrush(Colors.LightGray);
 
         if (value == null)
             return scb;
@@ -58,7 +58,7 @@ public class TimeToBrushConverter : IValueConverter
         }
 
         var currentTheme = App.MainRoot?.ActualTheme ?? ElementTheme.Default;
-        if (currentTheme == ElementTheme.Light)
+        if (currentTheme == ElementTheme.Light || parameter != null)
             scb = new SolidColorBrush(scb.Color.DarkerBy(0.4f));
 
         return scb;

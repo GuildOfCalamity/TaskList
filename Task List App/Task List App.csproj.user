@@ -13,6 +13,15 @@
     <None Update="Controls\CompositionShadow.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Views\Tab3Page.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Tab2Page.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Tab1Page.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Controls\ConfigTip.xaml">
       <SubType>Designer</SubType>
     </Page>

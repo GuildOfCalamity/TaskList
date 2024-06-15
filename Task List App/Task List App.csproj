@@ -68,6 +68,7 @@
     <None Remove="Assets\Check_Red.png" />
     <None Remove="Assets\Check_Yellow.png" />
     <None Remove="Assets\Fonts\Aptos.ttf" />
+    <None Remove="Assets\Fonts\OdinRounded.ttf" />
     <None Remove="Assets\Fonts\StudlyfreeRegular.ttf" />
     <None Remove="Assets\Fonts\TaurusMonoOutline.ttf" />
     <None Remove="Assets\Gear_Icon.png" />
@@ -94,6 +95,9 @@
     <None Remove="Views\CreateTaskDialog.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\NotesPage.xaml" />
+    <None Remove="Views\Tab1Page.xaml" />
+    <None Remove="Views\Tab2Page.xaml" />
+    <None Remove="Views\Tab3Page.xaml" />
     <None Remove="Views\TasksPageDialog.xaml" />
   </ItemGroup>
 
@@ -151,6 +155,15 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Tab3Page.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Tab2Page.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Tab1Page.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\ConfigTip.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
