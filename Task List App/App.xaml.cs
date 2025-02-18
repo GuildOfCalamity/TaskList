@@ -1,10 +1,12 @@
 ﻿#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -60,7 +62,7 @@ public partial class App : Application
     public static Window? MainWindow { get; set; } = new MainWindow();
     public static IntPtr WindowHandle { get; set; }
     public static FrameworkElement? MainRoot { get; set; }
-	public static bool IsClosing { get; set; } = false;
+    public static bool IsClosing { get; set; } = false;
     public static bool ToastLaunched { get; set; } = false;
     static ValueStopwatch stopWatch { get; set; } = ValueStopwatch.StartNew();
     public static EventBus RootEventBus { get; set; } = new();
@@ -251,6 +253,9 @@ public partial class App : Application
             this.DebugSettings.BindingFailed += DebugOnBindingFailed;
             this.DebugSettings.XamlResourceReferenceFailed += DebugOnXamlResourceReferenceFailed;
         }
+
+        // PubSubService test
+        _ = Task.Run(() => PubSubHeartbeat());
     }
 
     /// <summary>
@@ -371,9 +376,9 @@ public partial class App : Application
     void CurrentDomainOnProcessExit(object? sender, EventArgs e)
     {
         if (!IsClosing)
-		    IsClosing = true;
+            IsClosing = true;
 
-		if (sender is null)
+        if (sender is null)
             return;
 
         if (sender is AppDomain ad)
@@ -399,7 +404,7 @@ public partial class App : Application
     {
         Exception? ex = e.ExceptionObject as Exception;
         Debug.WriteLine($"[ERROR] Thread exception of type {ex?.GetType()}: {ex}");
-		DebugLog($"Thread exception of type {ex?.GetType()}: {ex}");
+        DebugLog($"Thread exception of type {ex?.GetType()}: {ex}");
         DebugLog($"{ex?.DumpFrames()}");
     }
 
@@ -415,7 +420,7 @@ public partial class App : Application
                 return true;
             });
         }
-		e.SetObserved(); // suppress and handle manually
+        e.SetObserved(); // suppress and handle manually
     }
     #endregion
 
@@ -537,10 +542,10 @@ public partial class App : Application
     /// You'll find other implementations in the <see cref="Task_List_App.Core.Services.MessageService"/>.
     /// </remarks>
     public static async Task ShowMessageBox(string title, string message, string primaryText, string cancelText)
-	{
-		// Create the dialog.
-		var messageDialog = new MessageDialog($"{message}");
-		messageDialog.Title = title;
+    {
+        // Create the dialog.
+        var messageDialog = new MessageDialog($"{message}");
+        messageDialog.Title = title;
 
         if (!string.IsNullOrEmpty(primaryText))
         {
@@ -553,22 +558,22 @@ public partial class App : Application
             messageDialog.Commands.Add(new UICommand($"{cancelText}", new UICommandInvokedHandler(DialogDismissedHandler)));
             messageDialog.DefaultCommandIndex = 1;
         }
-		// We must initialize the dialog with an owner.
-		WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
-		// Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.
-		await messageDialog.ShowAsync();
+        // We must initialize the dialog with an owner.
+        WinRT.Interop.InitializeWithWindow.Initialize(messageDialog, App.WindowHandle);
+        // Show the message dialog. Our DialogDismissedHandler will deal with what selection the user wants.
+        await messageDialog.ShowAsync();
 
-		// We could force the result in a separate timer...
-		//DialogDismissedHandler(new UICommand("time-out"));
-	}
+        // We could force the result in a separate timer...
+        //DialogDismissedHandler(new UICommand("time-out"));
+    }
 
-	/// <summary>
-	/// Callback for the selected option from the user.
-	/// </summary>
-	static void DialogDismissedHandler(IUICommand command)
-	{
-		Debug.WriteLine($"UICommand.Label => {command.Label}");
-	}
+    /// <summary>
+    /// Callback for the selected option from the user.
+    /// </summary>
+    static void DialogDismissedHandler(IUICommand command)
+    {
+        Debug.WriteLine($"UICommand.Label => {command.Label}");
+    }
 
     /// <summary>
     /// The <see cref="Microsoft.UI.Xaml.Controls.ContentDialog"/> looks much better than the
@@ -581,7 +586,7 @@ public partial class App : Application
     /// but a <see cref="Microsoft.UI.Xaml.XamlRoot"/> must be defined since it inherits from <see cref="Microsoft.UI.Xaml.Controls.Control"/>.
     /// </remarks>
     public static async Task ShowDialogBox(string title, string message, string primaryText, string cancelText, Action? onPrimary, Action? onCancel)
-	{
+    {
         double fontSize = 16;
         Microsoft.UI.Xaml.Media.FontFamily fontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas");
 
@@ -594,38 +599,132 @@ public partial class App : Application
 
         // NOTE: Content dialogs will automatically darken the background.
         ContentDialog contentDialog = new ContentDialog()
-		{
-			Title = title,
-			PrimaryButtonText = primaryText,
-			CloseButtonText = cancelText,
-			Content = new TextBlock()
-			{
-				Text = message,
-				FontSize = fontSize,
-				FontFamily = fontFamily,
-				TextWrapping = TextWrapping.Wrap
-			},
-			XamlRoot = App.MainRoot?.XamlRoot,
-			RequestedTheme = App.MainRoot?.ActualTheme ?? ElementTheme.Default
-		};
+        {
+            Title = title,
+            PrimaryButtonText = primaryText,
+            CloseButtonText = cancelText,
+            Content = new TextBlock()
+            {
+                Text = message,
+                FontSize = fontSize,
+                FontFamily = fontFamily,
+                TextWrapping = TextWrapping.Wrap
+            },
+            XamlRoot = App.MainRoot?.XamlRoot,
+            RequestedTheme = App.MainRoot?.ActualTheme ?? ElementTheme.Default
+        };
 
-		ContentDialogResult result = await contentDialog.ShowAsync();
+        ContentDialogResult result = await contentDialog.ShowAsync();
 
-		switch (result)
-		{
-			case ContentDialogResult.Primary:
-				onPrimary?.Invoke();
-				break;
-			//case ContentDialogResult.Secondary:
-			//    onSecondary?.Invoke();
-			//    break;
-			case ContentDialogResult.None: // Cancel
-				onCancel?.Invoke();
-				break;
-			default:
-				Debug.WriteLine($"Dialog result not defined.");
-				break;
-		}
-	}
-	#endregion
+        switch (result)
+        {
+            case ContentDialogResult.Primary:
+                onPrimary?.Invoke();
+                break;
+            //case ContentDialogResult.Secondary:
+            //    onSecondary?.Invoke();
+            //    break;
+            case ContentDialogResult.None: // Cancel
+                onCancel?.Invoke();
+                break;
+            default:
+                Debug.WriteLine($"Dialog result not defined.");
+                break;
+        }
+    }
+    #endregion
+
+    /// <summary>
+    /// If <see cref="App.WindowHandle"/> is set then a call to User32 <see cref="SetForegroundWindow(nint)"/> 
+    /// will be invoked. I tried using the native OverlappedPresenter.Restore(true), but that does not work.
+    /// </summary>
+    public static void ActivateMainWindow()
+    {
+        if (App.WindowHandle != IntPtr.Zero)
+            _ = SetForegroundWindow(App.WindowHandle);
+
+        //if (AppWin is not null && AppWin.Presenter is not null && AppWin.Presenter is OverlappedPresenter op)
+        //    op.Restore(true);
+    }
+
+    public async Task PubSubHeartbeat()
+    {
+        try
+        {
+            while (!IsClosing)
+            {
+                await Task.Delay(5000);
+                PubSubEnhanced<ApplicationMessage>.Instance.SendMessage(new ApplicationMessage
+                {
+                    Module = ModuleId.App,
+                    MessageText = $"🔔 Heartbeat",
+                    MessageType = typeof(string),
+                });
+            }
+        }
+        catch (Exception) { }
+    }
+
+    /// <summary>
+    /// To my knowledge there is no way to get this natively via the WinUI3 SDK, so I'm adding a P/Invoke.
+    /// </summary>
+    /// <returns>the amount of displays the system recognizes</returns>
+    public static int GetMonitorCount()
+    {
+        int count = 0;
+
+        MonitorEnumProc callback = (IntPtr hDesktop, IntPtr hdc, ref ScreenRect prect, int d) => ++count > 0;
+
+        if (EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, callback, 0))
+        {
+            Debug.WriteLine($"[INFO] You have {count} {(count > 1 ? "monitors" : "monitor")}.");
+            return count;
+        }
+        else
+        {
+            Debug.WriteLine("[WARNING] An error occurred while enumerating monitors.");
+            return 1;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct ScreenRect
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
+    }
+    delegate bool MonitorEnumProc(IntPtr hDesktop, IntPtr hdc, ref ScreenRect pRect, int dwData);
+
+    #region [User32 Imports]
+#pragma warning disable CS0414
+    static int SW_HIDE = 0;
+    static int SW_SHOWNORMAL = 1;
+    static int SW_SHOWMINIMIZED = 2;
+    static int SW_SHOWMAXIMIZED = 3;
+    static int SW_SHOWNOACTIVATE = 4;
+    static int SW_SHOW = 5;
+    static int SW_MINIMIZE = 6;
+    static int SW_SHOWMINNOACTIVE = 7;
+    static int SW_SHOWNA = 8;
+    static int SW_RESTORE = 9;
+    static int SW_SHOWDEFAULT = 10;
+    static int SW_FORCEMINIMIZE = 11;
+#pragma warning restore CS0414
+    [DllImport("User32.dll")]
+    internal static extern bool ShowWindow(IntPtr handle, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    internal static extern IntPtr SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    internal static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    internal static extern IntPtr GetActiveWindow();
+
+    [DllImport("user32.dll")]
+    static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lpRect, MonitorEnumProc callback, int dwData);
+    #endregion
 }

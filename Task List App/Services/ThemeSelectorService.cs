@@ -10,16 +10,18 @@ namespace Task_List_App.Services;
 /// </summary>
 public class ThemeSelectorService : IThemeSelectorService
 {
-    private const string SettingsKeyTheme = "AppBackgroundRequestedTheme";
-    private const string SettingsKeyNotifications = "AppToastNotification";
-    private const string SettingsKeyOverdueSummary = "AppOverdueSummary";
-    private const string SettingsKeyPersist = "AppPersistLogin";
-    private const string SettingsKeyBackdrop = "AppAcrylicBackdrop";
-    private const string SettingsKeyLastPage = "AppLastPage";
+    const string SettingsKeyTheme = "AppBackgroundRequestedTheme";
+    const string SettingsKeyNotifications = "AppToastNotification";
+    const string SettingsKeyOverdueSummary = "AppOverdueSummary";
+    const string SettingsKeyOpenUrl = "AppOpenUrl";
+    const string SettingsKeyPersist = "AppPersistLogin";
+    const string SettingsKeyBackdrop = "AppAcrylicBackdrop";
+    const string SettingsKeyLastPage = "AppLastPage";
 
     public ElementTheme Theme { get; set; } = ElementTheme.Dark;
 	public bool Notifications { get; set; } = true;
 	public bool OverdueSummary { get; set; } = true;
+	public bool OpenUrl { get; set; } = true;
     public bool PersistLogin { get; set; } = true;
 	public bool AcrylicBackdrop { get; set; } = false;
 	public Type? LastPage { get; set; }
@@ -29,7 +31,6 @@ public class ThemeSelectorService : IThemeSelectorService
     public ThemeSelectorService(ILocalSettingsService localSettingsService)
     {
 		Debug.WriteLine($"{System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType?.Name}__{System.Reflection.MethodBase.GetCurrentMethod()?.Name} [{DateTime.Now.ToString("hh:mm:ss.fff tt")}]");
-
 		_localSettingsService = localSettingsService;
     }
 
@@ -41,17 +42,18 @@ public class ThemeSelectorService : IThemeSelectorService
         Theme = await LoadThemeFromSettingsAsync();
         Notifications = await LoadNotificationsFromSettingsAsync();
         OverdueSummary = await LoadOverdueSummaryFromSettingsAsync();
+        OpenUrl = await LoadOpenUrlFromSettingsAsync();
         PersistLogin = await LoadPersistLoginFromSettingsAsync();
         AcrylicBackdrop = await LoadAcrylicBackdropFromSettingsAsync();
         LastPage = await LoadLastPageFromSettingsAsync();
-
         await Task.CompletedTask;
     }
 
-	/// <summary>
-	/// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
-	/// </summary>
-	public async Task SetThemeAsync(ElementTheme theme)
+    #region [Command Methods]
+    /// <summary>
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
+    public async Task SetThemeAsync(ElementTheme theme)
     {
         Theme = theme;
 
@@ -80,6 +82,15 @@ public class ThemeSelectorService : IThemeSelectorService
     /// <summary>
     /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
     /// </summary>
+    public async Task SetOpenUrlAsync(bool enabled)
+    {
+        OpenUrl = enabled;
+        await SaveOpenUrlInSettingsAsync(OpenUrl);
+    }
+
+    /// <summary>
+    /// Bound to the <see cref="System.Windows.Input.ICommand"/> inside <see cref="Task_List_App.ViewModels.SettingsViewModel"/>.
+    /// </summary>
     public async Task SetPersistLoginAsync(bool enabled)
     {
         PersistLogin = enabled;
@@ -103,14 +114,15 @@ public class ThemeSelectorService : IThemeSelectorService
         LastPage = page;
         await SaveLastPageInSettingsAsync(page);
     }
+    #endregion
 
-    #region [App theme settings]
+    #region [App theme setting]
     /// <summary>
     /// Update the theme immediately from the service.
     /// </summary>
     public async Task SetRequestedThemeAsync()
     {
-        if (App.MainWindow.Content is FrameworkElement rootElement)
+        if (App.MainWindow != null && App.MainWindow.Content is FrameworkElement rootElement)
         {
             rootElement.RequestedTheme = Theme;
             TitleBarHelper.UpdateTitleBar(Theme);
@@ -156,6 +168,17 @@ public class ThemeSelectorService : IThemeSelectorService
     /// Saves overdue summary parameter
     /// </summary>
     async Task SaveOverdueSummaryInSettingsAsync(bool summary) => await _localSettingsService.SaveSettingAsync(SettingsKeyOverdueSummary, $"{summary}");
+    #endregion
+
+    #region [Open Url setting]
+    /// <summary>
+    /// Loads open url parameter
+    /// </summary>
+    async Task<bool> LoadOpenUrlFromSettingsAsync() => await _localSettingsService.ReadSettingAsync<bool>(SettingsKeyOpenUrl);
+    /// <summary>
+    /// Saves open url parameter
+    /// </summary>
+    async Task SaveOpenUrlInSettingsAsync(bool open) => await _localSettingsService.SaveSettingAsync(SettingsKeyOpenUrl, $"{open}");
     #endregion
 
     #region [Last Page setting]

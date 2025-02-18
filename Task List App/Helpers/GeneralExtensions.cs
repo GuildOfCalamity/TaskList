@@ -2691,7 +2691,20 @@ public static class GeneralExtensions
         if (inputArray.Length > 1)
             return inputArray.Skip(1).ToArray();
         else
-            return new string[0];
+            return inputArray;
+    }
+
+    /// <summary>
+    /// Helper for parsing command line arguments.
+    /// </summary>
+    /// <param name="inputArray"></param>
+    /// <returns>string array of args excluding the 1st arg</returns>
+    public static string[] IgnoreNthTakeRest(this string[] inputArray, int skip = 1)
+    {
+        if (inputArray.Length > skip)
+            return inputArray.Skip(skip).ToArray();
+        else
+            return inputArray;
     }
 
     /// <summary>

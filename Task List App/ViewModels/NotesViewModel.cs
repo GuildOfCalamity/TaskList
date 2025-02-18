@@ -90,7 +90,14 @@ namespace Task_List_App.ViewModels
                 // For testing home-brew relay commands
                 TestCommand1 = new RelayCommand<NoteItem>(async (item) => await UpdateNote(item));
                 TestCommand2 = new RelayCommand(async () => await UpdateNote(null));
-                EditRequestCommand = new RelayCommand(() => { EditRequest = true; }, () => !EditRequest);
+                EditRequestCommand = new RelayCommand(() => 
+                {
+                    // We might want to add previous state checking here.
+                    if (EditRequest)
+                        EditRequest = false; 
+                    else
+                        EditRequest = true;
+                });
                 ThrowExCommand = new RelayCommand(async () => await ThrowError(), () => CanThrowError);
 
                 // IoC method...
